@@ -150,17 +150,35 @@
   }
 
   .navbar__nav {
-    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: rgba(10, 10, 10, 0.95);
+    border-bottom: 1px solid var(--color-border);
+    justify-content: center;
+    padding: var(--space-sm) 0;
+    gap: var(--space-md);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 
   .navbar__logo-text {
     font-size: 1.4rem;
+  }
+  
+  .navbar__search-form.active .navbar__search-input {
+    width: 120px;
   }
 }
 
 @media (max-width: 480px) {
   .navbar {
     padding: 0 var(--space-sm);
+  }
+  
+  .navbar__search-form.active .navbar__search-input {
+    width: 100px;
   }
 }
 
