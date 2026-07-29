@@ -1,0 +1,38 @@
+.media-browse-page {
+  padding: 100px 4% 4rem;
+  min-height: 100vh;
+  background-color: #0b0d14;
+  color: #e2e8f0;
+}
+
+.media-browse-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
+}
+
+.media-browse-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.media-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: #94a3b8;
+  gap: 1rem;
+}
+
+.media-state h2 {
+  color: #ffffff;
+}

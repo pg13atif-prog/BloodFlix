@@ -1,0 +1,112 @@
+.movie-row-container {
+  margin-bottom: var(--space-3xl);
+  padding-top: var(--space-lg);
+}
+
+.row-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  max-width: var(--content-max-width);
+  margin: 0 auto var(--space-md);
+  padding: 0 var(--space-xl);
+}
+
+.row-title {
+  margin: 0;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
+  font-weight: 600;
+}
+
+.row-see-all {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-xs);
+  color: var(--color-accent);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.row-see-all:hover,
+.row-see-all:focus-visible {
+  text-decoration: underline;
+}
+
+.row-see-all .arrow {
+  font-size: 1rem;
+}
+
+.row-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.movie-row {
+  display: flex;
+  gap: var(--space-lg);
+  width: 100%;
+  overflow-x: auto;
+  padding: 10px max(var(--space-xl), calc((100vw - var(--content-max-width)) / 2 + var(--space-xl)));
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.movie-row::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-button {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: calc(100% - 20px);
+  color: var(--color-text);
+  background: rgba(10, 10, 10, 0.72);
+  font-size: 2rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-base), background var(--transition-base);
+}
+
+.row-wrapper:hover .scroll-button,
+.scroll-button:focus-visible {
+  opacity: 1;
+}
+
+.scroll-button:hover {
+  background: rgba(10, 10, 10, 0.92);
+}
+
+.scroll-button.left {
+  left: 0;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.scroll-button.right {
+  right: 0;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .row-header {
+    padding: 0 var(--space-md);
+  }
+
+  .movie-row {
+    gap: var(--space-md);
+    padding-inline: var(--space-md);
+  }
+
+  .scroll-button {
+    display: none;
+  }
+}
