@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import MovieCard from './MovieCard';
 import './MovieRow.css';
 
-const MovieRow = ({ title, movies }) => {
+const MovieRow = ({ title, movies, link }) => {
   const rowRef = useRef(null);
 
   const scroll = (direction) => {
@@ -16,13 +16,21 @@ const MovieRow = ({ title, movies }) => {
     rowRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
   };
 
+  const handleSeeAll = () => {
+    if (link) {
+      window.location.hash = link;
+    }
+  };
+
   return (
     <section className="movie-row-container" aria-labelledby={`${title}-heading`}>
       <div className="row-header">
         <h2 className="row-title" id={`${title}-heading`}>{title}</h2>
-        <button className="row-see-all" type="button">
-          See All <span className="arrow" aria-hidden="true">&rsaquo;</span>
-        </button>
+        {link && (
+          <button className="row-see-all" type="button" onClick={handleSeeAll}>
+            See All <span className="arrow" aria-hidden="true">&rsaquo;</span>
+          </button>
+        )}
       </div>
 
       <div className="row-wrapper">

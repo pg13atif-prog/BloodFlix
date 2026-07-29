@@ -173,9 +173,9 @@ function App() {
                   {recommended.length > 0 && (
                     <MovieRow title={`Because you liked "${likedTitle}"`} movies={recommended} />
                   )}
-                  <MovieRow title="Popular Movies" movies={movies} />
-                  <MovieRow title="Trending TV Shows" movies={tvShows} />
-                  <MovieRow title="Trending Movies This Week" movies={trending} />
+                  <MovieRow title="Popular Movies" movies={movies} link="#movies" />
+                  <MovieRow title="Trending TV Shows" movies={tvShows} link="#trending-tv" />
+                  <MovieRow title="Trending Movies This Week" movies={trending} link="#trending-movies" />
                 </>
               )}
             </main>

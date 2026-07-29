@@ -74,3 +74,9 @@ button {
   padding: 0 var(--space-xl);
   color: var(--color-text-secondary);
 }
+
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 60px;
+  }
+}
