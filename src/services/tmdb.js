@@ -43,10 +43,38 @@ const getApiKey = () => {
   return apiKey;
 };
 
+const fetchWithTimeout = async (url, options = {}) => {
+  const { timeout = 10000, signal, ...rest } = options;
+  
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  const onAbort = () => controller.abort();
+  if (signal) {
+    signal.addEventListener('abort', onAbort);
+  }
+
+  try {
+    const response = await fetch(url, {
+      ...rest,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  } finally {
+    if (signal) {
+      signal.removeEventListener('abort', onAbort);
+    }
+  }
+};
+
 export const getPopularMovies = async (signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/movie/popular?language=en-US&page=1&api_key=${apiKey}`,
     { signal },
   );
@@ -62,7 +90,7 @@ export const getPopularMovies = async (signal) => {
 export const getPopularTvShows = async (signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/tv/popular?language=en-US&page=1&api_key=${apiKey}`,
     { signal },
   );
@@ -78,7 +106,7 @@ export const getPopularTvShows = async (signal) => {
 export const getTrending = async (mediaType = 'all', timeWindow = 'day', signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/trending/${mediaType}/${timeWindow}?language=en-US&api_key=${apiKey}`,
     { signal },
   );
@@ -94,7 +122,7 @@ export const getTrending = async (mediaType = 'all', timeWindow = 'day', signal)
 export const searchMedia = async (query, signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/search/multi?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1&api_key=${apiKey}`,
     { signal },
   );
@@ -113,7 +141,7 @@ export const searchMedia = async (query, signal) => {
 export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/${mediaType}/${movieId}?language=en-US&api_key=${apiKey}`,
     { signal },
   );
@@ -161,7 +189,7 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
 export const getMovieCredits = async (movieId, mediaType = 'movie', signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/${mediaType}/${movieId}/credits?language=en-US&api_key=${apiKey}`,
     { signal },
   );
@@ -182,7 +210,7 @@ export const getMovieCredits = async (movieId, mediaType = 'movie', signal) => {
 export const getMovieVideos = async (movieId, mediaType = 'movie', signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/${mediaType}/${movieId}/videos?language=en-US&api_key=${apiKey}`,
     { signal },
   );
@@ -211,7 +239,7 @@ export const discoverMovies = async ({ genreId, year }, signal) => {
     url += `&primary_release_year=${year}`;
   }
 
-  const response = await fetch(url, { signal });
+  const response = await fetchWithTimeout(url, { signal });
 
   if (!response.ok) {
     throw new Error('Unable to discover movies.');
@@ -224,7 +252,7 @@ export const discoverMovies = async ({ genreId, year }, signal) => {
 export const getSimilarMovies = async (movieId, mediaType = 'movie', signal) => {
   const apiKey = getApiKey();
 
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE_URL}/${mediaType}/${movieId}/similar?language=en-US&page=1&api_key=${apiKey}`,
     { signal },
   );
