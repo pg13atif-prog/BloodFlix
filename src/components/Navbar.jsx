@@ -8,6 +8,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const { currentUser } = useAuth();
 
@@ -16,7 +17,6 @@ const Navbar = () => {
       setScrolled(window.scrollY > 50);
     };
 
-    // Keep search query in sync with URL if navigated directly
     const handleHashChange = () => {
       const hash = window.location.hash;
       if (hash.startsWith('#search?q=')) {
@@ -27,12 +27,12 @@ const Navbar = () => {
         setSearchQuery('');
         setIsSearchActive(false);
       }
+      setIsMobileMenuOpen(false); // Close menu on navigation
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('hashchange', handleHashChange);
     
-    // Initial check
     handleHashChange();
 
     return () => {
@@ -54,9 +54,9 @@ const Navbar = () => {
     } else {
       setIsAuthModalOpen(true);
     }
+    setIsMobileMenuOpen(false);
   };
 
-  // Get first letter of email for avatar
   const avatarLetter = currentUser ? currentUser.email.charAt(0).toUpperCase() : '?';
 
   return (
@@ -67,33 +67,40 @@ const Navbar = () => {
         role="navigation"
         aria-label="Main Navigation"
       >
-        {/* ── Logo ── */}
-        <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; }} className="navbar__logo" id="navbar-logo" aria-label="BloodFlix Home">
-          <span className="navbar__logo-text">BloodFlix</span>
-        </a>
+        <div className="navbar__left">
+          {/* Hamburger Icon */}
+          <button className="navbar__hamburger" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
 
-        {/* ── Navigation Links ── */}
-        <ul className="navbar__nav" id="navbar-links">
-          <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; }} className="navbar__link">
-              Home
-            </a>
-          </li>
-          <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; }} className="navbar__link">
-              Movies
-            </a>
-          </li>
-          <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; }} className="navbar__link">
-              TV Shows
-            </a>
-          </li>
-        </ul>
+          <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; }} className="navbar__logo" id="navbar-logo" aria-label="BloodFlix Home">
+            <span className="navbar__logo-text">BloodFlix</span>
+          </a>
 
-        {/* ── Right: Search + Profile ── */}
+          <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">
+            <li>
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; setIsMobileMenuOpen(false); }} className="navbar__link">
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; setIsMobileMenuOpen(false); }} className="navbar__link">
+                Movies
+              </a>
+            </li>
+            <li>
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; setIsMobileMenuOpen(false); }} className="navbar__link">
+                TV Shows
+              </a>
+            </li>
+          </ul>
+        </div>
+
         <div className="navbar__actions" id="navbar-actions">
-          {/* Search */}
           <form className={`navbar__search-form ${isSearchActive ? 'active' : ''}`} onSubmit={handleSearchSubmit}>
             <button
               type="button"
@@ -124,7 +131,6 @@ const Navbar = () => {
             />
           </form>
 
-          {/* Profile Avatar */}
           <button
             className="navbar__profile"
             onClick={handleProfileClick}
@@ -137,6 +143,11 @@ const Navbar = () => {
         </div>
       </nav>
       
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+        <div className="navbar__backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
+      )}
+
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
