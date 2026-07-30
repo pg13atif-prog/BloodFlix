@@ -77,8 +77,39 @@
 }
 
 .match-form button {
-  padding: 1rem;
+  display: none; /* old style removed */
+}
+
+.match-btn {
+  background: linear-gradient(135deg, var(--color-accent, #e50914), #ff6b6b);
+  color: #fff;
+  border: none;
+  padding: 1.2rem;
+  border-radius: 8px;
   font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.5rem;
+}
+
+.match-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+}
+
+.match-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.match-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #555;
+  box-shadow: none;
 }
 
 .error-text {

@@ -56,7 +56,7 @@ const PickForMe = () => {
         {movie && !loading && (
           <div className="ai-result-card animated-entrance">
             <div className="ai-result-poster">
-              <MovieCard movie={movie} />
+              <MovieCard {...movie} />
             </div>
             <div className="ai-result-info">
               <h2>{movie.title} <span>({movie.year})</span></h2>

@@ -146,7 +146,7 @@ const SocialPage = () => {
               onChange={(e) => setSearchCode(e.target.value)}
               required
             />
-            <button type="submit" className="btn-primary" disabled={matchLoading}>
+            <button type="submit" className="match-btn" disabled={matchLoading}>
               {matchLoading ? 'Analyzing...' : 'Calculate Match'}
             </button>
           </form>
@@ -168,7 +168,7 @@ const SocialPage = () => {
               <h3>You Both Loved</h3>
               <div className="social-grid">
                 {matchResult.sharedFavorites.map(movie => (
-                  <MovieCard key={movie.id} movie={movie} />
+                  <MovieCard key={movie.id} {...movie} />
                 ))}
               </div>
             </div>

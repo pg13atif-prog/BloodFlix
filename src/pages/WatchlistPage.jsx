@@ -128,7 +128,7 @@ const WatchlistPage = () => {
             <div key={movie.id} className="watchlist-item-wrapper">
               {viewMode === 'grid' ? (
                 <div style={{ position: 'relative' }}>
-                  <MovieCard movie={movie} />
+                  <MovieCard {...movie} />
                   <button className="watchlist-remove-btn" onClick={(e) => handleRemove(e, movie.id)} aria-label="Remove">✕</button>
                 </div>
               ) : (
