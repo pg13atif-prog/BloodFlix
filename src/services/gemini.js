@@ -41,13 +41,17 @@ const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) 
     throw new Error('OpenRouter API key is missing.');
   }
 
-  // Fallback list of models, prioritizing the user's preferred models
+  // Fallback list of models, prioritizing active free models on OpenRouter
   const models = [
-    "inclusionai/ling-3.0-flash:free",
-    "google/gemini-2-flash-thinking-exp:free",
-    "qwen/qwen-2.5-coder-32b-instruct:free",
+    "google/gemini-2.0-flash-exp:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen/qwen-2.5-72b-instruct:free",
+    "deepseek/deepseek-r1:free",
+    "mistralai/mistral-7b-instruct:free",
+    "google/gemini-flash-1.5:free",
+    "openchat/openchat-7b:free",
     "meta-llama/llama-3.1-8b-instruct:free",
-    "nvidia/nemotron-3-ultra-550b-a55b:free"
+    "inclusionai/ling-3.0-flash:free"
   ];
 
   let lastError = null;
@@ -79,6 +83,117 @@ const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) 
   throw new Error(`All fallback models failed. Last error: ${lastError?.message}`);
 };
 
+const CATEGORIZED_FALLBACKS = {
+  horror: [
+    { title: "Get Out", mediaType: "movie", rationale: "A masterful psychological horror and social commentary with spine-tingling suspense." },
+    { title: "Hereditary", mediaType: "movie", rationale: "A deeply disturbing terror experience exploring family grief and dark cult lore." },
+    { title: "The Conjuring", mediaType: "movie", rationale: "A modern classic supernatural horror filled with relentless tension and terrifying paranormal activity." },
+    { title: "A Quiet Place", mediaType: "movie", rationale: "An atmospheric thriller where silence is survival against sound-hunting alien creatures." },
+    { title: "Talk to Me", mediaType: "movie", rationale: "A fresh, intense horror about teenagers summoning spirits through a mysterious embalmed hand." },
+    { title: "Alien", mediaType: "movie", rationale: "Ridley Scott's sci-fi horror masterpiece depicting claustrophobic terror aboard a deep-space freighter." },
+    { title: "The Shining", mediaType: "movie", rationale: "Stanley Kubrick's psychological horror milestone set in an isolated, haunted hotel." },
+    { title: "The Thing", mediaType: "movie", rationale: "John Carpenter's legendary paranoid sci-fi horror with practical shape-shifting monster effects." },
+    { title: "Psycho", mediaType: "movie", rationale: "Hitchcock's groundbreaking thriller that forever revolutionized suspense and horror cinema." },
+    { title: "It", mediaType: "movie", rationale: "A terrifying and emotional coming-of-age horror story featuring the shape-shifting clown Pennywise." }
+  ],
+  action: [
+    { title: "Mad Max: Fury Road", mediaType: "movie", rationale: "A non-stop high-octane post-apocalyptic chase spectacle with breathtaking practical stunts." },
+    { title: "John Wick", mediaType: "movie", rationale: "Sleek, relentless action choreography following a legendary assassin seeking vengeance." },
+    { title: "The Dark Knight", mediaType: "movie", rationale: "A gritty, cinematic crime epic pitting Gotham's protector against the anarchic chaos of the Joker." },
+    { title: "Die Hard", mediaType: "movie", rationale: "The ultimate action classic as John McClane single-handedly fights terrorists inside a skyscraper." },
+    { title: "Terminator 2: Judgment Day", mediaType: "movie", rationale: "A sci-fi action benchmark with revolutionary CGI, explosive setpieces, and iconic cyborg warfare." },
+    { title: "Mission: Impossible - Fallout", mediaType: "movie", rationale: "Mind-blowing real-world stunts and relentless pacing make this one of the finest action films ever." },
+    { title: "Gladiator", mediaType: "movie", rationale: "An epic story of honor, betrayal, and gladiatorial combat in the arena of ancient Rome." },
+    { title: "Top Gun: Maverick", mediaType: "movie", rationale: "An adrenaline-fueled aviation action blockbuster with real aerial cinematography and high emotional stakes." },
+    { title: "The Raid", mediaType: "movie", rationale: "Brutal, masterfully choreographed martial arts action inside a crime lord's high-rise apartment block." },
+    { title: "Avengers: Endgame", mediaType: "movie", rationale: "The massive climactic superhero battle bringing a decade of cinematic universe storytelling to a peak." }
+  ],
+  comedy: [
+    { title: "Superbad", mediaType: "movie", rationale: "A riotous, hilarious high school comedy capturing teenage friendship and wild party chaos." },
+    { title: "The Hangover", mediaType: "movie", rationale: "A chaotic mystery comedy following groomsmen trying to piece together a wild Vegas night." },
+    { title: "Step Brothers", mediaType: "movie", rationale: "Endlessly quotable slapstick comedy featuring Will Ferrell and John C. Reilly as grown step-siblings." },
+    { title: "Shaun of the Dead", mediaType: "movie", rationale: "A brilliant horror-comedy blending sharp British humor with zombie apocalypse survival." },
+    { title: "Knives Out", mediaType: "movie", rationale: "A witty, delightful whodunit mystery packed with eccentric characters and clever twists." },
+    { title: "The Grand Budapest Hotel", mediaType: "movie", rationale: "Wes Anderson's whimsical, visually stunning comedy detailing the misadventures of a legendary concierge." },
+    { title: "Deadpool", mediaType: "movie", rationale: "A fourth-wall-breaking, irreverent action comedy with sharp R-rated humor." },
+    { title: "Palm Springs", mediaType: "movie", rationale: "A hilarious and heartwarming romantic comedy time-loop adventure set at a desert wedding." },
+    { title: "Back to the Future", mediaType: "movie", rationale: "The timeless sci-fi comedy combining time-travel adventure with unforgettable humor." },
+    { title: "21 Jump Street", mediaType: "movie", rationale: "A clever buddy-cop comedy spoof that delivers consistent laugh-out-loud moments." }
+  ],
+  scifi: [
+    { title: "Interstellar", mediaType: "movie", rationale: "Christopher Nolan's awe-inspiring sci-fi journey across space, wormholes, and emotional dimensions." },
+    { title: "Inception", mediaType: "movie", rationale: "A brilliant sci-fi heist thriller exploring subconscious dream architecture and reality." },
+    { title: "The Matrix", mediaType: "movie", rationale: "The landmark cyberpunk action film that questioned reality and revolutionized visual effects." },
+    { title: "Blade Runner 2049", mediaType: "movie", rationale: "A breathtaking neo-noir sci-fi masterpiece with stunning cinematography and existential themes." },
+    { title: "Dune: Part Two", mediaType: "movie", rationale: "A colossal, visually breathtaking sci-fi epic following Paul Atreides on Arrakis." },
+    { title: "Arrival", mediaType: "movie", rationale: "A profound, deeply intelligent sci-fi drama about linguistics, time, and first contact with extraterrestrials." },
+    { title: "Ex Machina", mediaType: "movie", rationale: "A tense psychological sci-fi thriller probing the boundaries of artificial intelligence and manipulation." },
+    { title: "2001: A Space Odyssey", mediaType: "movie", rationale: "Kubrick's monumental sci-fi voyage detailing human evolution and artificial intelligence." },
+    { title: "Star Wars: Episode V - The Empire Strikes Back", mediaType: "movie", rationale: "The definitive space fantasy chapter filled with iconic twists and galactic drama." },
+    { title: "Her", mediaType: "movie", rationale: "A soulful, near-future sci-fi romance about a lonely man who falls in love with an intuitive AI operating system." }
+  ],
+  romance: [
+    { title: "La La Land", mediaType: "movie", rationale: "A vibrant, heartwarming musical romantic drama celebrating dreams and love in Los Angeles." },
+    { title: "Before Sunrise", mediaType: "movie", rationale: "An intimate, deeply romantic conversation-driven story of two travelers meeting in Vienna." },
+    { title: "Eternal Sunshine of the Spotless Mind", mediaType: "movie", rationale: "An inventive, emotional masterpiece exploring love, heartbreak, and memory erasure." },
+    { title: "About Time", mediaType: "movie", rationale: "A touching time-travel romance that beautifully captures love, family, and appreciating every day." },
+    { title: "Pride & Prejudice", mediaType: "movie", rationale: "A gorgeous, sweeping period romance adaptation of Jane Austen's timeless classic." },
+    { title: "500 Days of Summer", mediaType: "movie", rationale: "A realistic, creative non-linear look at the highs and lows of modern romance." },
+    { title: "Past Lives", mediaType: "movie", rationale: "A tender, deeply moving Korean-American romantic drama about destiny and longing across decades." },
+    { title: "Titanic", mediaType: "movie", rationale: "James Cameron's monumental romantic tragedy set aboard the ill-fated luxury liner." },
+    { title: "The Notebook", mediaType: "movie", rationale: "An enduring, passionate romance tracking a couple's lifelong devotion against all odds." },
+    { title: "Portrait of a Lady on Fire", mediaType: "movie", rationale: "A stunningly romantic and artistic French historical romance filled with burning desire." }
+  ],
+  animation: [
+    { title: "Spirited Away", mediaType: "movie", rationale: "Hayao Miyazaki's Oscar-winning fantasy masterpiece brimming with enchantment and spirit-world magic." },
+    { title: "Spider-Man: Into the Spider-Verse", mediaType: "movie", rationale: "A groundbreaking animated superhero triumph featuring comic-book visuals and incredible heart." },
+    { title: "Spider-Man: Across the Spider-Verse", mediaType: "movie", rationale: "A visually spectacular sequel pushing the boundaries of animation style and multiverse storytelling." },
+    { title: "Wall-E", mediaType: "movie", rationale: "Pixar's poignant, virtually wordless sci-fi animated fable about love and environmental stewardship." },
+    { title: "Princess Mononoke", mediaType: "movie", rationale: "An epic Studio Ghibli dark fantasy exploring the struggle between industrial progress and nature." },
+    { title: "Coco", mediaType: "movie", rationale: "A colorful, vibrant Pixar celebration of family, music, and Mexican Day of the Dead traditions." },
+    { title: "Your Name", mediaType: "movie", rationale: "A gorgeous Japanese anime romance blending body-swapping comedy with a cosmic fantasy twist." },
+    { title: "Toy Story", mediaType: "movie", rationale: "Pixar's beloved landmark 3D animated film that sparked a world-famous franchise." },
+    { title: "The Iron Giant", mediaType: "movie", rationale: "A classic, emotionally powerful animated story of friendship between a young boy and a giant robot." },
+    { title: "Soul", mediaType: "movie", rationale: "A thoughtful Pixar animation exploring life's purpose, passion, and the beauty of small moments." }
+  ],
+  thriller: [
+    { title: "Parasite", mediaType: "movie", rationale: "Bong Joon-ho's Oscar-winning masterpiece blending dark comedy, social thriller, and shocking twists." },
+    { title: "Se7en", mediaType: "movie", rationale: "A gritty, atmospheric detective thriller following a hunt for a killer using the seven deadly sins." },
+    { title: "Shutter Island", mediaType: "movie", rationale: "Scorsese's chilling psychological mystery set at an isolated asylum for the criminally insane." },
+    { title: "Prisoners", mediaType: "movie", rationale: "A tense, morally complex thriller tracking a desperate father searching for his missing child." },
+    { title: "The Silence of the Lambs", mediaType: "movie", rationale: "A chilling psychological crime thriller featuring Anthony Hopkins' legendary Hannibal Lecter." },
+    { title: "Zodiac", mediaType: "movie", rationale: "David Fincher's meticulous, haunting investigation into San Francisco's notorious Zodiac killer." },
+    { title: "Fight Club", mediaType: "movie", rationale: "A provocative psychological thriller dissecting consumerism and identity through a secret fight club." },
+    { title: "Gone Girl", mediaType: "movie", rationale: "A razor-sharp mystery surrounding a high-profile disappearance and media circus." },
+    { title: "Memento", mediaType: "movie", rationale: "Nolan's brilliant reverse-chronology noir following a man with short-term memory loss seeking revenge." },
+    { title: "Nightcrawler", mediaType: "movie", rationale: "A pulse-pounding, unsettling crime thriller starring Jake Gyllenhaal as an unhinged freelance videographer." }
+  ],
+  tv: [
+    { title: "Breaking Bad", mediaType: "tv", rationale: "The critically acclaimed drama detailing the dark transformation of a chemistry teacher into a drug lord." },
+    { title: "Stranger Things", mediaType: "tv", rationale: "A nostalgic 80s sci-fi horror series packed with supernatural mysteries and memorable characters." },
+    { title: "The Bear", mediaType: "tv", rationale: "An intense, fast-paced culinary drama exploring grief, ambition, and kitchen chaos in Chicago." },
+    { title: "Succession", mediaType: "tv", rationale: "A razor-sharp satirical family drama about power struggles inside a global media conglomerate." },
+    { title: "Severance", mediaType: "tv", rationale: "A mind-bending workplace mystery thriller exploring a procedure that surgically divides work and life memories." },
+    { title: "Arcane", mediaType: "tv", rationale: "A visually stunning animated series with rich character depth, emotional stakes, and worldbuilding." },
+    { title: "Chernobyl", mediaType: "tv", rationale: "A gripping, realistic historical miniseries depicting the 1986 nuclear catastrophe and its aftermath." },
+    { title: "Black Mirror", mediaType: "tv", rationale: "An anthology sci-fi series examining the dark, unexpected consequences of modern technology." },
+    { title: "Game of Thrones", mediaType: "tv", rationale: "An epic fantasy series of noble families warring for control of the Iron Throne." },
+    { title: "True Detective", mediaType: "tv", rationale: "A deeply moody, philosophical crime anthology series featuring brilliant performances and dark mysteries." }
+  ],
+  general: [
+    { title: "Inception", mediaType: "movie", rationale: "A mind-bending heist inside dreams with stunning visual direction and a gripping narrative." },
+    { title: "The Dark Knight", mediaType: "movie", rationale: "A masterpiece superhero crime thriller featuring an iconic performance by Heath Ledger as the Joker." },
+    { title: "Interstellar", mediaType: "movie", rationale: "An epic space odyssey exploring human endurance, love, and time dilation near colossal black holes." },
+    { title: "Parasite", mediaType: "movie", rationale: "A razor-sharp social satire and suspense masterpiece that keeps you guessing until the final frame." },
+    { title: "Whiplash", mediaType: "movie", rationale: "An intense, electrifying drama about ambition, obsession, and the pursuit of musical perfection." },
+    { title: "Pulp Fiction", mediaType: "movie", rationale: "Quentin Tarantino's iconic non-linear crime classic filled with unforgettable dialogue and pop culture style." },
+    { title: "Spirited Away", mediaType: "movie", rationale: "Studio Ghibli's breathtaking animated masterpiece celebrating wonder, courage, and magical transformation." },
+    { title: "Gladiator", mediaType: "movie", rationale: "A sweeping Roman epic of vengeance, honor, and heroic triumph in the legendary arena." },
+    { title: "Dune: Part Two", mediaType: "movie", rationale: "A visually colossal sci-fi epic delivering staggering cinematic scale and intense emotional stakes." },
+    { title: "The Matrix", mediaType: "movie", rationale: "The revolutionary cyber-action classic that redefined sci-fi cinema and visual effects forever." }
+  ]
+};
+
 export const getAiRecommendations = async (prompt) => {
   const systemInstruction = `
     You are an expert movie and TV show recommendation assistant for CineScope, a premium discovery platform.
@@ -101,20 +216,29 @@ export const getAiRecommendations = async (prompt) => {
     }
     throw new Error("Invalid AI response format: expected an array of recommendations.");
   } catch (err) {
-    console.warn('OpenRouter rate limited or unavailable, using smart recommendation engine fallback:', err.message);
-    const fallbacks = [
-      { title: "Inception", mediaType: "movie", rationale: "A mind-bending heist inside dreams with stunning visual direction and a gripping narrative." },
-      { title: "The Dark Knight", mediaType: "movie", rationale: "A masterpiece superhero crime thriller featuring an iconic performance by Heath Ledger as the Joker." },
-      { title: "Interstellar", mediaType: "movie", rationale: "An epic space odyssey exploring human endurance, love, and time dilation near colossal black holes." },
-      { title: "Parasite", mediaType: "movie", rationale: "A razor-sharp social satire and suspense masterpiece that keeps you guessing until the final frame." },
-      { title: "Whiplash", mediaType: "movie", rationale: "An intense, electrifying drama about ambition, obsession, and the pursuit of musical perfection." },
-      { title: "Pulp Fiction", mediaType: "movie", rationale: "Quentin Tarantino's iconic non-linear crime classic filled with unforgettable dialogue and pop culture style." },
-      { title: "Spirited Away", mediaType: "movie", rationale: "Studio Ghibli's breathtaking animated masterpiece celebrating wonder, courage, and magical transformation." },
-      { title: "Gladiator", mediaType: "movie", rationale: "A sweeping Roman epic of vengeance, honor, and heroic triumph in the legendary arena." },
-      { title: "Dune: Part Two", mediaType: "movie", rationale: "A visually colossal sci-fi epic delivering staggering cinematic scale and intense emotional stakes." },
-      { title: "The Matrix", mediaType: "movie", rationale: "The revolutionary cyber-action classic that redefined sci-fi cinema and visual effects forever." }
-    ];
-    return fallbacks;
+    console.warn('OpenRouter rate limited or unavailable, using prompt-aware fallback engine:', err.message);
+    const p = (prompt || '').toLowerCase();
+
+    let pool = CATEGORIZED_FALLBACKS.general;
+    if (/horror|scary|spooky|ghost|demon|creepy|slasher|kill|haunt/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.horror;
+    } else if (/action|fight|chase|combat|hero|war|stunt|explosion|badass/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.action;
+    } else if (/comedy|funny|laugh|hilarious|humor|joke|silly|fun|party/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.comedy;
+    } else if (/sci-fi|scifi|space|alien|future|robot|cyber|planet|galaxy|time/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.scifi;
+    } else if (/romance|love|romantic|couple|relationship|date|heart/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.romance;
+    } else if (/anime|animation|cartoon|animated|ghibli|pixar|disney/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.animation;
+    } else if (/thriller|suspense|mystery|crime|detective|noir|twist|mind-bending|psycho/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.thriller;
+    } else if (/tv|show|series|episode|season|binge/i.test(p)) {
+      pool = CATEGORIZED_FALLBACKS.tv;
+    }
+
+    return pool;
   }
 };
 
