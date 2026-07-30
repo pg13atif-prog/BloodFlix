@@ -8,19 +8,28 @@ const PickForMe = () => {
   const [loading, setLoading] = useState(false);
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState(null);
+  const [seenTitles, setSeenTitles] = useState([]);
 
   const handlePick = async () => {
     setLoading(true);
     setError(null);
     try {
-      const aiPick = await getAiPickForMe();
+      const aiPick = await getAiPickForMe(seenTitles);
       if (!aiPick || !aiPick.title) throw new Error("AI returned empty result");
       
-      const tmdbResults = await searchMedia(aiPick.title);
-      const match = tmdbResults.find(m => m.mediaType === aiPick.mediaType) || tmdbResults[0];
+      let searchTitle = aiPick.title;
+      // Guarantee no duplicate title in session
+      if (seenTitles.map(t => t.toLowerCase()).includes(searchTitle.toLowerCase())) {
+        const fallbacks = ["Inception", "Interstellar", "Pulp Fiction", "The Dark Knight", "Parasite", "Gladiator", "Whiplash", "Spirited Away", "Everything Everywhere All at Once", "Fight Club"];
+        searchTitle = fallbacks.find(f => !seenTitles.map(t => t.toLowerCase()).includes(f.toLowerCase())) || searchTitle;
+      }
+
+      const tmdbResults = await searchMedia(searchTitle);
+      const match = tmdbResults.find(m => m.mediaType === (aiPick.mediaType || 'movie')) || tmdbResults[0];
       
-      if (!match) throw new Error("Could not find movie on TMDB");
+      if (!match) throw new Error("Could not find title on TMDB");
       
+      setSeenTitles(prev => [...prev, match.title]);
       setMovie({ ...match, rationale: aiPick.rationale });
     } catch (err) {
       console.error(err);
@@ -56,11 +65,15 @@ const PickForMe = () => {
         {movie && !loading && (
           <div className="ai-result-card animated-entrance">
             <div className="ai-result-poster">
-              <MovieCard {...movie} />
+              {movie.poster ? (
+                <img src={movie.poster} alt={movie.title} className="pick-poster-img" />
+              ) : (
+                <div className="pick-poster-placeholder">{movie.title}</div>
+              )}
             </div>
             <div className="ai-result-info">
-              <h2>{movie.title} <span>({movie.year})</span></h2>
-              <p className="ai-rationale">"{movie.rationale}"</p>
+              <h2>{movie.title} {movie.year && <span>({movie.year})</span>}</h2>
+              <p className="ai-rationale">&ldquo;{movie.rationale}&rdquo;</p>
               <div className="ai-actions">
                 <button className="btn-primary" onClick={() => window.location.hash = `${movie.mediaType || 'movie'}/${movie.id}`}>View Details</button>
                 <button className="btn-secondary" onClick={handlePick}>Pick Another</button>

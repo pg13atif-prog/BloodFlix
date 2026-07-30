@@ -127,10 +127,11 @@ export const getAiPlannerRecommendation = async (answers) => {
   }
 };
 
-export const getAiPickForMe = async () => {
+export const getAiPickForMe = async (excludeTitles = []) => {
   const systemInstruction = `
-    You are CineAI. Your goal is to pick exactly ONE universally acclaimed, highly entertaining movie.
-    Return EXACTLY ONE movie recommendation in JSON format:
+    You are CineAI. Your goal is to pick exactly ONE universally acclaimed, highly entertaining movie or TV show.
+    ${excludeTitles.length > 0 ? `Do NOT recommend any of the following titles: ${excludeTitles.join(', ')}.` : ''}
+    Return EXACTLY ONE recommendation in JSON format:
     {
       "title": "Exact Title",
       "mediaType": "movie",
@@ -140,7 +141,7 @@ export const getAiPickForMe = async () => {
   `;
 
   try {
-    return await callOpenRouter(systemInstruction, "Surprise me with a guaranteed crowd-pleaser.", 0.9);
+    return await callOpenRouter(systemInstruction, "Surprise me with a guaranteed crowd-pleaser that is different from previous picks.", 0.95);
   } catch (err) {
     console.error('Error fetching Pick For Me:', err);
     throw err;
