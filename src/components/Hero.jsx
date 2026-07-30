@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getMovieVideos } from '../services/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
+import { HeroSkeleton } from './SkeletonLoader';
 import './Hero.css';
 
 const DEFAULT_FALLBACK_HERO = {
@@ -14,6 +15,10 @@ const DEFAULT_FALLBACK_HERO = {
 };
 
 const Hero = ({ movies = [], movie = null, loading = false }) => {
+  if (loading) {
+    return <HeroSkeleton />;
+  }
+
   // Build slide items list (up to 5 items)
   const slides = useMemo(() => {
     if (movies && movies.length > 0) {
@@ -28,30 +33,6 @@ const Hero = ({ movies = [], movie = null, loading = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [trailerKey, setTrailerKey] = useState(null);
-
-  if (loading) {
-    return (
-      <section className="hero hero--loading" id="hero-section-loading" aria-label="Loading Featured Movie">
-        <div className="hero__backdrop skeleton-base" style={{ height: '100%' }} />
-        <div className="hero__overlay" />
-        <div className="hero__content">
-          <div>
-            <div className="skeleton-base" style={{ width: '45%', height: '3.5rem', borderRadius: '8px', marginBottom: '1.5rem' }} />
-            <div className="skeleton-base" style={{ width: '150px', height: '1.5rem', borderRadius: '4px', marginBottom: '1rem' }} />
-            <div className="skeleton-base" style={{ width: '200px', height: '1.2rem', borderRadius: '4px', marginBottom: '1.5rem' }} />
-            <div className="skeleton-base" style={{ width: '60%', height: '1rem', borderRadius: '4px', marginBottom: '0.75rem' }} />
-            <div className="skeleton-base" style={{ width: '55%', height: '1rem', borderRadius: '4px', marginBottom: '0.75rem' }} />
-            <div className="skeleton-base" style={{ width: '45%', height: '1rem', borderRadius: '4px', marginBottom: '2.5rem' }} />
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div className="skeleton-base" style={{ width: '180px', height: '3rem', borderRadius: '30px' }} />
-              <div className="skeleton-base" style={{ width: '150px', height: '3rem', borderRadius: '30px' }} />
-            </div>
-          </div>
-        </div>
-        <div className="hero__vignette" />
-      </section>
-    );
-  }
 
   const currentSlide = slides[currentIndex] || slides[0] || DEFAULT_FALLBACK_HERO;
   const featuredId = currentSlide.id;

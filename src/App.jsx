@@ -202,7 +202,7 @@ function App() {
       default:
         return (
           <>
-            <Hero movies={movies.slice(0, 5)} loading={status === 'loading'} />
+            <Hero movies={movies.slice(0, 5)} loading={status === "loading"} />
             <main>
               {status === "loading" && (
                 <>

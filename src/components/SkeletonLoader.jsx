@@ -37,3 +37,20 @@ export const MovieRowSkeleton = () => {
     </div>
   );
 };
+
+export const HeroSkeleton = () => {
+  return (
+    <div className="skeleton-hero">
+      <div className="skeleton-hero-content">
+        <Skeleton width="65%" height="3.2rem" borderRadius="12px" style={{ marginBottom: '1.2rem' }} />
+        <Skeleton width="35%" height="1.4rem" borderRadius="8px" style={{ marginBottom: '1rem' }} />
+        <Skeleton width="45%" height="1.2rem" borderRadius="6px" style={{ marginBottom: '1.5rem' }} />
+        <Skeleton width="85%" height="3.5rem" borderRadius="8px" style={{ marginBottom: '2rem' }} />
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <Skeleton width="180px" height="3rem" borderRadius="12px" />
+          <Skeleton width="140px" height="3rem" borderRadius="12px" />
+        </div>
+      </div>
+    </div>
+  );
+};
