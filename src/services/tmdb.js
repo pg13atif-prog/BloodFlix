@@ -245,17 +245,34 @@ export const discoverMedia = async ({
 } = {}, signal) => {
   const endpoint = mediaType === 'tv' ? 'tv' : 'movie';
   
-  let url = `${API_BASE_URL}/discover/${endpoint}?language=en-US&page=${page}&include_adult=false&sort_by=${sortBy}`;
-  
-  // Require minimum vote count to prevent obscure 1-vote items when sorting by rating
-  if (sortBy.includes('vote_average') || minRating > 0) {
-    url += `&vote_count.gte=50`;
+  // Adjust sort_by for TV vs Movie
+  let effectiveSortBy = sortBy;
+  if (mediaType === 'tv' && sortBy === 'primary_release_date.desc') {
+    effectiveSortBy = 'first_air_date.desc';
   }
 
-  // Multi-genre filtering
+  let url = `${API_BASE_URL}/discover/${endpoint}?language=en-US&page=${page}&include_adult=false&sort_by=${effectiveSortBy}`;
+  
+  // Require minimum vote count to prevent obscure 1-vote items when sorting by rating
+  if (effectiveSortBy.includes('vote_average') || minRating > 0) {
+    url += mediaType === 'tv' ? `&vote_count.gte=5` : `&vote_count.gte=50`;
+  }
+
+  // Multi-genre filtering with TV ID translation
   if (genreIds && genreIds.length > 0) {
-    const formattedGenres = Array.isArray(genreIds) ? genreIds.join(',') : genreIds;
-    url += `&with_genres=${formattedGenres}`;
+    let rawGenres = Array.isArray(genreIds) ? genreIds : [genreIds];
+    if (mediaType === 'tv') {
+      rawGenres = rawGenres.map(gId => {
+        const numG = Number(gId);
+        if (numG === 28 || numG === 12) return 10759; // Action (28) / Adventure (12) -> Action & Adventure (10759)
+        if (numG === 878 || numG === 14) return 10765; // Sci-Fi (878) / Fantasy (14) -> Sci-Fi & Fantasy (10765)
+        if (numG === 10752) return 10768; // War (10752) -> War & Politics (10768)
+        return numG;
+      });
+      // Deduplicate mapped genre IDs
+      rawGenres = [...new Set(rawGenres)];
+    }
+    url += `&with_genres=${rawGenres.join(',')}`;
   }
   
   // Multi-year or Decade filtering
