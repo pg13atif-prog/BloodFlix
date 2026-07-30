@@ -1,8 +1,17 @@
 const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 
-const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) => {
-  if (!openRouterApiKey) {
-    throw new Error('OpenRouter API key is missing.');
+const executeRequest = async (model, systemInstruction, userPrompt, temperature, useJsonFormat) => {
+  const body = {
+    model,
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: userPrompt }
+    ],
+    temperature
+  };
+
+  if (useJsonFormat) {
+    body.response_format = { type: "json_object" };
   }
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -13,26 +22,61 @@ const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) 
       "HTTP-Referer": window.location.origin,
       "X-Title": "CineScope"
     },
-    body: JSON.stringify({
-      model: "inclusionai/ling-3.0-flash:free",
-      messages: [
-        { role: "system", content: systemInstruction },
-        { role: "user", content: userPrompt }
-      ],
-      temperature,
-      response_format: { type: "json_object" }
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`OpenRouter API error: ${response.status} ${errText}`);
+    throw new Error(`OpenRouter API error (${model}): ${response.status} ${errText}`);
   }
 
   const data = await response.json();
   const text = data.choices[0].message.content;
   const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
   return JSON.parse(cleanText);
+};
+
+const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) => {
+  if (!openRouterApiKey) {
+    throw new Error('OpenRouter API key is missing.');
+  }
+
+  // Fallback list of models, prioritizing the user's preferred models
+  const models = [
+    "inclusionai/ling-3.0-flash:free",
+    "google/gemini-2-flash-thinking-exp:free",
+    "qwen/qwen-2.5-coder-32b-instruct:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free"
+  ];
+
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      // Try with structured outputs first
+      return await executeRequest(model, systemInstruction, userPrompt, temperature, true);
+    } catch (err) {
+      console.warn(`Failed with model ${model} (structured output):`, err.message);
+      lastError = err;
+      
+      // If it failed because of structured-outputs compatibility, retry WITHOUT response_format
+      if (
+        err.message.includes("structured-outputs") || 
+        err.message.includes("response_format") || 
+        err.message.includes("structured_outputs")
+      ) {
+        try {
+          return await executeRequest(model, systemInstruction, userPrompt, temperature, false);
+        } catch (innerErr) {
+          console.warn(`Failed with model ${model} (fallback raw):`, innerErr.message);
+          lastError = innerErr;
+        }
+      }
+    }
+  }
+
+  throw new Error(`All fallback models failed. Last error: ${lastError?.message}`);
 };
 
 export const getAiRecommendations = async (prompt) => {
