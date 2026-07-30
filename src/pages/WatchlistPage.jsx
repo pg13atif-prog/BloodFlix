@@ -127,9 +127,9 @@ const WatchlistPage = () => {
           {filteredAndSortedList.map(movie => (
             <div key={movie.id} className="watchlist-item-wrapper">
               {viewMode === 'grid' ? (
-                <div style={{ position: 'relative' }}>
+                <div className="watchlist-card-wrapper">
                   <MovieCard {...movie} />
-                  <button className="watchlist-remove-btn" onClick={(e) => handleRemove(e, movie.id)} aria-label="Remove">✕</button>
+                  <button className="watchlist-remove-btn" onClick={(e) => handleRemove(e, movie.id)} title="Remove from Watchlist" aria-label="Remove">✕</button>
                 </div>
               ) : (
                 <div className="watchlist-list-item" onClick={() => window.location.hash = `${movie.mediaType || 'movie'}/${movie.id}`}>
