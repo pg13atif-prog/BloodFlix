@@ -173,28 +173,39 @@ export const getAiMovieDebate = async (movieA, movieB) => {
 
 export const getFriendCompatibilityRecs = async (myLikedTitles, friendLikedTitles) => {
   const systemInstruction = `
-    Based on the combined tastes of User A and User B, recommend exactly 5 movies they would BOTH enjoy watching together tonight.
-    Return a JSON object containing a "recommendations" key, which holds an array of exactly 5 recommendation objects.
-    Each recommendation object must have the following keys:
-    - title: the exact official title of the movie.
-    - rationale: a custom 2-3 sentence personalized rationale explaining why this is perfect for BOTH of them.
+    You are CineAI, an expert movie taste analyst.
+    Based on the lists of movies User A and User B like, perform a deep compatibility analysis:
+    1. Calculate a "compatibility" score (integer from 0 to 100) representing how well their movie tastes match based on shared genres, eras, directors, and styles.
+    2. Recommend exactly 5 movies they would BOTH enjoy watching together tonight.
+    
+    Return a JSON object with this exact structure:
+    {
+      "compatibility": 85,
+      "recommendations": [
+        { "title": "Exact Title", "rationale": "A custom 2-3 sentence personalized rationale explaining why this is perfect for BOTH of them." }
+      ]
+    }
     Do NOT return markdown formatting like \`\`\`json.
   `;
 
   const prompt = `
-    User A likes: ${myLikedTitles.slice(0, 10).join(', ')}.
-    User B likes: ${friendLikedTitles.slice(0, 10).join(', ')}.
+    User A likes: ${myLikedTitles.slice(0, 15).join(', ')}.
+    User B likes: ${friendLikedTitles.slice(0, 15).join(', ')}.
   `;
 
   try {
     const res = await callOpenRouter(systemInstruction, prompt, 0.7);
+    if (res && typeof res.compatibility === 'number' && Array.isArray(res.recommendations)) {
+      return res;
+    }
+    // Fallback if formatting was slightly off but returned recommendations
     if (res && Array.isArray(res.recommendations)) {
-      return res.recommendations;
+      return { compatibility: 50, recommendations: res.recommendations };
     }
     if (Array.isArray(res)) {
-      return res.slice(0, 5);
+      return { compatibility: 50, recommendations: res.slice(0, 5) };
     }
-    return [];
+    throw new Error("Invalid compatibility response structure.");
   } catch (err) {
     console.error('Error fetching friend compatibility recommendations:', err);
     throw err;

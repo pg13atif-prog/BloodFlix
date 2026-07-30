@@ -4,6 +4,7 @@ import { ref, get, set } from 'firebase/database';
 import { db } from '../services/firebase';
 import { getWatchlist, getLiked, getWatched } from '../services/firestore';
 import { getFriendCompatibilityRecs } from '../services/gemini';
+import { searchMedia } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
 import './SocialPage.css';
 
@@ -107,13 +108,33 @@ const SocialPage = () => {
       const overlap = new Set(myTitles.filter(t => fTitles.includes(t))).size;
       const compatibility = totalUnique === 0 ? 0 : Math.round((overlap / totalUnique) * 100);
 
-      // 3. Ask OpenRouter for Recommendations
-      const recommendations = await getFriendCompatibilityRecs(myLiked, fLiked);
+      // 3. Ask OpenRouter for Recommendations & Score
+      const compatibilityData = await getFriendCompatibilityRecs(myTitles, fTitles);
+
+      // Fetch TMDB details for each recommendation
+      const tmdbPromises = compatibilityData.recommendations.map(async (rec) => {
+        try {
+          const searchData = await searchMedia(rec.title);
+          const match = searchData.find(item => item.mediaType === rec.mediaType) || searchData[0];
+          if (match) {
+            return {
+              ...match,
+              rationale: rec.rationale
+            };
+          }
+          return null;
+        } catch (err) {
+          console.error(`Error fetching TMDB for ${rec.title}:`, err);
+          return null;
+        }
+      });
+
+      const hydratedRecs = (await Promise.all(tmdbPromises)).filter(Boolean);
 
       setMatchResult({
-        compatibility,
+        compatibility: compatibilityData.compatibility,
         sharedFavorites,
-        recommendations
+        recommendations: hydratedRecs
       });
 
     } catch (err) {
@@ -187,11 +208,23 @@ const SocialPage = () => {
 
           <div className="ai-recommendations">
             <h3>AI Top Picks For Both Of You</h3>
-            <div className="recommendations-list">
-              {matchResult.recommendations.map((rec, idx) => (
-                <div key={idx} className="rec-item">
-                  <h4>{rec.title}</h4>
-                  <p>{rec.rationale}</p>
+            <div className="social-grid">
+              {matchResult.recommendations.map((movie) => (
+                <div key={movie.id} className="social-rec-card-wrapper" style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                  <MovieCard {...movie} />
+                  <div className="social-rec-rationale" style={{
+                    marginTop: '0.75rem',
+                    fontSize: '0.85rem',
+                    lineHeight: '1.4',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontStyle: 'italic',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    borderLeft: '3px solid var(--color-accent, #e50914)'
+                  }}>
+                    "{movie.rationale}"
+                  </div>
                 </div>
               ))}
             </div>
