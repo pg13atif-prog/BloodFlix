@@ -17,6 +17,33 @@
   -webkit-text-fill-color: transparent;
 }
 
+.discover-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.advanced-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+.advanced-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
 .discover-tabs {
   display: flex;
   gap: 1rem;

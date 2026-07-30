@@ -66,7 +66,17 @@ const DiscoverPage = ({ activeTab = 'movies' }) => {
   return (
     <div className="discover-page page-container">
       <div className="discover-header">
-        <h1>Discover</h1>
+        <div className="discover-header-top">
+          <h1>Discover</h1>
+          {(activeTab === 'movies' || activeTab === 'tv') && (
+            <button className="advanced-filter-btn" onClick={() => window.location.hash = activeTab === 'movies' ? '#movies' : '#tvshows'}>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+              </svg>
+              Advanced Filters
+            </button>
+          )}
+        </div>
         <div className="discover-tabs">
           <a href="#discover/movies" className={`discover-tab ${activeTab === 'movies' ? 'active' : ''}`}>Movies</a>
           <a href="#discover/tv" className={`discover-tab ${activeTab === 'tv' ? 'active' : ''}`}>TV Shows</a>

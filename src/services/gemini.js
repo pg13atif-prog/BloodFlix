@@ -25,7 +25,7 @@ export const getAiRecommendations = async (prompt) => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         systemInstruction,
@@ -62,7 +62,7 @@ export const getAiPlannerRecommendation = async (answers) => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: JSON.stringify(answers),
       config: { systemInstruction, temperature: 0.7, responseMimeType: 'application/json' }
     });
@@ -89,7 +89,7 @@ export const getAiPickForMe = async () => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: "Surprise me with a guaranteed crowd-pleaser.",
       config: { systemInstruction, temperature: 0.9, responseMimeType: 'application/json' }
     });
@@ -120,7 +120,7 @@ export const getAiMovieDebate = async (movieA, movieB) => {
 
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-flash-latest',
+      model: 'gemini-2.5-flash',
       contents: `Compare "${movieA}" vs "${movieB}".`,
       config: { systemInstruction, temperature: 0.7, responseMimeType: 'application/json' }
     });
