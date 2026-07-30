@@ -18,19 +18,24 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server configuration error: missing TMDB API key' });
   }
 
-  // Parse subpath and query parameters from request URL
-  const requestUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const subpath = requestUrl.pathname.replace(/^\/api\/tmdb/, '');
+  // Parse the original subpath from query parameter (injected via vercel.json rewrite)
+  const { path } = req.query;
 
-  if (!subpath || subpath === '/') {
+  if (!path || path === '/') {
     return res.status(400).json({ error: 'Missing TMDB request subpath' });
   }
 
-  // Copy query parameters and append secure API key
-  const queryParams = new URLSearchParams(requestUrl.search);
+  // Copy query parameters (excluding path) and append secure API key
+  const queryParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(req.query)) {
+    if (key !== 'path') {
+      queryParams.set(key, value);
+    }
+  }
   queryParams.set('api_key', tmdbApiKey);
 
-  const targetUrl = `https://api.themoviedb.org/3${subpath}?${queryParams.toString()}`;
+  // Construct target TMDB API URL
+  const targetUrl = `https://api.themoviedb.org/3${path.startsWith('/') ? path : '/' + path}?${queryParams.toString()}`;
 
   try {
     const apiRes = await fetch(targetUrl, {

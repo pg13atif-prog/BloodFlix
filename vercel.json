@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/tmdb/:path*",
-      "destination": "/api/tmdb.js"
+      "destination": "/api/tmdb.js?path=/:path*"
     },
     {
       "source": "/((?!api/).*)",
