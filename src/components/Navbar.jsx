@@ -131,8 +131,9 @@ const Navbar = () => {
   };
 
   const handleNavClick = (e, targetHash) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsMobileMenuOpen(false);
+    setIsDropdownOpen(false);
     
     const normalizedTarget = targetHash === '#' ? '' : targetHash;
     const currentHash = window.location.hash || '';
@@ -320,7 +321,7 @@ const Navbar = () => {
                     <p className="dropdown-email">{currentUser.isAnonymous ? 'Guest User' : currentUser.email}</p>
                   </div>
                   <div className="dropdown-divider"></div>
-                  <button className="dropdown-item" onClick={() => { window.location.hash = 'profile'; setIsDropdownOpen(false); }}>
+                  <button type="button" className="dropdown-item" onClick={(e) => handleNavClick(e, '#profile')}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     View Profile
                   </button>
