@@ -1,8 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import { searchMedia } from '../services/tmdb';
 import './Navbar.css';
+
+/* ── Dropdown menu configs ─────────────────────────────────── */
+const discoverItems = [
+  { icon: '🎬', label: 'Movies', desc: 'Browse the complete movie library.', hash: '#discover/movies' },
+  { icon: '📺', label: 'TV Shows', desc: 'Explore popular series.', hash: '#discover/tv' },
+  { icon: '🔥', label: 'Trending', desc: "See what\u2019s popular today.", hash: '#discover/trending' },
+];
+
+const cineaiItems = [
+  { icon: '✨', label: 'What Should I Watch?', desc: 'Describe your mood and let CineAI recommend.', hash: '#cineai/what-to-watch' },
+  { icon: '🎬', label: 'Movie Night Planner', desc: 'Plan the perfect movie night.', hash: '#cineai/planner' },
+  { icon: '🎲', label: 'Pick For Me', desc: 'One click. One recommendation.', hash: '#cineai/pick-for-me' },
+  { icon: '⚔️', label: 'Movie Debate', desc: 'Compare two movies with AI.', hash: '#cineai/debate' },
+];
+
+const socialItems = [
+  { icon: '🤝', label: 'Movie Match', desc: 'Compare your movie taste with friends.', hash: '#social' },
+];
+
+/* ── Framer Motion variants ────────────────────────────────── */
+const dropdownVariants = {
+  hidden: { opacity: 0, y: -8, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] } },
+  exit: { opacity: 0, y: -6, scale: 0.98, transition: { duration: 0.12 } },
+};
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -12,7 +38,12 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [discoverDropdown, setDiscoverDropdown] = useState(false);
+
+  // Desktop hover dropdowns
+  const [openDropdown, setOpenDropdown] = useState(null); // 'discover' | 'cineai' | 'social' | null
+
+  // Mobile accordion
+  const [mobileAccordion, setMobileAccordion] = useState(null);
 
   // Autocomplete state
   const [suggestions, setSuggestions] = useState([]);
@@ -47,7 +78,7 @@ const Navbar = () => {
     } else {
       setSuggestions([]);
       if (searchQuery.trim().length === 0) {
-        setShowSuggestions(true); // Show recent searches
+        setShowSuggestions(true);
       } else {
         setShowSuggestions(false);
       }
@@ -72,7 +103,7 @@ const Navbar = () => {
         setSearchQuery('');
         setIsSearchActive(false);
       }
-      setIsMobileMenuOpen(false); // Close menu on navigation
+      setIsMobileMenuOpen(false);
     };
 
     const handleClickOutside = (e) => {
@@ -120,7 +151,6 @@ const Navbar = () => {
 
   const handleSearchKeyDown = (e) => {
     if (!showSuggestions) return;
-
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setFocusedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
@@ -134,10 +164,11 @@ const Navbar = () => {
     if (e) e.preventDefault();
     setIsMobileMenuOpen(false);
     setIsDropdownOpen(false);
-    
+    setOpenDropdown(null);
+
     const normalizedTarget = targetHash === '#' ? '' : targetHash;
     const currentHash = window.location.hash || '';
-    
+
     if (currentHash === normalizedTarget || (normalizedTarget === '' && (currentHash === '' || currentHash === '#'))) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -153,6 +184,63 @@ const Navbar = () => {
 
   const email = currentUser?.email || '';
   const avatarLetter = email ? email.charAt(0).toUpperCase() : '?';
+
+  /* ── Helper: render premium dropdown ──────────────────────── */
+  const renderPremiumDropdown = (items) => (
+    <motion.div
+      className="nav-dropdown"
+      variants={dropdownVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      {items.map((item) => (
+        <a
+          key={item.hash}
+          href={item.hash}
+          className="nav-dropdown__item"
+          onClick={(e) => handleNavClick(e, item.hash)}
+        >
+          <span className="nav-dropdown__icon">{item.icon}</span>
+          <div className="nav-dropdown__text">
+            <span className="nav-dropdown__label">{item.label}</span>
+            <span className="nav-dropdown__desc">{item.desc}</span>
+          </div>
+        </a>
+      ))}
+    </motion.div>
+  );
+
+  /* ── Helper: nav item with optional dropdown ─────────────── */
+  const NavItem = ({ id, label, icon, hash, isActive, items, className }) => {
+    const hasDropdown = items && items.length > 0;
+    const isOpen = openDropdown === id;
+
+    return (
+      <li
+        className={`navbar__nav-item ${hasDropdown ? 'navbar__dropdown-container' : ''}`}
+        onMouseEnter={() => hasDropdown && setOpenDropdown(id)}
+        onMouseLeave={() => hasDropdown && setOpenDropdown(null)}
+      >
+        <a
+          href={hash}
+          onClick={(e) => handleNavClick(e, hash)}
+          className={`navbar__link ${isActive ? 'navbar__link--active' : ''} ${className || ''}`}
+        >
+          <span className="navbar__link-icon">{icon}</span>
+          <span className="navbar__link-label">{label}</span>
+          {hasDropdown && (
+            <svg className={`navbar__chevron ${isOpen ? 'navbar__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          )}
+        </a>
+        <AnimatePresence>
+          {hasDropdown && isOpen && renderPremiumDropdown(items)}
+        </AnimatePresence>
+      </li>
+    );
+  };
 
   return (
     <>
@@ -177,7 +265,7 @@ const Navbar = () => {
               <span className="logo-cine">Cine</span><span className="logo-scope">Scope</span>
             </span>
           </a>
-          <span className="navbar__tagline">Search Less. Watch Better.</span>
+          <span className="navbar__tagline">Discover Your Next Favorite.</span>
         </div>
 
         {/* Centered navigation */}
@@ -190,31 +278,93 @@ const Navbar = () => {
               &times;
             </button>
           </li>
-          <li className="navbar__dropdown-container" onMouseEnter={() => setDiscoverDropdown(true)} onMouseLeave={() => setDiscoverDropdown(false)}>
-            <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className={`navbar__link ${currentPath.startsWith('#discover') || currentPath === '#movies' || currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
-              Discover <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px', verticalAlign: 'middle', transition: 'transform 0.2s', transform: discoverDropdown ? 'rotate(180deg)' : 'none' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </a>
-            {discoverDropdown && (
-              <div className="navbar__submenu">
-                <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className="submenu-item">Movies</a>
-                <a href="#discover/tv" onClick={(e) => handleNavClick(e, '#discover/tv')} className="submenu-item">TV Shows</a>
-                <a href="#discover/trending" onClick={(e) => handleNavClick(e, '#discover/trending')} className="submenu-item">Trending</a>
+
+          {/* ── Desktop nav items ──────────────────────────── */}
+          <NavItem
+            id="discover"
+            label="Discover"
+            icon="🎬"
+            hash="#discover/movies"
+            isActive={currentPath.startsWith('#discover') || currentPath === '#movies' || currentPath === '#tvshows'}
+            items={discoverItems}
+          />
+          <NavItem
+            id="cineai"
+            label="CineAI"
+            icon="✨"
+            hash="#cineai"
+            isActive={currentPath.startsWith('#cineai')}
+            items={cineaiItems}
+            className="navbar__link--cineai"
+          />
+          <NavItem
+            id="social"
+            label="Social"
+            icon="🤝"
+            hash="#social"
+            isActive={currentPath === '#social'}
+            items={socialItems}
+          />
+          <NavItem
+            id="watchlist"
+            label="Watchlist"
+            icon="❤️"
+            hash="#watchlist"
+            isActive={currentPath === '#watchlist'}
+          />
+
+          {/* ── Mobile Accordion Sections ─────────────────── */}
+          <li className="mobile-accordion-section">
+            <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'discover' ? null : 'discover')}>
+              <span>🎬 Discover</span>
+              <svg className={`mobile-accordion-chevron ${mobileAccordion === 'discover' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            {mobileAccordion === 'discover' && (
+              <div className="mobile-accordion-content">
+                {discoverItems.map(item => (
+                  <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
+                    <span className="mobile-accordion-icon">{item.icon}</span>
+                    <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
+                  </a>
+                ))}
               </div>
             )}
           </li>
-          <li>
-            <a href="#cineai" onClick={(e) => handleNavClick(e, '#cineai')} className={`navbar__link ${currentPath.startsWith('#cineai') ? 'navbar__link--active' : ''}`}>
-              CineAI
-            </a>
+          <li className="mobile-accordion-section">
+            <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'cineai' ? null : 'cineai')}>
+              <span>✨ CineAI</span>
+              <svg className={`mobile-accordion-chevron ${mobileAccordion === 'cineai' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            {mobileAccordion === 'cineai' && (
+              <div className="mobile-accordion-content">
+                {cineaiItems.map(item => (
+                  <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
+                    <span className="mobile-accordion-icon">{item.icon}</span>
+                    <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
+                  </a>
+                ))}
+              </div>
+            )}
           </li>
-          <li>
-            <a href="#social" onClick={(e) => handleNavClick(e, '#social')} className={`navbar__link ${currentPath === '#social' ? 'navbar__link--active' : ''}`}>
-              Social
-            </a>
+          <li className="mobile-accordion-section">
+            <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'social' ? null : 'social')}>
+              <span>🤝 Social</span>
+              <svg className={`mobile-accordion-chevron ${mobileAccordion === 'social' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            {mobileAccordion === 'social' && (
+              <div className="mobile-accordion-content">
+                {socialItems.map(item => (
+                  <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
+                    <span className="mobile-accordion-icon">{item.icon}</span>
+                    <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
+                  </a>
+                ))}
+              </div>
+            )}
           </li>
-          <li>
-            <a href="#watchlist" onClick={(e) => handleNavClick(e, '#watchlist')} className={`navbar__link ${currentPath === '#watchlist' ? 'navbar__link--active' : ''}`}>
-              Watchlist
+          <li className="mobile-accordion-section mobile-accordion-single">
+            <a href="#watchlist" className="mobile-accordion-trigger" onClick={(e) => handleNavClick(e, '#watchlist')}>
+              <span>❤️ Watchlist</span>
             </a>
           </li>
         </ul>
@@ -224,7 +374,7 @@ const Navbar = () => {
             <form className={`navbar__search-form ${isSearchActive ? 'active' : ''}`} onSubmit={handleSearchSubmit}>
               <button
                 type="button"
-                className="navbar__action-btn"
+                className="navbar__action-btn navbar__search-btn"
                 onClick={() => {
                   if (isSearchActive && searchQuery) {
                     handleSearchSubmit(new Event('submit'));
@@ -315,23 +465,35 @@ const Navbar = () => {
                 {avatarLetter}
               </button>
 
-              {isDropdownOpen && (
-                <div className="navbar__dropdown">
-                  <div className="dropdown-header">
-                    <p className="dropdown-email">{currentUser.isAnonymous ? 'Guest User' : currentUser.email}</p>
-                  </div>
-                  <div className="dropdown-divider"></div>
-                  <button type="button" className="dropdown-item" onClick={(e) => handleNavClick(e, '#profile')}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    View Profile
-                  </button>
-                  <div className="dropdown-divider"></div>
-                  <button className="dropdown-item logout" onClick={() => { logout(); setIsDropdownOpen(false); }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    Logout
-                  </button>
-                </div>
-              )}
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    className="navbar__dropdown"
+                    variants={dropdownVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                  >
+                    <div className="dropdown-header">
+                      <p className="dropdown-email">{currentUser.isAnonymous ? 'Guest User' : currentUser.email}</p>
+                    </div>
+                    <div className="dropdown-divider"></div>
+                    <button type="button" className="dropdown-item" onClick={(e) => handleNavClick(e, '#profile')}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                      Profile
+                    </button>
+                    <button type="button" className="dropdown-item" onClick={(e) => handleNavClick(e, '#achievements')}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+                      Achievements
+                    </button>
+                    <div className="dropdown-divider"></div>
+                    <button className="dropdown-item logout" onClick={() => { logout(); setIsDropdownOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                      Log Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <button
@@ -345,9 +507,18 @@ const Navbar = () => {
       </nav>
 
       {/* Mobile Menu Backdrop */}
-      {isMobileMenuOpen && (
-        <div className="navbar__backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
-      )}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            className="navbar__backdrop"
+            onClick={() => setIsMobileMenuOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Mobile Bottom Navigation Bar */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
