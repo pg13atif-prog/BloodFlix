@@ -147,7 +147,7 @@ const SocialPage = () => {
               required
             />
             <button type="submit" className="match-btn" disabled={matchLoading}>
-              {matchLoading ? 'Analyzing...' : 'Calculate Match'}
+              {matchLoading ? 'Comparing Watchlists...' : '✨ Compare Watchlists'}
             </button>
           </form>
           {matchError && <p className="error-text">{matchError}</p>}
