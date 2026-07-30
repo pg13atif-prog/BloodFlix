@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://api.themoviedb.org/3';
+const API_BASE_URL = '/api/tmdb';
 const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
 const BACKDROP_BASE_URL = 'https://image.tmdb.org/t/p/w1280';
 const PROFILE_BASE_URL = 'https://image.tmdb.org/t/p/w185';
@@ -35,14 +35,6 @@ const mapMovie = (movie) => ({
   mediaType: movie.media_type || (movie.name ? 'tv' : 'movie'),
 });
 
-const getApiKey = () => {
-  const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-  if (!apiKey) {
-    throw new Error('Missing TMDB API key. Add VITE_TMDB_API_KEY to .env.local.');
-  }
-  return apiKey;
-};
-
 const fetchWithTimeout = async (url, options = {}) => {
   const { timeout = 10000, signal, ...rest } = options;
   
@@ -72,10 +64,8 @@ const fetchWithTimeout = async (url, options = {}) => {
 };
 
 export const getPopularMovies = async (signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/movie/popular?language=en-US&page=1&api_key=${apiKey}`,
+    `${API_BASE_URL}/movie/popular?language=en-US&page=1`,
     { signal },
   );
 
@@ -88,10 +78,8 @@ export const getPopularMovies = async (signal) => {
 };
 
 export const getPopularTvShows = async (signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/tv/popular?language=en-US&page=1&api_key=${apiKey}`,
+    `${API_BASE_URL}/tv/popular?language=en-US&page=1`,
     { signal },
   );
 
@@ -104,10 +92,8 @@ export const getPopularTvShows = async (signal) => {
 };
 
 export const getTrending = async (mediaType = 'all', timeWindow = 'day', signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/trending/${mediaType}/${timeWindow}?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/trending/${mediaType}/${timeWindow}?language=en-US`,
     { signal },
   );
 
@@ -120,10 +106,8 @@ export const getTrending = async (mediaType = 'all', timeWindow = 'day', signal)
 };
 
 export const searchMedia = async (query, signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/search/multi?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1&api_key=${apiKey}`,
+    `${API_BASE_URL}/search/multi?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`,
     { signal },
   );
 
@@ -139,10 +123,8 @@ export const searchMedia = async (query, signal) => {
 };
 
 export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}?language=en-US`,
     { signal },
   );
 
@@ -192,10 +174,8 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
 };
 
 export const getMovieCredits = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/credits?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/credits?language=en-US`,
     { signal },
   );
 
@@ -213,10 +193,8 @@ export const getMovieCredits = async (movieId, mediaType = 'movie', signal) => {
 };
 
 export const getMovieVideos = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/videos?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/videos?language=en-US`,
     { signal },
   );
 
@@ -240,10 +218,9 @@ export const discoverMedia = async ({
   sortBy = 'popularity.desc',
   page = 1
 } = {}, signal) => {
-  const apiKey = getApiKey();
   const endpoint = mediaType === 'tv' ? 'tv' : 'movie';
   
-  let url = `${API_BASE_URL}/discover/${endpoint}?language=en-US&page=${page}&api_key=${apiKey}&include_adult=false&sort_by=${sortBy}`;
+  let url = `${API_BASE_URL}/discover/${endpoint}?language=en-US&page=${page}&include_adult=false&sort_by=${sortBy}`;
   
   // Require minimum vote count to prevent obscure 1-vote items when sorting by rating
   if (sortBy.includes('vote_average') || minRating > 0) {
@@ -313,10 +290,8 @@ export const discoverMovies = async ({ genreId, year } = {}, signal) => {
 };
 
 export const getSimilarMovies = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
-
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/similar?language=en-US&page=1&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/similar?language=en-US&page=1`,
     { signal },
   );
 
@@ -329,9 +304,8 @@ export const getSimilarMovies = async (movieId, mediaType = 'movie', signal) => 
 };
 
 export const getWatchProviders = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/watch/providers?api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/watch/providers`,
     { signal }
   );
   if (!response.ok) return null;
@@ -340,9 +314,8 @@ export const getWatchProviders = async (movieId, mediaType = 'movie', signal) =>
 };
 
 export const getRecommendations = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/recommendations?language=en-US&page=1&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/recommendations?language=en-US&page=1`,
     { signal }
   );
   if (!response.ok) return [];
@@ -351,9 +324,8 @@ export const getRecommendations = async (movieId, mediaType = 'movie', signal) =
 };
 
 export const getReviews = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/reviews?language=en-US&page=1&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/reviews?language=en-US&page=1`,
     { signal }
   );
   if (!response.ok) return [];
@@ -362,9 +334,8 @@ export const getReviews = async (movieId, mediaType = 'movie', signal) => {
 };
 
 export const getFullCast = async (movieId, mediaType = 'movie', signal) => {
-  const apiKey = getApiKey();
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}/credits?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/${mediaType}/${movieId}/credits?language=en-US`,
     { signal }
   );
   if (!response.ok) return [];
@@ -379,9 +350,8 @@ export const getFullCast = async (movieId, mediaType = 'movie', signal) => {
 };
 
 export const getTvSeason = async (seriesId, seasonNumber, signal) => {
-  const apiKey = getApiKey();
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/tv/${seriesId}/season/${seasonNumber}?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/tv/${seriesId}/season/${seasonNumber}?language=en-US`,
     { signal }
   );
   if (!response.ok) return null;
@@ -389,9 +359,8 @@ export const getTvSeason = async (seriesId, seasonNumber, signal) => {
 };
 
 export const getTvEpisode = async (seriesId, seasonNumber, episodeNumber, signal) => {
-  const apiKey = getApiKey();
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?language=en-US&api_key=${apiKey}`,
+    `${API_BASE_URL}/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?language=en-US`,
     { signal }
   );
   if (!response.ok) return null;
