@@ -24,7 +24,7 @@ const PickForMe = () => {
       setMovie({ ...match, rationale: aiPick.rationale });
     } catch (err) {
       console.error(err);
-      setError("Oops. Our AI got stage fright. Try again!");
+      setError("Oops. Our AI got stage fright. Details: " + err.message);
     } finally {
       setLoading(false);
     }
