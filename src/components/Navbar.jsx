@@ -81,8 +81,10 @@ const Navbar = () => {
             </svg>
           </button>
 
-          <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; }} className="navbar__logo" id="navbar-logo" aria-label="BloodFlix Home">
-            <span className="navbar__logo-text">BloodFlix</span>
+          <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; }} className="navbar__logo" id="navbar-logo" aria-label="CineScope Home">
+            <span className="navbar__logo-text">
+              <span className="logo-cine">Cine</span><span className="logo-scope">Scope</span>
+            </span>
           </a>
 
           <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">

@@ -44,7 +44,7 @@ const ProfilePage = () => {
         <div className="profile-info">
           <h1 className="profile-name">{username}</h1>
           <p className="profile-email">{email}</p>
-          <span className="profile-badge">BloodFlix Member</span>
+          <span className="profile-badge">CineScope Member</span>
         </div>
       </div>
       

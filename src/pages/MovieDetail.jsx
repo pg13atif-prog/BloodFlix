@@ -284,7 +284,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                     <path d="M8 5v14l11-7z" />
                   </svg>
-                  Watch Trailer
+                  Watch Official Trailer
                 </button>
               ) : (
                 <button className="detail-btn btn-primary disabled" disabled>

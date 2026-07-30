@@ -36,7 +36,7 @@ const SearchPage = ({ query }) => {
     <div className="search-page">
       <div className="search-header">
         <h1 className="search-title">
-          {query ? `Search Results for "${query}"` : 'Search BloodFlix'}
+          {query ? `Search Results for "${query}"` : 'Search CineScope'}
         </h1>
       </div>
 
