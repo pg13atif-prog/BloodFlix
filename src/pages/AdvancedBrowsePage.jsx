@@ -27,8 +27,8 @@ const SORT_OPTIONS = [
   { label: 'Newest Releases', value: 'primary_release_date.desc' },
 ];
 
-const AdvancedBrowsePage = () => {
-  const [mediaType, setMediaType] = useState('movie');
+const AdvancedBrowsePage = ({ initialMediaType = 'movie' }) => {
+  const [mediaType, setMediaType] = useState(initialMediaType);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedDecade, setSelectedDecade] = useState('');
   const [selectedYears, setSelectedYears] = useState([]);

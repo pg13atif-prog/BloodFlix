@@ -195,8 +195,8 @@ const Navbar = () => {
             </a>
             {discoverDropdown && (
               <div className="navbar__submenu">
-                <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className="submenu-item">Movies</a>
-                <a href="#discover/tv" onClick={(e) => handleNavClick(e, '#discover/tv')} className="submenu-item">TV Shows</a>
+                <a href="#movies" onClick={(e) => handleNavClick(e, '#movies')} className="submenu-item">Movies</a>
+                <a href="#tvshows" onClick={(e) => handleNavClick(e, '#tvshows')} className="submenu-item">TV Shows</a>
                 <a href="#discover/trending" onClick={(e) => handleNavClick(e, '#discover/trending')} className="submenu-item">Trending</a>
               </div>
             )}

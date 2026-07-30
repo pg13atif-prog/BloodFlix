@@ -100,6 +100,22 @@ function App() {
           setCurrentRoute('profile');
           setCurrentParams(null);
           break;
+        case '#movies':
+          setCurrentRoute('movies');
+          setCurrentParams(null);
+          break;
+        case '#tvshows':
+          setCurrentRoute('tvshows');
+          setCurrentParams(null);
+          break;
+        case '#trending-tv':
+          setCurrentRoute('trending-tv');
+          setCurrentParams(null);
+          break;
+        case '#trending-movies':
+          setCurrentRoute('trending-movies');
+          setCurrentParams(null);
+          break;
         default:
           setCurrentRoute('home');
           setCurrentParams(null);
@@ -190,11 +206,17 @@ function App() {
         }} />;
       
       case 'movies':
-        return <AdvancedBrowsePage />;
+        return <AdvancedBrowsePage initialMediaType="movie" />;
         
       case 'tvshows':
-        return <MediaBrowsePage title="Popular TV Shows" fetchMethod={getPopularTvShows} />;
+        return <AdvancedBrowsePage initialMediaType="tv" />;
         
+      case 'trending-tv':
+        return <DiscoverPage activeTab="tv" />;
+
+      case 'trending-movies':
+        return <DiscoverPage activeTab="trending" />;
+
       case 'search':
         return <SearchPage query={currentParams?.query || ''} />;
         
