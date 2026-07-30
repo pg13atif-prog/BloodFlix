@@ -129,6 +129,20 @@ const Navbar = () => {
     }
   };
 
+  const handleNavClick = (e, targetHash) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    
+    const normalizedTarget = targetHash === '#' ? '' : targetHash;
+    const currentHash = window.location.hash || '';
+    
+    if (currentHash === normalizedTarget || (normalizedTarget === '' && (currentHash === '' || currentHash === '#'))) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.location.hash = normalizedTarget;
+    }
+  };
+
   const toggleSearch = () => {
     setIsSearchActive(!isSearchActive);
     setShowSuggestions(!isSearchActive);
@@ -156,7 +170,7 @@ const Navbar = () => {
             </svg>
           </button>
 
-          <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; }} className="navbar__logo" id="navbar-logo" aria-label="CineScope Home">
+          <a href="#" onClick={(e) => handleNavClick(e, '#')} className="navbar__logo" id="navbar-logo" aria-label="CineScope Home">
             <span className="navbar__logo-text">
               <span className="logo-cine">Cine</span><span className="logo-scope">Scope</span>
             </span>
@@ -167,27 +181,27 @@ const Navbar = () => {
         {/* Centered navigation */}
         <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">
           <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
+            <a href="#" onClick={(e) => handleNavClick(e, '#')} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
               Home
             </a>
           </li>
           <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#movies' ? 'navbar__link--active' : ''}`}>
+            <a href="#movies" onClick={(e) => handleNavClick(e, '#movies')} className={`navbar__link ${currentPath === '#movies' ? 'navbar__link--active' : ''}`}>
               Movies
             </a>
           </li>
           <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
+            <a href="#tvshows" onClick={(e) => handleNavClick(e, '#tvshows')} className={`navbar__link ${currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
               TV Shows
             </a>
           </li>
           <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'ai-discovery'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#ai-discovery' ? 'navbar__link--active' : ''}`}>
+            <a href="#ai-discovery" onClick={(e) => handleNavClick(e, '#ai-discovery')} className={`navbar__link ${currentPath === '#ai-discovery' ? 'navbar__link--active' : ''}`}>
               AI Discovery
             </a>
           </li>
           <li>
-            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'recommended'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#recommended' ? 'navbar__link--active' : ''}`}>
+            <a href="#recommended" onClick={(e) => handleNavClick(e, '#recommended')} className={`navbar__link ${currentPath === '#recommended' ? 'navbar__link--active' : ''}`}>
               Recommended
             </a>
           </li>
