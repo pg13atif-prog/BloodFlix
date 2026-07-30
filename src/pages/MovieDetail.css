@@ -346,6 +346,43 @@
   font-weight: 400;
 }
 
+.imdb-badge {
+  background: #f5c518 !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(245, 197, 24, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.imdb-logo {
+  font-weight: 900;
+  font-family: Impact, sans-serif;
+  letter-spacing: -0.5px;
+  font-size: 0.82rem;
+  background: #000;
+  color: #f5c518;
+  padding: 0 3px;
+  border-radius: 2px;
+  line-height: 1.1;
+}
+
+.rt-badge {
+  background: rgba(250, 50, 10, 0.15) !important;
+  border-color: rgba(250, 50, 10, 0.4) !important;
+  color: #ff5252 !important;
+  font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rt-logo {
+  font-size: 0.95rem;
+}
+
 .genre-badge {
   color: #ffffff !important;
   background: rgba(15, 23, 42, 0.85) !important;

@@ -5,6 +5,10 @@
       "destination": "/api/tmdb.js?path=/:path*"
     },
     {
+      "source": "/api/ratings",
+      "destination": "/api/ratings.js"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

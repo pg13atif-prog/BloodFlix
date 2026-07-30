@@ -7,7 +7,8 @@ import {
   getWatchProviders,
   getRecommendations,
   getReviews,
-  getTvSeason
+  getTvSeason,
+  getExternalRatings
 } from '../services/tmdb';
 import { 
   addToWatchlist, removeFromWatchlist, isInWatchlist, addRecentlyViewed,
@@ -32,6 +33,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const [isSaved, setIsSaved] = useState(false);
   const [isLikedItem, setIsLikedItem] = useState(false);
   const [isWatchedItem, setIsWatchedItem] = useState(false);
+  const [externalRatings, setExternalRatings] = useState({ imdbRating: null, rottenTomatoes: null });
   
   // TV Show Season Data
   const [selectedSeason, setSelectedSeason] = useState(1);
@@ -69,6 +71,9 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
         setTrailerKey(videosData[0]?.key || null);
         setSimilarMovies(similarData);
         
+        // Fetch IMDb and Rotten Tomatoes ratings
+        getExternalRatings(detailsData.imdb_id, detailsData.title, detailsData.release_date?.split('-')[0]).then(setExternalRatings);
+
         // Providers logic (filter by US for now if geolocation not available)
         const usProviders = providersData?.US || providersData?.GB || providersData?.CA || null;
         setWatchProviders(usProviders);
@@ -459,6 +464,19 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                   <span className="star-icon">★</span> {movie.rating}
                   <span className="vote-count">({movie.voteCount})</span>
                 </span>
+
+                {externalRatings?.imdbRating && (
+                  <span className="badge imdb-badge" title="IMDb Rating">
+                    <span className="imdb-logo">IMDb</span> {externalRatings.imdbRating}
+                  </span>
+                )}
+
+                {externalRatings?.rottenTomatoes && (
+                  <span className="badge rt-badge" title="Rotten Tomatoes Score">
+                    <span className="rt-logo">🍅</span> {externalRatings.rottenTomatoes}
+                  </span>
+                )}
+
                 <span className="badge year-badge">{movie.year}</span>
                 <span className="badge runtime-badge">{movie.runtime}</span>
                 {movie.genres.map((g) => (

@@ -129,9 +129,26 @@ export const searchMedia = async (query, signal) => {
     .map(mapMovie);
 };
 
+export const getExternalRatings = async (imdbId, title, year) => {
+  try {
+    const params = new URLSearchParams();
+    if (imdbId) params.append('imdbId', imdbId);
+    if (title) params.append('title', title);
+    if (year) params.append('year', year);
+
+    const res = await fetch(`/api/ratings?${params.toString()}`);
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.error('Failed to load ratings:', err);
+  }
+  return { imdbRating: null, rottenTomatoes: null };
+};
+
 export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}?language=en-US`,
+    `${API_BASE_URL}/${mediaType}/${movieId}?append_to_response=external_ids&language=en-US`,
     { signal },
   );
 
@@ -153,6 +170,7 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
 
   return {
     id: data.id,
+    imdbId: data.imdb_id || data.external_ids?.imdb_id || null,
     title: data.title || data.name,
     originalTitle: data.original_title || data.original_name,
     tagline: data.tagline,
