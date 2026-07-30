@@ -41,7 +41,7 @@ export const getWatchlist = async (userId) => {
   
   if (snapshot.exists()) {
     const data = snapshot.val();
-    return Object.values(data);
+    return Object.values(data).filter(Boolean);
   }
   return [];
 };
@@ -124,7 +124,7 @@ export const getWatched = async (userId) => {
   const watchedRef = getWatchedRef(userId);
   const snapshot = await get(watchedRef);
   if (snapshot.exists()) {
-    return Object.values(snapshot.val());
+    return Object.values(snapshot.val()).filter(Boolean);
   }
   return [];
 };
@@ -166,7 +166,7 @@ export const getLiked = async (userId) => {
   const likedRef = getLikedRef(userId);
   const snapshot = await get(likedRef);
   if (snapshot.exists()) {
-    return Object.values(snapshot.val());
+    return Object.values(snapshot.val()).filter(Boolean);
   }
   return [];
 };
