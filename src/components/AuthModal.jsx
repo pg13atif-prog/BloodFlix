@@ -25,8 +25,20 @@ const AuthModal = ({ isOpen, onClose }) => {
       }
       onClose(); // Close modal on success
     } catch (err) {
-      setError('Failed to ' + (isLogin ? 'log in' : 'sign up') + '. Check your credentials.');
-      console.error(err);
+      let errorMessage = 'Check your credentials.';
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered.';
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Password should be at least 6 characters.';
+      } else if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        errorMessage = 'Invalid email or password.';
+      } else if (err.code === 'auth/operation-not-allowed') {
+        errorMessage = 'Email/Password sign-in is not enabled in Firebase Console.';
+      } else {
+        errorMessage = err.message;
+      }
+      setError(`Failed to ${isLogin ? 'log in' : 'sign up'}. ${errorMessage}`);
+      console.error('Firebase Auth Error:', err);
     }
 
     setLoading(false);
