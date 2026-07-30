@@ -137,7 +137,6 @@ const AdvancedBrowsePage = ({ initialMediaType = 'movie', hideHeaderTitle = fals
   };
 
   const activeFiltersCount =
-    (mediaType !== 'movie' ? 1 : 0) +
     selectedGenres.length +
     (selectedDecade ? 1 : 0) +
     selectedYears.length +

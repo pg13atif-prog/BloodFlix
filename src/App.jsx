@@ -5,7 +5,6 @@ import { checkAndUnlockAchievements } from "./services/achievements";
 import MovieRow from "./components/MovieRow";
 import MovieDetail from "./pages/MovieDetail";
 import MediaBrowsePage from "./pages/MediaBrowsePage";
-import AdvancedBrowsePage from "./pages/AdvancedBrowsePage";
 import SearchPage from "./pages/SearchPage";
 import ProfilePage from "./pages/ProfilePage";
 import { getPopularMovies, getPopularTvShows, getTrending, getSimilarMovies } from "./services/tmdb";
@@ -106,20 +105,17 @@ function App() {
           setCurrentParams(null);
           break;
         case '#movies':
-          setCurrentRoute('movies');
-          setCurrentParams(null);
+          setCurrentRoute('discover');
+          setCurrentParams({ tab: 'movies' });
           break;
         case '#tvshows':
-          setCurrentRoute('tvshows');
-          setCurrentParams(null);
+          setCurrentRoute('discover');
+          setCurrentParams({ tab: 'tv' });
           break;
         case '#trending-tv':
-          setCurrentRoute('trending-tv');
-          setCurrentParams(null);
-          break;
         case '#trending-movies':
-          setCurrentRoute('trending-movies');
-          setCurrentParams(null);
+          setCurrentRoute('discover');
+          setCurrentParams({ tab: 'trending' });
           break;
         default:
           setCurrentRoute('home');
@@ -211,28 +207,11 @@ function App() {
         }} />;
       
       case 'movies':
-        return <AdvancedBrowsePage initialMediaType="movie" />;
-        
       case 'tvshows':
-        return <AdvancedBrowsePage initialMediaType="tv" />;
-        
       case 'trending-tv':
-        return <DiscoverPage activeTab="tv" />;
-
       case 'trending-movies':
-        return <DiscoverPage activeTab="trending" />;
-
-      case 'search':
-        return <SearchPage query={currentParams?.query || ''} />;
-        
-      case 'profile':
-        return <ProfilePage />;
-        
-      case 'achievements':
-        return <AchievementsPage />;
-        
       case 'discover':
-        return <DiscoverPage activeTab={currentParams?.tab} />;
+        return <DiscoverPage activeTab={currentParams?.tab || 'movies'} />;
 
       case 'cineai':
         return <CineAiPage />;
