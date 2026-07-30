@@ -2,11 +2,28 @@ import { useState, useEffect } from 'react';
 import { getAiRecommendations } from '../services/gemini';
 import { searchMedia } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
-import { CardSkeleton } from '../components/SkeletonLoader';
+import { Skeleton } from '../components/SkeletonLoader';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { incrementStat } from '../services/achievements';
 import './AiDiscoveryPage.css';
+
+const AiResultSkeleton = () => (
+  <div className="ai-result-item glass-panel" style={{ opacity: 0.65 }}>
+    <div className="ai-result-poster">
+      <Skeleton height="240px" borderRadius="12px" />
+    </div>
+    <div className="ai-result-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+      <Skeleton width="45%" height="2.2rem" borderRadius="8px" />
+      <div style={{ display: 'flex', gap: '0.8rem' }}>
+        <Skeleton width="70px" height="1.4rem" borderRadius="4px" />
+        <Skeleton width="50px" height="1.4rem" borderRadius="4px" />
+        <Skeleton width="60px" height="1.4rem" borderRadius="4px" />
+      </div>
+      <Skeleton width="100%" height="4.5rem" borderRadius="12px" />
+    </div>
+  </div>
+);
 
 const AiDiscoveryPage = () => {
   const [prompt, setPrompt] = useState(() => sessionStorage.getItem('cinescope_ai_prompt') || '');
@@ -102,10 +119,10 @@ const AiDiscoveryPage = () => {
         {loading && (
           <div className="ai-loading-state">
             <div className="ai-pulse"></div>
-            <p>Analyzing your request and searching the cinematic universe...</p>
-            <div className="search-grid" style={{ marginTop: '2rem' }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <CardSkeleton key={i} />
+            <p className="ai-loading-text">Analyzing your request and searching the cinematic universe...</p>
+            <div className="ai-results-list" style={{ marginTop: '2.5rem', width: '100%' }}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <AiResultSkeleton key={i} />
               ))}
             </div>
           </div>

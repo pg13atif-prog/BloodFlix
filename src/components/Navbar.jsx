@@ -252,6 +252,9 @@ const Navbar = () => {
 
             {/* Autocomplete Dropdown */}
             {isSearchActive && showSuggestions && (
+              (searchQuery.trim().length > 1) || 
+              (searchQuery.trim().length === 0 && recentSearches.length > 0)
+            ) && (
               <div className="autocomplete-dropdown glass-panel">
                 {searchQuery.trim().length === 0 && recentSearches.length > 0 && (
                   <div className="autocomplete-section">
