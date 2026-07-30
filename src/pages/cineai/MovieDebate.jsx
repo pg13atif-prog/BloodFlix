@@ -22,7 +22,7 @@ const MovieDebate = () => {
       setResult(debateResult);
     } catch (err) {
       console.error(err);
-      setError("The debate got too heated! Something went wrong.");
+      setError("The debate got too heated! Details: " + err.message);
     } finally {
       setLoading(false);
     }

@@ -39,7 +39,7 @@ const MoviePlanner = () => {
         setMovie({ ...match, rationale: aiPick.rationale });
       } catch (err) {
         console.error(err);
-        setError("Our sommelier got confused. Please try again.");
+        setError("Our sommelier got confused. Details: " + err.message);
       } finally {
         setLoading(false);
       }

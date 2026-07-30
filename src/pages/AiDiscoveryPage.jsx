@@ -108,7 +108,7 @@ const AiDiscoveryPage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("AI Discovery is currently unavailable or there was an error with your prompt.");
+      setError("AI Discovery is currently unavailable or there was an error with your prompt. Details: " + err.message);
     } finally {
       setLoading(false);
     }
