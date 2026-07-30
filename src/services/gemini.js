@@ -172,32 +172,63 @@ export const getAiMovieDebate = async (movieA, movieB) => {
 };
 
 export const getFriendCompatibilityRecs = async (myProfile, friendProfile) => {
+  // 1. Sort profiles deterministically so identical inputs produce identical prompt strings
+  const sortedMyProfile = [...myProfile].sort();
+  const sortedFriendProfile = [...friendProfile].sort();
+
+  // Helper to extract genres, eras, ratings from profile strings: "Title (Year, Genre, ★Rating)"
+  const parseProfileItem = (itemStr) => {
+    const match = itemStr.match(/\((\d{4}|—),\s*([^,]+),\s*★([\d.]+)\)/);
+    if (!match) return { year: null, genre: 'Unknown', rating: 7.0 };
+    return {
+      year: match[1] !== '—' ? parseInt(match[1], 10) : null,
+      genre: match[2].trim(),
+      rating: parseFloat(match[3]) || 7.0
+    };
+  };
+
+  const myParsed = sortedMyProfile.map(parseProfileItem);
+  const friendParsed = sortedFriendProfile.map(parseProfileItem);
+
+  // 2. Compute mathematical baseline metrics
+  const myGenres = new Set(myParsed.map(p => p.genre).filter(g => g !== 'Unknown'));
+  const friendGenres = new Set(friendParsed.map(p => p.genre).filter(g => g !== 'Unknown'));
+  const genreIntersection = [...myGenres].filter(g => friendGenres.has(g)).length;
+  const genreUnion = new Set([...myGenres, ...friendGenres]).size;
+  const mathGenreScore = genreUnion > 0 ? Math.round((genreIntersection / genreUnion) * 100) : 50;
+
+  // Rating standards delta
+  const myAvgRating = myParsed.reduce((s, p) => s + p.rating, 0) / (myParsed.length || 1);
+  const friendAvgRating = friendParsed.reduce((s, p) => s + p.rating, 0) / (friendParsed.length || 1);
+  const ratingDelta = Math.abs(myAvgRating - friendAvgRating);
+  const mathRatingScore = Math.max(20, Math.round(100 - ratingDelta * 25));
+
+  // Era overlap (decades)
+  const myDecades = new Set(myParsed.map(p => p.year ? Math.floor(p.year / 10) * 10 : null).filter(Boolean));
+  const friendDecades = new Set(friendParsed.map(p => p.year ? Math.floor(p.year / 10) * 10 : null).filter(Boolean));
+  const eraIntersection = [...myDecades].filter(d => friendDecades.has(d)).length;
+  const eraUnion = new Set([...myDecades, ...friendDecades]).size;
+  const mathEraScore = eraUnion > 0 ? Math.round((eraIntersection / eraUnion) * 100) : 60;
+
   const systemInstruction = `
-    You are CineAI, the world's leading movie taste analyst. Perform a DEEP multi-dimensional compatibility analysis between two users based on their movie profiles.
+    You are CineAI, the world's leading movie taste analyst. Perform a deterministic, accurate compatibility analysis between two users.
 
-    ## Scoring Methodology (score each dimension 0-100):
-    1. **Genre Overlap** — How much do their preferred genres align? (e.g., both love Thriller & Sci-Fi = high score)
-    2. **Era Alignment** — Do they watch movies from similar decades? (e.g., both love 2010s blockbusters = high score)
-    3. **Rating Standards** — Do they rate movies similarly? (e.g., both like highly-rated ★8+ films = high score)
-    4. **Thematic Taste** — Beyond genre, do they gravitate toward similar themes? (cerebral vs popcorn, dark vs lighthearted, etc.)
-
-    The overall **compatibility** score is a weighted average:
-    - Genre Overlap: 35%
-    - Thematic Taste: 30%
-    - Era Alignment: 20%
-    - Rating Standards: 15%
+    Mathematically computed baseline scores for reference:
+    - Genre Overlap Baseline: ${mathGenreScore}%
+    - Era Alignment Baseline: ${mathEraScore}%
+    - Rating Standards Baseline: ${mathRatingScore}%
 
     ## Output Requirements:
     Return a JSON object with this EXACT structure:
     {
-      "compatibility": 78,
+      "compatibility": ${Math.round(mathGenreScore * 0.4 + mathEraScore * 0.3 + mathRatingScore * 0.3)},
       "breakdown": {
-        "genreOverlap": 85,
-        "eraAlignment": 70,
-        "ratingStandards": 80,
-        "thematicTaste": 75
+        "genreOverlap": ${mathGenreScore},
+        "eraAlignment": ${mathEraScore},
+        "ratingStandards": ${mathRatingScore},
+        "thematicTaste": ${Math.round((mathGenreScore + mathEraScore) / 2)}
       },
-      "summary": "A 1-2 sentence personality-driven summary of how their tastes complement or clash.",
+      "summary": "A 1-2 sentence accurate summary of how their tastes complement or clash.",
       "recommendations": [
         { "title": "Exact Movie Title", "rationale": "A personalized 2-sentence explanation connecting this pick to BOTH users' specific tastes." }
       ]
@@ -205,34 +236,42 @@ export const getFriendCompatibilityRecs = async (myProfile, friendProfile) => {
 
     Rules:
     - Return exactly 5 recommendations.
-    - Recommendations should be movies NEITHER user has listed — suggest something new.
-    - Each rationale must reference specific movies from both users' lists to justify the pick.
+    - Recommendations should be highly-rated movies NEITHER user has listed — suggest something new.
+    - Be consistent, deterministic, and precise.
     - Do NOT return markdown formatting like \`\`\`json.
   `;
 
   const prompt = `
-    ## User A's Movie Profile (title, year, genre, rating):
-    ${myProfile.join('\n    ')}
+    ## User A's Movie Profile:
+    ${sortedMyProfile.join('\n    ')}
 
-    ## User B's Movie Profile (title, year, genre, rating):
-    ${friendProfile.join('\n    ')}
+    ## User B's Movie Profile:
+    ${sortedFriendProfile.join('\n    ')}
   `;
 
   try {
-    const res = await callOpenRouter(systemInstruction, prompt, 0.7);
+    // Temperature set to 0.1 for deterministic & stable AI output across iterations
+    const res = await callOpenRouter(systemInstruction, prompt, 0.1);
     if (res && typeof res.compatibility === 'number' && Array.isArray(res.recommendations)) {
       return {
         compatibility: Math.min(100, Math.max(0, res.compatibility)),
-        breakdown: res.breakdown || null,
+        breakdown: res.breakdown || {
+          genreOverlap: mathGenreScore,
+          eraAlignment: mathEraScore,
+          ratingStandards: mathRatingScore,
+          thematicTaste: Math.round((mathGenreScore + mathEraScore) / 2)
+        },
         summary: res.summary || null,
         recommendations: res.recommendations.slice(0, 5)
       };
     }
     if (res && Array.isArray(res.recommendations)) {
-      return { compatibility: 50, breakdown: null, summary: null, recommendations: res.recommendations.slice(0, 5) };
-    }
-    if (Array.isArray(res)) {
-      return { compatibility: 50, breakdown: null, summary: null, recommendations: res.slice(0, 5) };
+      return {
+        compatibility: Math.round(mathGenreScore * 0.4 + mathEraScore * 0.3 + mathRatingScore * 0.3),
+        breakdown: { genreOverlap: mathGenreScore, eraAlignment: mathEraScore, ratingStandards: mathRatingScore, thematicTaste: Math.round((mathGenreScore + mathEraScore) / 2) },
+        summary: null,
+        recommendations: res.recommendations.slice(0, 5)
+      };
     }
     throw new Error("Invalid compatibility response structure.");
   } catch (err) {

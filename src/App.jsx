@@ -18,6 +18,7 @@ import RecommendedPage from "./pages/RecommendedPage";
 import DiscoverPage from "./pages/DiscoverPage";
 import CineAiPage from "./pages/CineAiPage";
 import SocialPage from "./pages/SocialPage";
+import AchievementsPage from "./pages/AchievementsPage";
 import WatchlistPage from "./pages/WatchlistPage";
 
 // CineAI Tools
@@ -98,6 +99,10 @@ function App() {
           break;
         case '#profile':
           setCurrentRoute('profile');
+          setCurrentParams(null);
+          break;
+        case '#achievements':
+          setCurrentRoute('achievements');
           setCurrentParams(null);
           break;
         case '#movies':
@@ -222,6 +227,9 @@ function App() {
         
       case 'profile':
         return <ProfilePage />;
+        
+      case 'achievements':
+        return <AchievementsPage />;
         
       case 'discover':
         return <DiscoverPage activeTab={currentParams?.tab} />;

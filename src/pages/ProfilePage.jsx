@@ -143,8 +143,21 @@ const ProfilePage = () => {
     { key: 'watched',   label: 'Already Watched', count: watched.length   },
   ];
 
-  const currentList  = { liked, watchlist, watched }[activeTab];
-  const removeMap    = { liked: handleRemoveLiked, watchlist: handleRemoveWatchlist, watched: handleRemoveWatched };
+  const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'title' | 'rating'
+
+  const currentList = useMemo(() => {
+    let list = [...({ liked, watchlist, watched }[activeTab] || [])];
+    if (sortBy === 'title') {
+      list.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
+    } else if (sortBy === 'rating') {
+      list.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+    }
+    return list;
+  }, [liked, watchlist, watched, activeTab, sortBy]);
+
+  const removeMap = { liked: handleRemoveLiked, watchlist: handleRemoveWatchlist, watched: handleRemoveWatched };
+  const unlockedCount = Object.keys(unlockedAchievements).length;
+  const totalAchievements = ACHIEVEMENTS_LIST.length;
 
   return (
     <div className="profile-page profile-v2">
@@ -169,8 +182,8 @@ const ProfilePage = () => {
 
       <div className="profile-v2-body">
 
-        {/* ── Watch Time Box ────────────────────────────────────────── */}
-        <div className="watchtime-card">
+        {/* ── Compact Watch Time & Stats Box ──────────────────────── */}
+        <div className="watchtime-card compact-stats">
           <div className="watchtime-badge">
             <div className="watchtime-badge-inner">
               <div className="watchtime-badge-val">{totalHours}h</div>
@@ -178,8 +191,7 @@ const ProfilePage = () => {
             </div>
           </div>
           <div className="watchtime-stats">
-            <h2 className="watchtime-title">Your Watch Time</h2>
-            <p className="watchtime-subtitle">Based on movies &amp; episodes marked as Already Watched</p>
+            <h2 className="watchtime-title">Your Watch Stats</h2>
             <div className="watchtime-breakdown">
               <div className="wt-stat">
                 <span className="wt-val">{watchlist.length}</span>
@@ -190,8 +202,8 @@ const ProfilePage = () => {
                 <span className="wt-label">Watched</span>
               </div>
               <div className="wt-stat">
-                <span className="wt-val">{totalHours}h</span>
-                <span className="wt-label">Hours</span>
+                <span className="wt-val">{liked.length}</span>
+                <span className="wt-label">Liked</span>
               </div>
               <div className="wt-stat">
                 <span className="wt-val">{topGenre}</span>
@@ -202,93 +214,59 @@ const ProfilePage = () => {
                 <span className="wt-label">AI Searches</span>
               </div>
               <div className="wt-stat">
-                <span className="wt-val">{liked.length}</span>
-                <span className="wt-label">Liked</span>
-              </div>
-              <div className="wt-stat">
                 <span className="wt-val">{stats.trailersWatchedCount}</span>
                 <span className="wt-label">Trailers</span>
               </div>
               <div className="wt-stat">
-                <span className="wt-val">{Object.keys(unlockedAchievements).length}</span>
+                <span className="wt-val">{unlockedCount}</span>
                 <span className="wt-label">Earned</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Achievements Section ────────────────────────────────────────── */}
-        <div className="achievements-section">
-          <h2 className="achievements-section-title">🏆 Achievements Showcase</h2>
-          <div className="achievements-grid">
-            {ACHIEVEMENTS_LIST.map((ach) => {
-              const isUnlocked = !!unlockedAchievements[ach.id];
-              
-              // Calculate progress if locked and has maxProgress
-              let progressText = '';
-              let pct = 0;
-              if (!isUnlocked && ach.maxProgress) {
-                let currentVal = 0;
-                if (ach.category === 'Watchlist') {
-                  currentVal = watchlist.length;
-                } else if (ach.category === 'Hours Watched') {
-                  currentVal = totalHours;
-                } else if (ach.id === 'explorer') {
-                  currentVal = stats.uniqueViewedIds?.length || 0;
-                } else if (ach.id === 'world_explorer') {
-                  currentVal = stats.viewedCountries?.length || 0;
-                } else if (ach.id === 'genre_hopper') {
-                  // Calculate unique genres manually
-                  const genresSet = new Set();
-                  [...watchlist, ...liked, ...watched].forEach(m => {
-                    if (m.category) genresSet.add(m.category);
-                  });
-                  currentVal = genresSet.size;
-                } else if (ach.id === 'prompt_master') {
-                  currentVal = stats.aiSearchesCount;
-                }
-                
-                pct = Math.min((currentVal / ach.maxProgress) * 100, 100);
-                progressText = `${Math.floor(currentVal)} / ${ach.maxProgress} ${ach.category === 'Hours Watched' ? 'Hours' : ach.id === 'world_explorer' ? 'Countries' : ach.id === 'genre_hopper' ? 'Genres' : 'Titles'}`;
-              }
-
-              return (
-                <div key={ach.id} className={`achievement-card glass-panel ${isUnlocked ? 'unlocked' : 'locked'}`}>
-                  <div className="achievement-icon-wrap">
-                    <span className="achievement-icon">{ach.icon}</span>
-                  </div>
-                  <div className="achievement-info">
-                    <h3 className="achievement-name">{ach.name}</h3>
-                    <p className="achievement-desc">{ach.description}</p>
-                    
-                    {!isUnlocked && ach.maxProgress && (
-                      <div className="achievement-progress-container">
-                        <div className="achievement-progress-bar-wrap">
-                          <div className="achievement-progress-bar" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="achievement-progress-text">{progressText}</span>
-                      </div>
-                    )}
-                  </div>
-                  {isUnlocked && <div className="achievement-unlock-badge">Unlocked</div>}
-                </div>
-              );
-            })}
+        {/* ── Achievements Banner (Links to #achievements) ───────── */}
+        <div className="profile-achievements-banner glass-panel" onClick={() => window.location.hash = 'achievements'}>
+          <div className="ach-banner-left">
+            <span className="ach-banner-icon">🏆</span>
+            <div>
+              <h3>Achievements &amp; Badges</h3>
+              <p>{unlockedCount} of {totalAchievements} Unlocked ({Math.round((unlockedCount / totalAchievements) * 100)}%)</p>
+            </div>
           </div>
+          <button className="btn-secondary ach-banner-btn" onClick={(e) => { e.stopPropagation(); window.location.hash = 'achievements'; }}>
+            View Achievements →
+          </button>
         </div>
 
-        {/* ── Tabs ─────────────────────────────────────────────────── */}
-        <div className="profile-tabs-bar">
-          {tabs.map(t => (
-            <button
-              key={t.key}
-              className={`profile-tab-btn ${activeTab === t.key ? 'active' : ''}`}
-              onClick={() => setActiveTab(t.key)}
+        {/* ── Tabs & Sort Controls ─────────────────────────────────── */}
+        <div className="profile-controls-bar">
+          <div className="profile-tabs-bar">
+            {tabs.map(t => (
+              <button
+                key={t.key}
+                className={`profile-tab-btn ${activeTab === t.key ? 'active' : ''}`}
+                onClick={() => setActiveTab(t.key)}
+              >
+                {t.label}
+                <span className="profile-tab-count">{t.count}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="profile-sort-container">
+            <label htmlFor="profile-sort">Sort by:</label>
+            <select
+              id="profile-sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="profile-sort-select"
             >
-              {t.label}
-              <span className="profile-tab-count">{t.count}</span>
-            </button>
-          ))}
+              <option value="recent">Recently Added</option>
+              <option value="title">Title (A-Z)</option>
+              <option value="rating">Rating (High to Low)</option>
+            </select>
+          </div>
         </div>
 
         {/* ── Tab Content ──────────────────────────────────────────── */}

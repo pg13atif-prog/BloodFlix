@@ -617,3 +617,134 @@
   border-radius: 20px;
   border: 1px solid rgba(251, 191, 36, 0.2);
 }
+
+/* ── Compact Watch Stats Box ────────────────────────────────────────── */
+.watchtime-card.compact-stats {
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.75rem;
+  gap: 1.75rem;
+  border-radius: 16px;
+}
+
+.watchtime-card.compact-stats .watchtime-badge {
+  width: 90px;
+  height: 90px;
+}
+
+.watchtime-card.compact-stats .watchtime-badge-val {
+  font-size: 1.4rem;
+}
+
+.watchtime-card.compact-stats .watchtime-title {
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+}
+
+.watchtime-card.compact-stats .watchtime-breakdown {
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+
+.watchtime-card.compact-stats .wt-stat {
+  padding: 0.6rem 0.4rem;
+  border-radius: 10px;
+}
+
+.watchtime-card.compact-stats .wt-val {
+  font-size: 1.25rem;
+}
+
+.watchtime-card.compact-stats .wt-label {
+  font-size: 0.7rem;
+}
+
+/* ── Achievements Banner ────────────────────────────────────────────── */
+.profile-achievements-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.1) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  transition: all 0.25s ease;
+}
+
+.profile-achievements-banner:hover {
+  border-color: rgba(234, 179, 8, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(234, 179, 8, 0.15);
+}
+
+.ach-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.ach-banner-icon {
+  font-size: 2.2rem;
+}
+
+.ach-banner-left h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: #fff;
+}
+
+.ach-banner-left p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.ach-banner-btn {
+  border-color: rgba(234, 179, 8, 0.4);
+  color: #facc15;
+  white-space: nowrap;
+}
+
+/* ── Profile Controls Bar (Tabs + Sort) ────────────────────────────── */
+.profile-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile-sort-container {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.profile-sort-select {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.88rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.profile-sort-select:focus {
+  border-color: var(--color-accent, #e50914);
+}
+
+.profile-sort-select option {
+  background: #0f172a;
+  color: #fff;
+}
+

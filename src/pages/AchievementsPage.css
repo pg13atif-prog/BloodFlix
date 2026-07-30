@@ -1,0 +1,208 @@
+.achievements-page {
+  padding-top: 100px;
+  min-height: 100vh;
+  padding-bottom: 5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.achievements-header-nav {
+  margin-bottom: 1.5rem;
+}
+
+.achievements-hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.achievements-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.achievements-hero p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+}
+
+.overall-progress-card {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.overall-progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.overall-progress-val {
+  color: var(--color-accent, #e50914);
+}
+
+.overall-track {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.overall-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent, #e50914), #ff6b6b);
+  border-radius: 999px;
+  transition: width 0.8s ease;
+}
+
+/* Filter Bar */
+.achievements-filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.filter-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.6rem 1.4rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover, .filter-btn.active {
+  background: var(--color-accent, #e50914);
+  color: #fff;
+  border-color: var(--color-accent, #e50914);
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+}
+
+/* Full Grid */
+.achievements-full-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.achievement-card-full {
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.achievement-card-full.unlocked {
+  border-color: rgba(234, 179, 8, 0.4);
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);
+}
+
+.achievement-card-full.locked {
+  opacity: 0.65;
+}
+
+.achievement-card-full:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.ach-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.ach-card-icon {
+  font-size: 2.2rem;
+}
+
+.ach-card-category {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.ach-card-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem;
+}
+
+.ach-card-desc {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.45;
+  margin: 0 0 1.25rem;
+  flex: 1;
+}
+
+.ach-progress-section {
+  margin-top: auto;
+  margin-bottom: 1rem;
+}
+
+.ach-progress-bar-wrap {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.ach-progress-bar {
+  height: 100%;
+  background: var(--color-accent, #e50914);
+  border-radius: 999px;
+}
+
+.ach-progress-text {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.ach-status-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: auto;
+}
+
+.ach-status-badge.unlocked {
+  background: rgba(234, 179, 8, 0.15);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.ach-status-badge.locked {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+}

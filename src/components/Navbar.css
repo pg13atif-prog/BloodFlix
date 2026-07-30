@@ -619,10 +619,6 @@
     display: none;
   }
 
-  .navbar:has(.navbar__search-form.active) .navbar__logo {
-    display: none;
-  }
-
   .navbar__search-form.active .navbar__search-input {
     width: 140px;
   }
