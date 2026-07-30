@@ -237,6 +237,12 @@ function App() {
       case 'recommended':
         return <RecommendedPage />;
         
+      case 'profile':
+        return <ProfilePage />;
+
+      case 'achievements':
+        return <AchievementsPage />;
+
       case 'home':
       default:
         return (
