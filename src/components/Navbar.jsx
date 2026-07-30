@@ -227,8 +227,8 @@ const Navbar = () => {
           onClick={(e) => handleNavClick(e, hash)}
           className={`navbar__link ${isActive ? 'navbar__link--active' : ''} ${className || ''}`}
         >
-          <span className="navbar__link-icon">{icon}</span>
           <span className="navbar__link-label">{label}</span>
+          {id === 'cineai' && <span className="navbar__ai-badge">AI</span>}
           {hasDropdown && (
             <svg className={`navbar__chevron ${isOpen ? 'navbar__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -283,15 +283,13 @@ const Navbar = () => {
           <NavItem
             id="discover"
             label="Discover"
-            icon="🎬"
             hash="#discover/movies"
             isActive={currentPath.startsWith('#discover') || currentPath === '#movies' || currentPath === '#tvshows'}
             items={discoverItems}
           />
           <NavItem
             id="cineai"
-            label="CineAI"
-            icon="✨"
+            label="Cine"
             hash="#cineai"
             isActive={currentPath.startsWith('#cineai')}
             items={cineaiItems}
@@ -300,7 +298,6 @@ const Navbar = () => {
           <NavItem
             id="social"
             label="Social"
-            icon="🤝"
             hash="#social"
             isActive={currentPath === '#social'}
             items={socialItems}
@@ -308,7 +305,6 @@ const Navbar = () => {
           <NavItem
             id="watchlist"
             label="Watchlist"
-            icon="❤️"
             hash="#watchlist"
             isActive={currentPath === '#watchlist'}
           />
@@ -316,7 +312,7 @@ const Navbar = () => {
           {/* ── Mobile Accordion Sections ─────────────────── */}
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'discover' ? null : 'discover')}>
-              <span>🎬 Discover</span>
+              <span>Discover</span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'discover' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             {mobileAccordion === 'discover' && (
@@ -332,7 +328,7 @@ const Navbar = () => {
           </li>
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'cineai' ? null : 'cineai')}>
-              <span>✨ CineAI</span>
+              <span>CineAI</span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'cineai' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             {mobileAccordion === 'cineai' && (
@@ -348,7 +344,7 @@ const Navbar = () => {
           </li>
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'social' ? null : 'social')}>
-              <span>🤝 Social</span>
+              <span>Social</span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'social' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             {mobileAccordion === 'social' && (
@@ -364,7 +360,7 @@ const Navbar = () => {
           </li>
           <li className="mobile-accordion-section mobile-accordion-single">
             <a href="#watchlist" className="mobile-accordion-trigger" onClick={(e) => handleNavClick(e, '#watchlist')}>
-              <span>❤️ Watchlist</span>
+              <span>Watchlist</span>
             </a>
           </li>
         </ul>
