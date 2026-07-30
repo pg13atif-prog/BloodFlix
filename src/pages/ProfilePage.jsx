@@ -68,6 +68,7 @@ const ProfilePage = () => {
   const [loading,   setLoading]     = useState(true);
   const [activeTab, setActiveTab]   = useState('liked');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'title' | 'rating'
 
   useEffect(() => {
     if (!currentUser) { setLoading(false); return; }
@@ -111,6 +112,16 @@ const ProfilePage = () => {
     });
     return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
   }, [liked, watched, watchlist]);
+
+  const currentList = useMemo(() => {
+    let list = [...({ liked, watchlist, watched }[activeTab] || [])];
+    if (sortBy === 'title') {
+      list.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
+    } else if (sortBy === 'rating') {
+      list.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+    }
+    return list;
+  }, [liked, watchlist, watched, activeTab, sortBy]);
 
   const handleNavigate = (movie) => {
     window.location.hash = `${movie.mediaType || 'movie'}/${movie.id}`;
@@ -166,17 +177,6 @@ const ProfilePage = () => {
     { key: 'watched',   label: 'Already Watched', count: watched.length   },
   ];
 
-  const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'title' | 'rating'
-
-  const currentList = useMemo(() => {
-    let list = [...({ liked, watchlist, watched }[activeTab] || [])];
-    if (sortBy === 'title') {
-      list.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
-    } else if (sortBy === 'rating') {
-      list.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
-    }
-    return list;
-  }, [liked, watchlist, watched, activeTab, sortBy]);
 
   const removeMap = { liked: handleRemoveLiked, watchlist: handleRemoveWatchlist, watched: handleRemoveWatched };
   const unlockedCount = Object.keys(unlockedAchievements).length;
