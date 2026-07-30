@@ -486,9 +486,9 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                     className="badge rt-badge clickable-rating"
                     title="View on Rotten Tomatoes"
                   >
-                    <svg className="rt-logo-svg" width="16" height="16" viewBox="0 0 32 32" fill="none">
-                      <path d="M16 4.5C14.5 2.5 12 2 12 2C12 2 12.5 4 14 5.5C12 5 9.5 5.5 8 7.5C11 8.5 13 8 13.5 8.5C10 10.5 8.5 14 9.5 18C10.5 22 13 25.5 17 26C21.5 26.5 25 23 25.5 18.5C26 14 24.5 10.5 21.5 8C21.5 8.5 22.5 11 20 10.5C21 8.5 19.5 6 17 5.5C18 4.5 18.5 3 18.5 3C18.5 3 17 3.5 16 4.5Z" fill="#FA320A"/>
-                      <path d="M14 2C14 2 14.5 4 16 4.5C15 3.5 14 2 14 2Z" fill="#4B8B3B"/>
+                    <svg className="rt-logo-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="13.5" r="8.5" fill="#FA320A"/>
+                      <path d="M12 2.5C11 5 8.5 5.5 6.5 5C8.5 7.5 11 7 12 7C13 7 15.5 7.5 17.5 5C15.5 5.5 13 5 12 2.5Z" fill="#388E3C"/>
                     </svg>
                     <span className="rt-val">{externalRatings.rottenTomatoes}</span>
                   </a>

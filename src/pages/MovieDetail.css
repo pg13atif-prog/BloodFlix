@@ -407,6 +407,7 @@
 
 .rt-logo-svg {
   flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(250, 50, 10, 0.4));
 }
 
 .rt-val {
