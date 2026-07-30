@@ -162,17 +162,14 @@
   transform: scaleX(1);
 }
 
-/* ── CineAI — text red highlight ──────────────────────────── */
-.navbar__link--cineai {
+/* ── CineAI — only "AI" text red ───────────────────────────── */
+.navbar__ai-text {
   color: var(--color-accent, #e50914);
+  transition: color 0.2s ease;
 }
 
-.navbar__link--cineai:hover {
+.navbar__link:hover .navbar__ai-text {
   color: #ff2a35;
-}
-
-.navbar__link--cineai.navbar__link--active {
-  color: var(--color-accent, #e50914);
 }
 
 /* ── Premium Dropdown (Discover / CineAI / Social) ────────── */

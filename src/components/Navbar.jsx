@@ -227,7 +227,9 @@ const Navbar = () => {
           onClick={(e) => handleNavClick(e, hash)}
           className={`navbar__link ${isActive ? 'navbar__link--active' : ''} ${className || ''}`}
         >
-          <span className="navbar__link-label">{label}</span>
+          <span className="navbar__link-label">
+            {id === 'cineai' ? <>Cine<span className="navbar__ai-text">AI</span></> : label}
+          </span>
           {hasDropdown && (
             <svg className={`navbar__chevron ${isOpen ? 'navbar__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -327,7 +329,7 @@ const Navbar = () => {
           </li>
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'cineai' ? null : 'cineai')}>
-              <span>CineAI</span>
+              <span>Cine<span className="navbar__ai-text">AI</span></span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'cineai' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
             {mobileAccordion === 'cineai' && (
