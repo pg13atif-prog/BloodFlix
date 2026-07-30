@@ -15,6 +15,15 @@ import { MovieRowSkeleton } from "./components/SkeletonLoader";
 import AiDiscoveryPage from "./pages/AiDiscoveryPage";
 import TvEpisodePage from "./pages/TvEpisodePage";
 import RecommendedPage from "./pages/RecommendedPage";
+import DiscoverPage from "./pages/DiscoverPage";
+import CineAiPage from "./pages/CineAiPage";
+import SocialPage from "./pages/SocialPage";
+import WatchlistPage from "./pages/WatchlistPage";
+
+// CineAI Tools
+import MoviePlanner from "./pages/cineai/MoviePlanner";
+import PickForMe from "./pages/cineai/PickForMe";
+import MovieDebate from "./pages/cineai/MovieDebate";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -56,33 +65,39 @@ function App() {
         return;
       }
 
+      const discoverMatch = hash.match(/^#discover\/(movies|tv|trending)/);
+      if (discoverMatch) {
+        setCurrentRoute('discover');
+        setCurrentParams({ tab: discoverMatch[1] });
+        return;
+      }
+      
+      const cineAiMatch = hash.match(/^#cineai\/(what-to-watch|planner|pick-for-me|debate)/);
+      if (cineAiMatch) {
+        setCurrentRoute('cineai-tool');
+        setCurrentParams({ tool: cineAiMatch[1] });
+        return;
+      }
+
       switch (hash) {
-        case '#movies':
-          setCurrentRoute('movies');
+        case '#discover':
+          setCurrentRoute('discover');
+          setCurrentParams({ tab: 'movies' });
+          break;
+        case '#cineai':
+          setCurrentRoute('cineai');
           setCurrentParams(null);
           break;
-        case '#tvshows':
-          setCurrentRoute('tvshows');
+        case '#social':
+          setCurrentRoute('social');
+          setCurrentParams(null);
+          break;
+        case '#watchlist':
+          setCurrentRoute('watchlist');
           setCurrentParams(null);
           break;
         case '#profile':
           setCurrentRoute('profile');
-          setCurrentParams(null);
-          break;
-        case '#trending-movies':
-          setCurrentRoute('trending-movies');
-          setCurrentParams(null);
-          break;
-        case '#trending-tv':
-          setCurrentRoute('trending-tv');
-          setCurrentParams(null);
-          break;
-        case '#recommended':
-          setCurrentRoute('recommended');
-          setCurrentParams(null);
-          break;
-        case '#ai-discovery':
-          setCurrentRoute('ai-discovery');
           setCurrentParams(null);
           break;
         default:
@@ -180,20 +195,30 @@ function App() {
       case 'tvshows':
         return <MediaBrowsePage title="Popular TV Shows" fetchMethod={getPopularTvShows} />;
         
-      case 'trending-movies':
-        return <MediaBrowsePage title="Trending Movies" fetchMethod={(signal) => getTrending('movie', 'day', signal)} />;
-        
-      case 'trending-tv':
-        return <MediaBrowsePage title="Trending TV Shows" fetchMethod={(signal) => getTrending('tv', 'day', signal)} />;
-        
       case 'search':
         return <SearchPage query={currentParams?.query || ''} />;
         
       case 'profile':
         return <ProfilePage />;
         
-      case 'ai-discovery':
-        return <AiDiscoveryPage />;
+      case 'discover':
+        return <DiscoverPage activeTab={currentParams?.tab} />;
+
+      case 'cineai':
+        return <CineAiPage />;
+
+      case 'cineai-tool':
+        if (currentParams?.tool === 'what-to-watch') return <AiDiscoveryPage />;
+        if (currentParams?.tool === 'planner') return <MoviePlanner />;
+        if (currentParams?.tool === 'pick-for-me') return <PickForMe />;
+        if (currentParams?.tool === 'debate') return <MovieDebate />;
+        return <div className="page-container"><h1>{currentParams.tool} coming soon</h1></div>;
+
+      case 'social':
+        return <SocialPage />;
+
+      case 'watchlist':
+        return <WatchlistPage />;
 
       case 'recommended':
         return <RecommendedPage />;

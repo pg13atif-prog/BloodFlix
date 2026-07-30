@@ -63,6 +63,13 @@ const fetchWithTimeout = async (url, options = {}) => {
   }
 };
 
+export const fetchList = async (endpoint, signal) => {
+  const response = await fetchWithTimeout(`${API_BASE_URL}/${endpoint}`, { signal });
+  if (!response.ok) throw new Error(`Failed to load ${endpoint}`);
+  const { results } = await response.json();
+  return results.filter((item) => item.poster_path).map(mapMovie);
+};
+
 export const getPopularMovies = async (signal) => {
   const response = await fetchWithTimeout(
     `${API_BASE_URL}/movie/popular?language=en-US&page=1`,

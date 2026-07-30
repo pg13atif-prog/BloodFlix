@@ -12,6 +12,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [discoverDropdown, setDiscoverDropdown] = useState(false);
 
   // Autocomplete state
   const [suggestions, setSuggestions] = useState([]);
@@ -188,29 +189,31 @@ const Navbar = () => {
               &times;
             </button>
           </li>
+          <li className="navbar__dropdown-container" onMouseEnter={() => setDiscoverDropdown(true)} onMouseLeave={() => setDiscoverDropdown(false)}>
+            <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className={`navbar__link ${currentPath.startsWith('#discover') || currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
+              Discover <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px', verticalAlign: 'middle', transition: 'transform 0.2s', transform: discoverDropdown ? 'rotate(180deg)' : 'none' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </a>
+            {discoverDropdown && (
+              <div className="navbar__submenu">
+                <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className="submenu-item">Movies</a>
+                <a href="#discover/tv" onClick={(e) => handleNavClick(e, '#discover/tv')} className="submenu-item">TV Shows</a>
+                <a href="#discover/trending" onClick={(e) => handleNavClick(e, '#discover/trending')} className="submenu-item">Trending</a>
+              </div>
+            )}
+          </li>
           <li>
-            <a href="#" onClick={(e) => handleNavClick(e, '#')} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
-              Home
+            <a href="#cineai" onClick={(e) => handleNavClick(e, '#cineai')} className={`navbar__link ${currentPath.startsWith('#cineai') ? 'navbar__link--active' : ''}`}>
+              CineAI
             </a>
           </li>
           <li>
-            <a href="#movies" onClick={(e) => handleNavClick(e, '#movies')} className={`navbar__link ${currentPath === '#movies' ? 'navbar__link--active' : ''}`}>
-              Movies
+            <a href="#social" onClick={(e) => handleNavClick(e, '#social')} className={`navbar__link ${currentPath === '#social' ? 'navbar__link--active' : ''}`}>
+              Social
             </a>
           </li>
           <li>
-            <a href="#tvshows" onClick={(e) => handleNavClick(e, '#tvshows')} className={`navbar__link ${currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
-              TV Shows
-            </a>
-          </li>
-          <li>
-            <a href="#ai-discovery" onClick={(e) => handleNavClick(e, '#ai-discovery')} className={`navbar__link ${currentPath === '#ai-discovery' ? 'navbar__link--active' : ''}`}>
-              AI Discovery
-            </a>
-          </li>
-          <li>
-            <a href="#recommended" onClick={(e) => handleNavClick(e, '#recommended')} className={`navbar__link ${currentPath === '#recommended' ? 'navbar__link--active' : ''}`}>
-              Recommended
+            <a href="#watchlist" onClick={(e) => handleNavClick(e, '#watchlist')} className={`navbar__link ${currentPath === '#watchlist' ? 'navbar__link--active' : ''}`}>
+              Watchlist
             </a>
           </li>
         </ul>
@@ -348,76 +351,67 @@ const Navbar = () => {
       {/* Mobile Bottom Navigation Bar */}
       <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
         <a 
-          href="#" 
-          onClick={(e) => handleNavClick(e, '#')} 
-          className={`mobile-nav-item ${currentPath === '#' || currentPath === '' ? 'active' : ''}`}
+          href="#discover/movies" 
+          onClick={(e) => handleNavClick(e, '#discover/movies')} 
+          className={`mobile-nav-item ${currentPath.startsWith('#discover') || currentPath === '#' || currentPath === '' ? 'active' : ''}`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>Home</span>
+          <span>Discover</span>
         </a>
 
         <a 
-          href="#movies" 
-          onClick={(e) => handleNavClick(e, '#movies')} 
-          className={`mobile-nav-item ${currentPath === '#movies' ? 'active' : ''}`}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-            <line x1="7" y1="2" x2="7" y2="22"></line>
-            <line x1="17" y1="2" x2="17" y2="22"></line>
-            <line x1="2" y1="12" x2="22" y2="12"></line>
-            <line x1="2" y1="7" x2="7" y2="7"></line>
-            <line x1="2" y1="17" x2="7" y2="17"></line>
-            <line x1="17" y1="17" x2="22" y2="17"></line>
-            <line x1="17" y1="7" x2="22" y2="7"></line>
-          </svg>
-          <span>Movies</span>
-        </a>
-
-        <a 
-          href="#tvshows" 
-          onClick={(e) => handleNavClick(e, '#tvshows')} 
-          className={`mobile-nav-item ${currentPath === '#tvshows' ? 'active' : ''}`}
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
-            <polyline points="17 2 12 7 7 2"></polyline>
-          </svg>
-          <span>TV Shows</span>
-        </a>
-
-        <a 
-          href="#ai-discovery" 
-          onClick={(e) => handleNavClick(e, '#ai-discovery')} 
-          className={`mobile-nav-item ${currentPath === '#ai-discovery' ? 'active' : ''}`}
+          href="#cineai" 
+          onClick={(e) => handleNavClick(e, '#cineai')} 
+          className={`mobile-nav-item ${currentPath.startsWith('#cineai') ? 'active' : ''}`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
           </svg>
-          <span>AI Search</span>
+          <span>CineAI</span>
         </a>
 
         <a 
-          href="#profile" 
-          onClick={(e) => {
-            if (currentUser) {
-              handleNavClick(e, '#profile');
-            } else {
-              e.preventDefault();
-              setIsAuthModalOpen(true);
-            }
-          }} 
-          className={`mobile-nav-item ${currentPath === '#profile' ? 'active' : ''}`}
+          href="#social" 
+          onClick={(e) => handleNavClick(e, '#social')} 
+          className={`mobile-nav-item ${currentPath === '#social' ? 'active' : ''}`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          <span>{currentUser ? 'Profile' : 'Sign In'}</span>
+          <span>Social</span>
         </a>
+
+        <a 
+          href="#watchlist" 
+          onClick={(e) => handleNavClick(e, '#watchlist')} 
+          className={`mobile-nav-item ${currentPath === '#watchlist' ? 'active' : ''}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Watchlist</span>
+        </a>
+
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            toggleSearch();
+          }} 
+          className="mobile-nav-item"
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <span>Search</span>
+        </button>
       </nav>
 
       <AuthModal
