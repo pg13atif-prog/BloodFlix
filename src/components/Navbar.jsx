@@ -180,6 +180,14 @@ const Navbar = () => {
 
         {/* Centered navigation */}
         <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">
+          <li className="mobile-drawer-header">
+            <span className="navbar__logo-text">
+              <span className="logo-cine">Cine</span><span className="logo-scope">Scope</span>
+            </span>
+            <button className="mobile-drawer-close" onClick={() => setIsMobileMenuOpen(false)} aria-label="Close menu">
+              &times;
+            </button>
+          </li>
           <li>
             <a href="#" onClick={(e) => handleNavClick(e, '#')} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
               Home

@@ -367,14 +367,18 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.mobile-drawer-header {
+  display: none;
+}
+
 /* Backdrop for Mobile Drawer */
 .navbar__backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1004;
   animation: fadeIn 0.2s ease;
 }
 
@@ -403,22 +407,49 @@
     justify-content: center;
   }
 
+  .mobile-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-drawer-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .mobile-drawer-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
   .navbar__nav {
     position: fixed;
     top: 0;
-    left: -280px;
-    width: 260px;
+    left: -300px;
+    width: 280px;
     height: 100vh;
     background: #0b0f19;
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    padding: 80px 1.5rem 2rem;
-    gap: 0.75rem;
+    padding: 1.5rem 1.5rem 2rem;
+    gap: 0.5rem;
     transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 1001;
-    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8);
+    z-index: 1005;
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.9);
     border-right: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: auto;
   }
 
   .navbar__nav.navbar__nav--open {
@@ -432,11 +463,17 @@
 
   .navbar__link {
     display: block;
-    font-size: 1.1rem;
-    padding: 0.8rem 0;
+    font-size: 1.15rem;
+    padding: 0.9rem 0;
     width: 100%;
-    color: #cbd5e1;
+    color: #e2e8f0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-weight: 500;
+  }
+
+  .navbar__link:hover,
+  .navbar__link--active {
+    color: #e50914;
   }
 
   .navbar__link::after {
