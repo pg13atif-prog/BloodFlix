@@ -39,16 +39,23 @@ export const getAiRecommendations = async (prompt) => {
   const systemInstruction = `
     You are an expert movie and TV show recommendation assistant for CineScope, a premium discovery platform.
     The user will give you a prompt describing what they want to watch.
-    You must return a JSON array of exactly 10 recommendation objects.
-    Each object must have the following keys:
+    You must return a JSON object containing a "recommendations" key, which holds an array of exactly 10 recommendation objects.
+    Each recommendation object must have the following keys:
     - title: the exact official title of the movie or TV show.
     - mediaType: either "movie" or "tv".
     - rationale: a custom 2-3 sentence overview that beautifully blends the plot summary with the specific reason it matches the user's prompt. Make it sound like a premium editorial synopsis.
-    Do NOT return markdown formatting like \`\`\`json. Return ONLY the raw JSON array.
+    Do NOT return markdown formatting like \`\`\`json.
   `;
 
   try {
-    return await callOpenRouter(systemInstruction, prompt, 0.7);
+    const res = await callOpenRouter(systemInstruction, prompt, 0.7);
+    if (res && Array.isArray(res.recommendations)) {
+      return res.recommendations;
+    }
+    if (Array.isArray(res)) {
+      return res;
+    }
+    throw new Error("Invalid AI response format: expected an array of recommendations.");
   } catch (err) {
     console.error('Error fetching AI recommendations:', err);
     throw err;
