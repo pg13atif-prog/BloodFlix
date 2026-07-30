@@ -470,7 +470,14 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 {movie.genres && movie.genres.length > 0 && (
                   <>
                     <span className="dot-separator">•</span>
-                    <span>{movie.genres.join(', ')}</span>
+                    <div className="genres-inline">
+                      {movie.genres.map((g, idx) => (
+                        <span key={g} className="genre-chip">
+                          {g}
+                          {idx < movie.genres.length - 1 && <span className="genre-dot">•</span>}
+                        </span>
+                      ))}
+                    </div>
                   </>
                 )}
               </div>

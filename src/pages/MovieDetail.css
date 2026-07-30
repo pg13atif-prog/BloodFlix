@@ -336,6 +336,33 @@
   margin: 0 0.15rem;
 }
 
+.genres-inline {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.genre-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.genre-chip:hover {
+  color: var(--color-accent, #e50914);
+}
+
+.genre-dot {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
 /* Dedicated Ratings Row */
 .detail-ratings-row {
   display: flex;
