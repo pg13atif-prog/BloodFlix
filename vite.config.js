@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api/tmdb': {
-          target: 'https://cine-scope-kohl.vercel.app',
+          target: 'https://cine-scope-ivory-one.vercel.app',
           changeOrigin: true,
           secure: false,
         }
