@@ -18,6 +18,7 @@
   font-family: var(--font-heading);
   font-size: clamp(1.4rem, 2vw, 1.75rem);
   font-weight: 600;
+  line-height: 1;
 }
 
 .row-see-all {
@@ -52,7 +53,7 @@
   gap: var(--space-lg);
   width: 100%;
   overflow-x: auto;
-  padding: 10px max(var(--space-xl), calc((100vw - var(--content-max-width)) / 2 + var(--space-xl)));
+  padding: 4px max(var(--space-xl), calc((100vw - var(--content-max-width)) / 2 + var(--space-xl)));
   scroll-behavior: smooth;
   scrollbar-width: none;
 }
