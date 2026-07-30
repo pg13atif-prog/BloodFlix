@@ -14,7 +14,7 @@ const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) 
       "X-Title": "CineScope"
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-2.5-flash:free",
       messages: [
         { role: "system", content: systemInstruction },
         { role: "user", content: userPrompt }
