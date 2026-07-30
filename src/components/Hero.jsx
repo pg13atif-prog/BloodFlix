@@ -32,16 +32,16 @@ const Hero = ({ movies = [], movie = null }) => {
   const currentSlide = slides[currentIndex] || slides[0] || DEFAULT_FALLBACK_HERO;
   const featuredId = currentSlide.id;
 
-  // Auto-scroll every 5 seconds (5000ms)
+  // Auto-scroll every 5 seconds (5000ms) - paused when trailer modal is open
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || showTrailerModal) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [slides.length, currentIndex]);
+  }, [slides.length, showTrailerModal]);
 
   // Fetch YouTube trailer for the current slide
   useEffect(() => {
