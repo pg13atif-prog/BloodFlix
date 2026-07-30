@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ref, get, set, query, orderByChild, equalTo } from 'firebase/database';
+import { ref, get, set } from 'firebase/database';
 import { db } from '../services/firebase';
 import { getWatchlist, getLiked, getWatched } from '../services/firestore';
-import { GoogleGenAI } from '@google/genai';
+import { getFriendCompatibilityRecs } from '../services/gemini';
 import MovieCard from '../components/MovieCard';
 import './SocialPage.css';
-
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-let ai;
-if (apiKey) ai = new GoogleGenAI({ apiKey });
 
 const generateFriendCode = () => {
   return 'CS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -22,8 +18,32 @@ const SocialPage = () => {
   const [loading, setLoading] = useState(true);
   const [matchLoading, setMatchLoading] = useState(false);
   const [matchError, setMatchError] = useState(null);
-  
   const [matchResult, setMatchResult] = useState(null);
+  
+  const [loadingCaption, setLoadingCaption] = useState("Comparing Watchlists...");
+
+  useEffect(() => {
+    if (!matchLoading) return;
+    
+    const captions = [
+      "Fetching friend's watchlist...",
+      "Analyzing movie tastes...",
+      "Comparing genres and ratings...",
+      "Calculating compatibility score...",
+      "Consulting CineAI for recommendations...",
+      "Wrapping up results..."
+    ];
+    
+    let index = 0;
+    setLoadingCaption(captions[0]);
+    
+    const interval = setInterval(() => {
+      index = (index + 1) % captions.length;
+      setLoadingCaption(captions[index]);
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [matchLoading]);
 
   useEffect(() => {
     if (!currentUser) {
@@ -39,7 +59,6 @@ const SocialPage = () => {
       } else {
         const newCode = generateFriendCode();
         await set(codeRef, newCode);
-        // Also save a reverse lookup index
         await set(ref(db, `friendCodes/${newCode}`), currentUser.uid);
         setFriendCode(newCode);
       }
@@ -83,28 +102,13 @@ const SocialPage = () => {
       
       const sharedFavorites = myLiked.filter(m => fLiked.find(fm => fm.id === m.id));
 
-      // Calculate Compatibility (very naive overlap)
+      // Calculate Compatibility (naive overlap)
       const totalUnique = new Set([...myTitles, ...fTitles]).size;
       const overlap = new Set(myTitles.filter(t => fTitles.includes(t))).size;
       const compatibility = totalUnique === 0 ? 0 : Math.round((overlap / totalUnique) * 100);
 
-      // 3. Ask Gemini for 5 Recommendations
-      let recommendations = [];
-      if (ai) {
-        const prompt = `
-          User A likes: ${myLiked.map(m=>m.title).slice(0, 10).join(', ')}.
-          User B likes: ${fLiked.map(m=>m.title).slice(0, 10).join(', ')}.
-          Based on the combined tastes of User A and User B, recommend exactly 5 movies they would BOTH enjoy watching together tonight.
-          Return a JSON array of objects: { "title": "Exact Title", "rationale": "Why it's perfect for BOTH of them." }
-          Return ONLY JSON.
-        `;
-        const res = await ai.models.generateContent({
-          model: 'gemini-flash-latest',
-          contents: prompt,
-          config: { temperature: 0.7, responseMimeType: 'application/json' }
-        });
-        recommendations = JSON.parse(res.text.replace(/```json/g, '').replace(/```/g, '').trim());
-      }
+      // 3. Ask OpenRouter for Recommendations
+      const recommendations = await getFriendCompatibilityRecs(myLiked, fLiked);
 
       setMatchResult({
         compatibility,
@@ -147,12 +151,19 @@ const SocialPage = () => {
               required
             />
             <button type="submit" className="match-btn" disabled={matchLoading}>
-              {matchLoading ? 'Comparing Watchlists...' : '✨ Compare Watchlists'}
+              {matchLoading ? 'Comparing...' : 'Compare Watchlists'}
             </button>
           </form>
-          {matchError && <p className="error-text">{matchError}</p>}
+          {matchError && <p className="error-text" style={{ marginTop: '1rem' }}>{matchError}</p>}
         </div>
       </div>
+
+      {matchLoading && (
+        <div className="ai-loading-state" style={{ marginTop: '3rem' }}>
+          <div className="ai-spinner"></div>
+          <p>{loadingCaption}</p>
+        </div>
+      )}
 
       {matchResult && (
         <div className="match-results animated-entrance">

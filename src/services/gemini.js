@@ -170,3 +170,33 @@ export const getAiMovieDebate = async (movieA, movieB) => {
     throw err;
   }
 };
+
+export const getFriendCompatibilityRecs = async (myLikedTitles, friendLikedTitles) => {
+  const systemInstruction = `
+    Based on the combined tastes of User A and User B, recommend exactly 5 movies they would BOTH enjoy watching together tonight.
+    Return a JSON object containing a "recommendations" key, which holds an array of exactly 5 recommendation objects.
+    Each recommendation object must have the following keys:
+    - title: the exact official title of the movie.
+    - rationale: a custom 2-3 sentence personalized rationale explaining why this is perfect for BOTH of them.
+    Do NOT return markdown formatting like \`\`\`json.
+  `;
+
+  const prompt = `
+    User A likes: ${myLikedTitles.slice(0, 10).join(', ')}.
+    User B likes: ${friendLikedTitles.slice(0, 10).join(', ')}.
+  `;
+
+  try {
+    const res = await callOpenRouter(systemInstruction, prompt, 0.7);
+    if (res && Array.isArray(res.recommendations)) {
+      return res.recommendations;
+    }
+    if (Array.isArray(res)) {
+      return res.slice(0, 5);
+    }
+    return [];
+  } catch (err) {
+    console.error('Error fetching friend compatibility recommendations:', err);
+    throw err;
+  }
+};
