@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchList, getTrending } from '../services/tmdb';
 import MovieRow from '../components/MovieRow';
 import { MovieRowSkeleton } from '../components/SkeletonLoader';
+import AdvancedBrowsePage from './AdvancedBrowsePage';
 import './DiscoverPage.css';
 
 const DiscoverPage = ({ activeTab = 'movies' }) => {
@@ -11,6 +12,11 @@ const DiscoverPage = ({ activeTab = 'movies' }) => {
     trending: { today: [], week: [] }
   });
   const [loading, setLoading] = useState(true);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  useEffect(() => {
+    setShowAdvancedFilters(false);
+  }, [activeTab]);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,11 +75,14 @@ const DiscoverPage = ({ activeTab = 'movies' }) => {
         <div className="discover-header-top">
           <h1>Discover</h1>
           {(activeTab === 'movies' || activeTab === 'tv') && (
-            <button className="advanced-filter-btn" onClick={() => window.location.hash = activeTab === 'movies' ? '#movies' : '#tvshows'}>
+            <button 
+              className={`advanced-filter-btn ${showAdvancedFilters ? 'active' : ''}`}
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
               </svg>
-              Advanced Filters
+              {showAdvancedFilters ? 'Show Curated Rows' : 'Advanced Filters'}
             </button>
           )}
         </div>
@@ -85,7 +94,9 @@ const DiscoverPage = ({ activeTab = 'movies' }) => {
       </div>
 
       <div className="discover-content">
-        {loading ? (
+        {showAdvancedFilters ? (
+          <AdvancedBrowsePage initialMediaType={activeTab === 'tv' ? 'tv' : 'movie'} hideHeaderTitle={true} />
+        ) : loading ? (
           <>
             <MovieRowSkeleton />
             <MovieRowSkeleton />

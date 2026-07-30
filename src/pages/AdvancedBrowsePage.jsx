@@ -27,15 +27,20 @@ const SORT_OPTIONS = [
   { label: 'Newest Releases', value: 'primary_release_date.desc' },
 ];
 
-const AdvancedBrowsePage = ({ initialMediaType = 'movie' }) => {
+const AdvancedBrowsePage = ({ initialMediaType = 'movie', hideHeaderTitle = false }) => {
   const [mediaType, setMediaType] = useState(initialMediaType);
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [selectedDecade, setSelectedDecade] = useState('');
   const [selectedYears, setSelectedYears] = useState([]);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('popularity.desc');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
+
+  // Sync initialMediaType when prop changes
+  useEffect(() => {
+    setMediaType(initialMediaType);
+  }, [initialMediaType]);
+
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -143,12 +148,14 @@ const AdvancedBrowsePage = ({ initialMediaType = 'movie' }) => {
     <div className="advanced-browse-page">
       <div className="advanced-browse-header">
         <div className="title-row">
-          <div>
-            <h1 className="advanced-browse-title">Explore Catalog</h1>
-            <p className="advanced-browse-subtitle">
-              Discover movies and TV shows filtered by genre, release era, and rating.
-            </p>
-          </div>
+          {!hideHeaderTitle && (
+            <div>
+              <h1 className="advanced-browse-title">Discover</h1>
+              <p className="advanced-browse-subtitle">
+                Filter movies and TV shows by genre, release era, and rating.
+              </p>
+            </div>
+          )}
 
           <div className="header-actions">
             {/* Media Type Switcher */}
