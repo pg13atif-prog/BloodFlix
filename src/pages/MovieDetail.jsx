@@ -458,23 +458,41 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
               <h1 className="detail-title">{movie.title}</h1>
               {movie.tagline && <p className="detail-tagline">&ldquo;{movie.tagline}&rdquo;</p>}
 
-              {/* Badges Bar */}
-              <div className="detail-badges-row">
-                <span className="badge rating-badge">
-                  <span className="star-icon">★</span> {movie.rating}
+              {/* Clean Meta Line (Year • Runtime • Genres) */}
+              <div className="detail-meta-line">
+                <span>{movie.year}</span>
+                {movie.runtime && movie.runtime !== 'N/A' && (
+                  <>
+                    <span className="dot-separator">•</span>
+                    <span>{movie.runtime}</span>
+                  </>
+                )}
+                {movie.genres && movie.genres.length > 0 && (
+                  <>
+                    <span className="dot-separator">•</span>
+                    <span>{movie.genres.join(', ')}</span>
+                  </>
+                )}
+              </div>
+
+              {/* Dedicated Ratings Row */}
+              <div className="detail-ratings-row">
+                <div className="rating-pill tmdb-pill" title="TMDB Rating">
+                  <span className="star-icon">★</span>
+                  <span className="rating-score">{movie.rating}</span>
                   <span className="vote-count">({movie.voteCount})</span>
-                </span>
+                </div>
 
                 {externalRatings?.imdbRating && (
                   <a
                     href={`https://www.imdb.com/title/${movie.imdbId || externalRatings?.imdbId || ''}/`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="badge imdb-badge clickable-rating"
+                    className="rating-pill imdb-pill"
                     title="View on IMDb"
                   >
                     <span className="imdb-logo">IMDb</span>
-                    <span className="imdb-val">{externalRatings.imdbRating}</span>
+                    <span className="rating-score">{externalRatings.imdbRating}</span>
                   </a>
                 )}
 
@@ -483,31 +501,16 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                     href={`https://www.rottentomatoes.com/search?search=${encodeURIComponent(movie.title)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="badge rt-badge clickable-rating"
+                    className="rating-pill rt-pill"
                     title="View on Rotten Tomatoes"
                   >
-                    <svg className="rt-logo-svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <svg className="rt-logo-svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="13.5" r="8.5" fill="#FA320A"/>
                       <path d="M12 2.5C11 5 8.5 5.5 6.5 5C8.5 7.5 11 7 12 7C13 7 15.5 7.5 17.5 5C15.5 5.5 13 5 12 2.5Z" fill="#388E3C"/>
                     </svg>
-                    <span className="rt-val">{externalRatings.rottenTomatoes}</span>
+                    <span className="rating-score">{externalRatings.rottenTomatoes}</span>
                   </a>
                 )}
-
-                <span className="badge year-badge">{movie.year}</span>
-                <span className="badge runtime-badge">{movie.runtime}</span>
-                {movie.genres.map((g) => (
-                  <span 
-                    key={g} 
-                    className="badge genre-badge" 
-                    style={{ 
-                      borderColor: getGenreColor(g),
-                      backgroundColor: 'rgba(15, 23, 42, 0.85)'
-                    }}
-                  >
-                    {g}
-                  </span>
-                ))}
               </div>
             </div>
 
