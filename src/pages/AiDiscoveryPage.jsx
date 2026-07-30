@@ -3,10 +3,18 @@ import { getAiRecommendations } from '../services/gemini';
 import { searchMedia } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
 import { Skeleton } from '../components/SkeletonLoader';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { incrementStat } from '../services/achievements';
 import './AiDiscoveryPage.css';
+
+const SEARCH_CAPTIONS = [
+  "Analyzing your request and scanning the cinematic universe...",
+  "Consulting movie critics across space and time...",
+  "Matching themes, plot twists, and character tropes...",
+  "Brewing personalized recommendations for you...",
+  "Polishing your custom watchlist..."
+];
 
 const AiResultSkeleton = () => (
   <div className="ai-result-item glass-panel" style={{ opacity: 0.65 }}>
@@ -34,6 +42,18 @@ const AiDiscoveryPage = () => {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [captionIndex, setCaptionIndex] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setCaptionIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCaptionIndex((prev) => (prev + 1) % SEARCH_CAPTIONS.length);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     sessionStorage.setItem('cinescope_ai_prompt', prompt);
@@ -119,8 +139,21 @@ const AiDiscoveryPage = () => {
         {loading && (
           <div className="ai-loading-state">
             <div className="ai-pulse"></div>
-            <p className="ai-loading-text">Analyzing your request and searching the cinematic universe...</p>
-            <div className="ai-results-list" style={{ marginTop: '2.5rem', width: '100%' }}>
+            <div style={{ height: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={captionIndex}
+                  className="ai-loading-text"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {SEARCH_CAPTIONS[captionIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+            <div className="ai-results-list" style={{ marginTop: '2rem', width: '100%' }}>
               {Array.from({ length: 3 }).map((_, i) => (
                 <AiResultSkeleton key={i} />
               ))}

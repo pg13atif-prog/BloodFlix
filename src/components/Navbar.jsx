@@ -345,6 +345,81 @@ const Navbar = () => {
         <div className="navbar__backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
 
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a 
+          href="#" 
+          onClick={(e) => handleNavClick(e, '#')} 
+          className={`mobile-nav-item ${currentPath === '#' || currentPath === '' ? 'active' : ''}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+
+        <a 
+          href="#movies" 
+          onClick={(e) => handleNavClick(e, '#movies')} 
+          className={`mobile-nav-item ${currentPath === '#movies' ? 'active' : ''}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="2" y1="7" x2="7" y2="7"></line>
+            <line x1="2" y1="17" x2="7" y2="17"></line>
+            <line x1="17" y1="17" x2="22" y2="17"></line>
+            <line x1="17" y1="7" x2="22" y2="7"></line>
+          </svg>
+          <span>Movies</span>
+        </a>
+
+        <a 
+          href="#tvshows" 
+          onClick={(e) => handleNavClick(e, '#tvshows')} 
+          className={`mobile-nav-item ${currentPath === '#tvshows' ? 'active' : ''}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+            <polyline points="17 2 12 7 7 2"></polyline>
+          </svg>
+          <span>TV Shows</span>
+        </a>
+
+        <a 
+          href="#ai-discovery" 
+          onClick={(e) => handleNavClick(e, '#ai-discovery')} 
+          className={`mobile-nav-item ${currentPath === '#ai-discovery' ? 'active' : ''}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+          </svg>
+          <span>AI Search</span>
+        </a>
+
+        <a 
+          href="#profile" 
+          onClick={(e) => {
+            if (currentUser) {
+              handleNavClick(e, '#profile');
+            } else {
+              e.preventDefault();
+              setIsAuthModalOpen(true);
+            }
+          }} 
+          className={`mobile-nav-item ${currentPath === '#profile' ? 'active' : ''}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>{currentUser ? 'Profile' : 'Sign In'}</span>
+        </a>
+      </nav>
+
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
