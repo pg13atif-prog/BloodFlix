@@ -1,8 +1,8 @@
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 import MovieCard from './MovieCard';
 import './MovieRow.css';
 
-const MovieRow = ({ title, movies, link }) => {
+const MovieRow = memo(({ title, movies, link }) => {
   const rowRef = useRef(null);
 
   const scroll = (direction) => {
@@ -50,6 +50,6 @@ const MovieRow = ({ title, movies, link }) => {
       </div>
     </section>
   );
-};
+});
 
 export default MovieRow;

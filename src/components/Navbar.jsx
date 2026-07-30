@@ -9,8 +9,10 @@ const Navbar = () => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,7 +20,9 @@ const Navbar = () => {
     };
 
     const handleHashChange = () => {
-      const hash = window.location.hash;
+      const hash = window.location.hash || '#';
+      setCurrentPath(hash);
+      
       if (hash.startsWith('#search?q=')) {
         const query = decodeURIComponent(hash.split('=')[1]);
         setSearchQuery(query);
@@ -48,16 +52,7 @@ const Navbar = () => {
     }
   };
 
-  const handleProfileClick = () => {
-    if (currentUser) {
-      window.location.hash = 'profile';
-    } else {
-      setIsAuthModalOpen(true);
-    }
-    setIsMobileMenuOpen(false);
-  };
-
-  const avatarLetter = currentUser ? currentUser.email.charAt(0).toUpperCase() : '?';
+  const avatarLetter = currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : '?';
 
   return (
     <>
@@ -83,17 +78,17 @@ const Navbar = () => {
 
           <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">
             <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; setIsMobileMenuOpen(false); }} className="navbar__link">
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
                 Home
               </a>
             </li>
             <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; setIsMobileMenuOpen(false); }} className="navbar__link">
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#movies' ? 'navbar__link--active' : ''}`}>
                 Movies
               </a>
             </li>
             <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; setIsMobileMenuOpen(false); }} className="navbar__link">
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
                 TV Shows
               </a>
             </li>
@@ -131,15 +126,49 @@ const Navbar = () => {
             />
           </form>
 
-          <button
-            className="navbar__profile"
-            onClick={handleProfileClick}
-            aria-label="Profile"
-            type="button"
-            title={currentUser ? "Go to Profile" : "Log In"}
-          >
-            {avatarLetter}
-          </button>
+          {currentUser ? (
+            <div className="navbar__profile-container" onMouseLeave={() => setIsDropdownOpen(false)}>
+              <button
+                className="navbar__profile"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                aria-label="Profile Menu"
+                aria-expanded={isDropdownOpen}
+              >
+                {avatarLetter}
+              </button>
+              
+              {isDropdownOpen && (
+                <div className="navbar__dropdown">
+                  <div className="dropdown-header">
+                    <p className="dropdown-email">{currentUser.isAnonymous ? 'Guest User' : currentUser.email}</p>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  {!currentUser.isAnonymous && (
+                    <button className="dropdown-item" onClick={() => { window.location.hash = 'profile'; setIsDropdownOpen(false); }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                      Profile
+                    </button>
+                  )}
+                  <button className="dropdown-item" onClick={() => { window.location.hash = 'profile'; setIsDropdownOpen(false); }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                    Watchlist
+                  </button>
+                  <div className="dropdown-divider"></div>
+                  <button className="dropdown-item logout" onClick={() => { logout(); setIsDropdownOpen(false); }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              className="navbar__login-btn"
+              onClick={() => setIsAuthModalOpen(true)}
+            >
+              Sign In
+            </button>
+          )}
         </div>
       </nav>
       

@@ -8,7 +8,7 @@ const AuthModal = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const { login, signup, loginAsGuest } = useAuth();
 
   if (!isOpen) return null;
 
@@ -84,6 +84,25 @@ const AuthModal = ({ isOpen, onClose }) => {
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button type="button" onClick={() => setIsLogin(!isLogin)} className="switch-btn">
             {isLogin ? 'Sign Up' : 'Log In'}
+          </button>
+        </div>
+
+        <div className="auth-guest-section">
+          <div className="auth-divider"><span>OR</span></div>
+          <button 
+            type="button" 
+            className="auth-guest-btn" 
+            onClick={async () => {
+              try {
+                await loginAsGuest();
+                onClose();
+              } catch (err) {
+                console.error("Guest login failed", err);
+                setError("Failed to continue as guest.");
+              }
+            }}
+          >
+            Continue as Guest
           </button>
         </div>
       </div>

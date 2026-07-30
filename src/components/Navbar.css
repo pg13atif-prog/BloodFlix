@@ -129,6 +129,12 @@
   height: 20px;
 }
 
+.navbar__profile-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .navbar__profile {
   width: 34px;
   height: 34px;
@@ -149,6 +155,100 @@
 .navbar__profile:hover {
   border-color: var(--color-accent);
   transform: scale(1.05);
+  box-shadow: var(--shadow-glow);
+}
+
+.navbar__dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 220px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUpFade 0.2s ease forwards;
+  z-index: 1000;
+}
+
+.dropdown-header {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dropdown-email {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 1rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  text-align: left;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.dropdown-item svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dropdown-item:hover svg {
+  opacity: 1;
+}
+
+.dropdown-item.logout {
+  color: #ef4444;
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.dropdown-item.logout svg {
+  color: #ef4444;
+}
+
+.navbar__login-btn {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.navbar__login-btn:hover {
+  background: var(--color-accent-hover);
   box-shadow: var(--shadow-glow);
 }
 

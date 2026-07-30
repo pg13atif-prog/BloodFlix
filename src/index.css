@@ -35,8 +35,52 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-glow: 0 0 20px var(--color-accent-glow);
-  --navbar-height: 68px;
+  --navbar-height: 60px;
   --content-max-width: 1400px;
+  
+  /* Harmonious Modern Genre Palette */
+  --color-genre-action: #ef4444;
+  --color-genre-adventure: #f97316;
+  --color-genre-animation: #f59e0b;
+  --color-genre-comedy: #eab308;
+  --color-genre-crime: #84cc16;
+  --color-genre-documentary: #22c55e;
+  --color-genre-drama: #10b981;
+  --color-genre-family: #14b8a6;
+  --color-genre-fantasy: #06b6d4;
+  --color-genre-horror: #0ea5e9;
+  --color-genre-music: #3b82f6;
+  --color-genre-mystery: #6366f1;
+  --color-genre-romance: #8b5cf6;
+  --color-genre-sci-fi: #d946ef;
+  --color-genre-thriller: #ec4899;
+  --color-genre-war: #f43f5e;
+  --color-genre-western: #a8a29e;
+  --color-genre-tv: #cbd5e1;
+  --color-genre-default: #94a3b8;
+}
+
+/* ---------- Global Animations ---------- */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 10px rgba(229, 9, 20, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(229, 9, 20, 0.6); }
+  100% { box-shadow: 0 0 10px rgba(229, 9, 20, 0.2); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 html {

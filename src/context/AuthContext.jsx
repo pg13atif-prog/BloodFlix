@@ -3,6 +3,7 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  signInAnonymously,
   signOut 
 } from 'firebase/auth';
 import { auth } from '../services/firebase';
@@ -27,6 +28,11 @@ export const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
+  // Guest Login
+  const loginAsGuest = () => {
+    return signInAnonymously(auth);
+  };
+
   // Log out
   const logout = () => {
     return signOut(auth);
@@ -45,6 +51,7 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     signup,
     login,
+    loginAsGuest,
     logout,
   };
 

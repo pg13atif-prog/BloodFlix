@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import './MovieCard.css';
 
-const MovieCard = ({ id, title, year, rating, poster, category, mediaType, onClick }) => {
+const MovieCard = memo(({ id, title, year, rating, poster, category, mediaType, onClick }) => {
   const handleClick = () => {
     if (onClick) {
       onClick(id);
@@ -39,7 +40,7 @@ const MovieCard = ({ id, title, year, rating, poster, category, mediaType, onCli
       </div>
     </article>
   );
-};
+});
 
 export default MovieCard;
 
