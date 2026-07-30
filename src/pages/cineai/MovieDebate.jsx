@@ -164,15 +164,6 @@ const MovieDebate = () => {
                 </div>
               ))}
             </div>
-            
-            <div className="ai-actions" style={{ marginTop: '2rem', justifyContent: 'center' }}>
-                <button className="btn-secondary" onClick={() => {
-                  const temp = movieA;
-                  setMovieA(movieB);
-                  setMovieB(temp);
-                  setResult(null);
-                }}>Reverse Debate</button>
-            </div>
           </div>
         )}
       </div>
