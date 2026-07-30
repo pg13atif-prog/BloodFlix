@@ -102,8 +102,8 @@
 
 /* Header Floating Back Nav */
 .detail-header-nav {
-  position: fixed;
-  top: 1.5rem;
+  position: absolute;
+  top: calc(var(--navbar-height) + 1.5rem);
   left: 2rem;
   z-index: 50;
 }
@@ -347,9 +347,10 @@
 }
 
 .genre-badge {
-  background: rgba(229, 9, 20, 0.12);
-  border-color: rgba(229, 9, 20, 0.3);
-  color: #ff4d4d;
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* Actions Bar */

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import './Navbar.css';
@@ -12,6 +12,7 @@ const Navbar = () => {
   const [currentPath, setCurrentPath] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
+  const dropdownRef = useRef(null);
   const { currentUser, logout } = useAuth();
 
   useEffect(() => {
@@ -34,14 +35,22 @@ const Navbar = () => {
       setIsMobileMenuOpen(false); // Close menu on navigation
     };
 
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('hashchange', handleHashChange);
+    document.addEventListener('mousedown', handleClickOutside);
     
     handleHashChange();
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('hashchange', handleHashChange);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -127,7 +136,7 @@ const Navbar = () => {
           </form>
 
           {currentUser ? (
-            <div className="navbar__profile-container" onMouseLeave={() => setIsDropdownOpen(false)}>
+            <div className="navbar__profile-container" ref={dropdownRef}>
               <button
                 className="navbar__profile"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
