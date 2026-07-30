@@ -9,13 +9,9 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api/tmdb': {
-          target: 'https://cine-scope-kohl.vercel.app/api/tmdb',
+          target: 'https://cine-scope-kohl.vercel.app',
           changeOrigin: true,
-          rewrite: (path) => {
-            const apiKey = env.TMDB_API_KEY || env.VITE_TMDB_API_KEY;
-            const separator = path.includes('?') ? '&' : '?';
-            return path.replace(/^\/api\/tmdb/, '') + (apiKey ? `${separator}api_key=${apiKey}` : '');
-          }
+          secure: false,
         }
       }
     },
