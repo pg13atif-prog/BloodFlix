@@ -1,17 +1,41 @@
-import { GoogleGenAI } from '@google/genai';
+const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-
-let ai;
-if (apiKey) {
-  ai = new GoogleGenAI({ apiKey });
-}
-
-export const getAiRecommendations = async (prompt) => {
-  if (!ai) {
-    throw new Error('Gemini API key is missing or invalid.');
+const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) => {
+  if (!openRouterApiKey) {
+    throw new Error('OpenRouter API key is missing.');
   }
 
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${openRouterApiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": window.location.origin,
+      "X-Title": "CineScope"
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemInstruction },
+        { role: "user", content: userPrompt }
+      ],
+      temperature,
+      response_format: { type: "json_object" }
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`OpenRouter API error: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices[0].message.content;
+  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(cleanText);
+};
+
+export const getAiRecommendations = async (prompt) => {
   const systemInstruction = `
     You are an expert movie and TV show recommendation assistant for CineScope, a premium discovery platform.
     The user will give you a prompt describing what they want to watch.
@@ -24,21 +48,7 @@ export const getAiRecommendations = async (prompt) => {
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash',
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-        responseMimeType: 'application/json'
-      }
-    });
-
-    const text = response.text;
-    // Strip possible markdown formatting if the model disobeys
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    return JSON.parse(cleanText);
+    return await callOpenRouter(systemInstruction, prompt, 0.7);
   } catch (err) {
     console.error('Error fetching AI recommendations:', err);
     throw err;
@@ -46,8 +56,6 @@ export const getAiRecommendations = async (prompt) => {
 };
 
 export const getAiPlannerRecommendation = async (answers) => {
-  if (!ai) throw new Error('Gemini API key is missing.');
-
   const systemInstruction = `
     You are CineAI, an elite movie sommelier. 
     The user has answered questions about their mood, genre, timeline, and company.
@@ -61,12 +69,7 @@ export const getAiPlannerRecommendation = async (answers) => {
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash',
-      contents: JSON.stringify(answers),
-      config: { systemInstruction, temperature: 0.7, responseMimeType: 'application/json' }
-    });
-    return JSON.parse(response.text.replace(/```json/g, '').replace(/```/g, '').trim());
+    return await callOpenRouter(systemInstruction, JSON.stringify(answers), 0.7);
   } catch (err) {
     console.error('Error fetching Planner recommendation:', err);
     throw err;
@@ -74,8 +77,6 @@ export const getAiPlannerRecommendation = async (answers) => {
 };
 
 export const getAiPickForMe = async () => {
-  if (!ai) throw new Error('Gemini API key is missing.');
-
   const systemInstruction = `
     You are CineAI. Your goal is to pick exactly ONE universally acclaimed, highly entertaining movie.
     Return EXACTLY ONE movie recommendation in JSON format:
@@ -88,12 +89,7 @@ export const getAiPickForMe = async () => {
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash',
-      contents: "Surprise me with a guaranteed crowd-pleaser.",
-      config: { systemInstruction, temperature: 0.9, responseMimeType: 'application/json' }
-    });
-    return JSON.parse(response.text.replace(/```json/g, '').replace(/```/g, '').trim());
+    return await callOpenRouter(systemInstruction, "Surprise me with a guaranteed crowd-pleaser.", 0.9);
   } catch (err) {
     console.error('Error fetching Pick For Me:', err);
     throw err;
@@ -101,8 +97,6 @@ export const getAiPickForMe = async () => {
 };
 
 export const getAiMovieDebate = async (movieA, movieB) => {
-  if (!ai) throw new Error('Gemini API key is missing.');
-
   const systemInstruction = `
     You are a professional film critic judging a bout between two movies.
     Compare them across exactly these 9 categories: Story, Characters, Acting, Direction, VFX, Cinematography, Soundtrack, Ending, Rewatchability.
@@ -119,12 +113,7 @@ export const getAiMovieDebate = async (movieA, movieB) => {
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash',
-      contents: `Compare "${movieA}" vs "${movieB}".`,
-      config: { systemInstruction, temperature: 0.7, responseMimeType: 'application/json' }
-    });
-    return JSON.parse(response.text.replace(/```json/g, '').replace(/```/g, '').trim());
+    return await callOpenRouter(systemInstruction, `Compare "${movieA}" vs "${movieB}".`, 0.7);
   } catch (err) {
     console.error('Error fetching Debate result:', err);
     throw err;
