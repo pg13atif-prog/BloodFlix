@@ -179,6 +179,29 @@
   border-color: rgba(255, 255, 255, 0.4);
 }
 
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-accent, #e50914), #ff6b6b);
+  border: none;
+  color: #fff;
+  padding: 0.8rem 2.5rem;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.3);
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.5);
+  background: linear-gradient(135deg, #ff1f2d, #ff8585);
+}
+
 /* Auto-suggestions Dropdown */
 .input-suggest-wrapper {
   position: relative;
