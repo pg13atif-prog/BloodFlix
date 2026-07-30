@@ -1,152 +1,364 @@
-.profile-page {
-  padding: 120px 4% 4rem;
+/* ── Shared legacy classes (kept to avoid breaking anything) ───────── */
+.dashboard-page {
+  padding: 100px 4% 4rem;
   min-height: 100vh;
   background-color: #0b0d14;
   color: #e2e8f0;
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
 }
+.dashboard-grid { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; }
+.glass-panel { background: rgba(15,23,42,.4); border: 1px solid rgba(255,255,255,.05); border-radius: 16px; padding: 1.5rem; }
 
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 3rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+/* ── New Profile V2 ──────────────────────────────────────────────────── */
+.profile-v2 {
+  min-height: 100vh;
+  background: #0b0d14;
+  color: #e2e8f0;
 }
 
-.profile-avatar-large {
+/* Hero banner */
+.profile-hero {
+  position: relative;
+  height: 240px;
+  background: linear-gradient(135deg, #1a0a0a 0%, #1e1e3a 50%, #0b0d14 100%);
+  overflow: hidden;
+}
+
+.profile-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(229,9,20,0.25) 0%, transparent 60%),
+              radial-gradient(circle at 70% 30%, rgba(99,102,241,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.profile-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 60%, #0b0d14 100%);
+}
+
+.profile-hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+.profile-avatar-xl {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e50914, #ff4d4d);
-  color: white;
+  background: linear-gradient(135deg, #e50914, #ff6b35);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 3rem;
+  font-weight: 800;
+  border: 3px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+  box-shadow: 0 8px 32px rgba(229,9,20,0.4);
+}
+
+.profile-hero-name {
+  font-size: 2rem;
   font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: #fff;
+}
+
+.profile-hero-email {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.5);
+  margin: 0;
+}
+
+.profile-logout-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.profile-logout-btn:hover {
+  background: rgba(229,9,20,0.2);
+  border-color: rgba(229,9,20,0.4);
+  color: #fff;
+}
+
+/* ── Body ───────────────────────────────────────────────────────────── */
+.profile-v2-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem 4rem;
+}
+
+/* ── Watch Time Card ─────────────────────────────────────────────────── */
+.watchtime-card {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  background: linear-gradient(135deg, rgba(229,9,20,0.12) 0%, rgba(99,102,241,0.08) 100%);
+  border: 1px solid rgba(229,9,20,0.2);
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  box-shadow: 0 8px 40px rgba(229,9,20,0.08);
+}
+
+.watchtime-ring-wrap {
   flex-shrink: 0;
 }
 
-.profile-info {
+.watchtime-stats {
+  flex: 1;
+}
+
+.watchtime-title {
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+  color: #fff;
+}
+
+.watchtime-subtitle {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.9rem;
+  margin: 0 0 2rem;
+}
+
+.watchtime-breakdown {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.wt-stat {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.wt-val {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.wt-label {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wt-divider {
+  width: 1px;
+  height: 48px;
+  background: rgba(255,255,255,0.12);
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .watchtime-card { flex-direction: column; text-align: center; }
+  .watchtime-ring-wrap { margin: 0 auto; }
+}
+
+/* ── Tab bar ─────────────────────────────────────────────────────────── */
+.profile-tabs-bar {
+  display: flex;
   gap: 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 2rem;
 }
 
-.profile-name {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0;
-}
-
-.profile-email {
-  color: #94a3b8;
-  font-size: 1.1rem;
-}
-
-.profile-badge {
-  display: inline-block;
-  background: rgba(229, 9, 20, 0.15);
-  color: #ff4d4d;
-  border: 1px solid rgba(229, 9, 20, 0.3);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+.profile-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 1rem;
   font-weight: 600;
-  margin-top: 0.5rem;
-  width: fit-content;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -1px;
 }
 
-.profile-content {
+.profile-tab-btn:hover {
+  color: rgba(255,255,255,0.85);
+}
+
+.profile-tab-btn.active {
+  color: #fff;
+  border-bottom-color: #e50914;
+}
+
+.profile-tab-count {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.profile-tab-btn.active .profile-tab-count {
+  background: rgba(229,9,20,0.2);
+  color: #e50914;
+}
+
+/* ── List grid ───────────────────────────────────────────────────────── */
+.profile-list-grid {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
+  gap: 0.75rem;
 }
 
-.profile-section h2 {
-  font-size: 1.4rem;
-  color: #ffffff;
-  margin-bottom: 1.5rem;
-}
-
-.empty-state {
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px dashed rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 3rem;
-  text-align: center;
+/* ── List Item ───────────────────────────────────────────────────────── */
+.profile-list-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 1rem;
-}
-
-.browse-link {
-  color: white;
-  background: #e50914;
-  padding: 0.6rem 1.5rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
-
-.browse-link:hover {
-  background: #ff1e27;
-}
-
-.settings-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.settings-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.settings-list li:last-child {
-  border-bottom: none;
-}
-
-.settings-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: white;
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
+  padding: 0.75rem;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-.settings-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+.profile-list-item:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
 }
 
-.logout-btn {
-  background: transparent;
-  color: #ef4444;
-  border: 1px solid #ef4444;
-  padding: 0.8rem 2rem;
+.profile-list-poster {
+  position: relative;
+  width: 54px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-list-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-list-poster-fallback {
+  width: 100%;
+  height: 100%;
+  background: rgba(229,9,20,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e50914;
+}
+
+.profile-list-remove {
+  position: absolute;
+  inset: 0;
+  background: rgba(229,9,20,0.85);
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  border-radius: 8px;
+}
+
+.profile-list-remove:hover { background: rgba(229,9,20,1); }
+
+.profile-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-list-info h4 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-list-info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.4);
+}
+
+.profile-list-rating {
+  flex-shrink: 0;
+  color: #fbbf24;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.profile-empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.profile-empty-state h3 {
+  font-size: 1.5rem;
+  margin: 0 0 0.5rem;
+  color: #fff;
+}
+
+.profile-empty-state p {
+  color: rgba(255,255,255,0.45);
+  margin: 0 0 2rem;
+}
+
+/* ── btn-primary (local) ─────────────────────────────────────────────── */
+.profile-v2 .btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.5rem;
+  background: #e50914;
+  color: #fff;
+  border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  align-self: flex-start;
-  transition: all 0.2s ease;
+  transition: background 0.2s;
 }
 
-.logout-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
+.profile-v2 .btn-primary:hover {
+  background: #c00812;
 }

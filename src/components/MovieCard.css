@@ -113,3 +113,252 @@
     height: 240px;
   }
 }
+
+/* Hover Card Popout Portal */
+.movie-hover-card {
+  position: absolute;
+  z-index: 10000;
+  background: #141414;
+  border-radius: 12px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9), 0 5px 15px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.33, 1, 0.68, 1);
+  animation: popout 0.3s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes popout {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.05); }
+}
+
+.hover-image-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  position: relative;
+  background: #222;
+  flex-shrink: 0;
+}
+
+.hover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hover-image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px 16px 12px;
+  background: linear-gradient(to top, #141414 0%, rgba(20, 20, 20, 0.7) 50%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+}
+
+.hover-title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  line-height: 1.2;
+}
+
+.hover-content {
+  padding: 16px;
+  background: #141414;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hover-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.hover-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(40, 40, 40, 0.6);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-size: 1.2rem;
+}
+
+.hover-btn:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.hover-btn.saved {
+  color: #fff;
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hover-btn.liked {
+  color: #e91e63;
+  border-color: rgba(233, 30, 99, 0.5);
+}
+
+.hover-btn.watched {
+  color: #4caf50;
+  border-color: rgba(76, 175, 80, 0.5);
+}
+.hover-btn.saved:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hover-play-btn {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+.hover-play-btn:hover {
+  background: #e5e5e5;
+  border-color: #e5e5e5;
+  transform: scale(1.1);
+}
+
+.hover-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.hover-meta-dot {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.hover-rating {
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+}
+
+.hover-year {
+  color: #fff;
+}
+
+.hover-type {
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #ddd;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hover-genres {
+  font-size: 0.9rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hover-genre-dot {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.hover-synopsis-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.hover-synopsis {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #a3a3a3;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* Clamp lower initially to show button cleanly */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hover-read-more {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 0 0;
+  margin-top: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.hover-read-more:hover {
+  opacity: 1;
+}
+
+/* Expanded State */
+.movie-hover-card.expanded {
+  aspect-ratio: auto;
+  max-height: 90vh;
+}
+
+.movie-hover-card.expanded .hover-content {
+  overflow-y: auto;
+}
+
+.movie-hover-card.expanded .hover-synopsis {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+/* Providers Corner in Image */
+.hover-image-overlay {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.hover-providers-corner {
+  display: flex;
+  gap: 4px;
+  background: rgba(0,0,0,0.5);
+  padding: 4px 6px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.hover-provider-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import { searchMedia } from '../services/tmdb';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -12,8 +13,45 @@ const Navbar = () => {
   const [currentPath, setCurrentPath] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
+  // Autocomplete state
+  const [suggestions, setSuggestions] = useState([]);
+  const [recentSearches, setRecentSearches] = useState(() => {
+    const saved = localStorage.getItem('cinescope_recent_searches');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+
   const dropdownRef = useRef(null);
+  const searchContainerRef = useRef(null);
   const { currentUser, logout } = useAuth();
+
+  useEffect(() => {
+    localStorage.setItem('cinescope_recent_searches', JSON.stringify(recentSearches));
+  }, [recentSearches]);
+
+  useEffect(() => {
+    if (searchQuery.trim().length > 1 && isSearchActive) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        searchMedia(searchQuery.trim(), controller.signal).then(data => {
+          setSuggestions(data.slice(0, 5));
+          setShowSuggestions(true);
+        }).catch(err => console.error(err));
+      }, 300);
+      return () => {
+        clearTimeout(timeoutId);
+        controller.abort();
+      };
+    } else {
+      setSuggestions([]);
+      if (searchQuery.trim().length === 0) {
+        setShowSuggestions(true); // Show recent searches
+      } else {
+        setShowSuggestions(false);
+      }
+    }
+  }, [searchQuery, isSearchActive]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,6 +66,7 @@ const Navbar = () => {
         const query = decodeURIComponent(hash.split('=')[1]);
         setSearchQuery(query);
         setIsSearchActive(true);
+        setShowSuggestions(false);
       } else if (!hash.startsWith('#search')) {
         setSearchQuery('');
         setIsSearchActive(false);
@@ -38,6 +77,9 @@ const Navbar = () => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
+      }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setShowSuggestions(false);
       }
     };
 
@@ -54,14 +96,47 @@ const Navbar = () => {
     };
   }, []);
 
+  const executeSearch = (query) => {
+    if (!query.trim()) return;
+    const cleanQuery = query.trim();
+    if (!recentSearches.includes(cleanQuery)) {
+      setRecentSearches(prev => [cleanQuery, ...prev].slice(0, 5));
+    }
+    setShowSuggestions(false);
+    window.location.hash = `search?q=${encodeURIComponent(cleanQuery)}`;
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.hash = `search?q=${encodeURIComponent(searchQuery.trim())}`;
+    if (focusedIndex >= 0 && suggestions.length > 0) {
+      const item = suggestions[focusedIndex];
+      window.location.hash = `${item.mediaType || 'movie'}/${item.id}`;
+      setShowSuggestions(false);
+    } else {
+      executeSearch(searchQuery);
     }
   };
 
-  const avatarLetter = currentUser && currentUser.email ? currentUser.email.charAt(0).toUpperCase() : '?';
+  const handleSearchKeyDown = (e) => {
+    if (!showSuggestions) return;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setFocusedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setFocusedIndex(prev => (prev > -1 ? prev - 1 : prev));
+    }
+  };
+
+  const toggleSearch = () => {
+    setIsSearchActive(!isSearchActive);
+    setShowSuggestions(!isSearchActive);
+    if (isSearchActive) setSearchQuery('');
+  };
+
+  const email = currentUser?.email || '';
+  const avatarLetter = email ? email.charAt(0).toUpperCase() : '?';
 
   return (
     <>
@@ -103,40 +178,101 @@ const Navbar = () => {
                 TV Shows
               </a>
             </li>
+            <li>
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'ai-discovery'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#ai-discovery' ? 'navbar__link--active' : ''}`}>
+                AI Discovery
+              </a>
+            </li>
+            <li>
+              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'recommended'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#recommended' ? 'navbar__link--active' : ''}`}>
+                Recommended
+              </a>
+            </li>
           </ul>
         </div>
 
         <div className="navbar__actions" id="navbar-actions">
-          <form className={`navbar__search-form ${isSearchActive ? 'active' : ''}`} onSubmit={handleSearchSubmit}>
-            <button
-              type="button"
-              className="navbar__action-btn"
-              onClick={() => {
-                if (isSearchActive && searchQuery) {
-                  handleSearchSubmit(new Event('submit'));
-                } else {
-                  setIsSearchActive(!isSearchActive);
-                }
-              }}
-              aria-label="Search"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
-            <input
-              type="text"
-              className="navbar__search-input"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onBlur={() => {
-                if (!searchQuery) setIsSearchActive(false);
-              }}
-            />
-          </form>
+          <div className="navbar__search-wrapper" ref={searchContainerRef}>
+            <form className={`navbar__search-form ${isSearchActive ? 'active' : ''}`} onSubmit={handleSearchSubmit}>
+              <button
+                type="button"
+                className="navbar__action-btn"
+                onClick={() => {
+                  if (isSearchActive && searchQuery) {
+                    handleSearchSubmit(new Event('submit'));
+                  } else {
+                    toggleSearch();
+                  }
+                }}
+                aria-label="Search"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </button>
+              <input
+                type="text"
+                className="navbar__search-input"
+                placeholder="Titles, people, genres..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(true);
+                  setFocusedIndex(-1);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onKeyDown={handleSearchKeyDown}
+              />
+            </form>
 
+            {/* Autocomplete Dropdown */}
+            {isSearchActive && showSuggestions && (
+              <div className="autocomplete-dropdown glass-panel">
+                {searchQuery.trim().length === 0 && recentSearches.length > 0 && (
+                  <div className="autocomplete-section">
+                    <h4>Recent Searches</h4>
+                    {recentSearches.map((term, i) => (
+                      <div key={i} className="autocomplete-item" onClick={() => executeSearch(term)}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>{term}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {searchQuery.trim().length > 1 && suggestions.length > 0 && (
+                  <div className="autocomplete-section">
+                    {suggestions.map((item, i) => (
+                      <div 
+                        key={item.id} 
+                        className={`autocomplete-item ${focusedIndex === i ? 'focused' : ''}`}
+                        onClick={() => {
+                          window.location.hash = `${item.mediaType || 'movie'}/${item.id}`;
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        {item.poster ? (
+                          <img src={item.poster} alt="" />
+                        ) : (
+                          <div className="autocomplete-no-img"></div>
+                        )}
+                        <div className="autocomplete-info">
+                          <span>{item.title}</span>
+                          <small>{item.year} • {item.category}</small>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {searchQuery.trim().length > 1 && suggestions.length === 0 && (
+                  <div className="autocomplete-section">
+                    <div className="autocomplete-item no-results">No results found for "{searchQuery}"</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           {currentUser ? (
             <div className="navbar__profile-container" ref={dropdownRef}>
               <button
@@ -155,17 +291,8 @@ const Navbar = () => {
                   </div>
                   <div className="dropdown-divider"></div>
                   <button className="dropdown-item" onClick={() => { window.location.hash = 'profile'; setIsDropdownOpen(false); }}>
-                    {currentUser.isAnonymous ? (
-                      <>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                        Watchlist
-                      </>
-                    ) : (
-                      <>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        Profile & Watchlist
-                      </>
-                    )}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    View Profile
                   </button>
                   <div className="dropdown-divider"></div>
                   <button className="dropdown-item logout" onClick={() => { logout(); setIsDropdownOpen(false); }}>

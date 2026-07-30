@@ -175,6 +175,7 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
     releaseDate: data.release_date ?? data.first_air_date ?? '',
     year: (data.release_date || data.first_air_date)?.slice(0, 4) ?? '—',
     runtime: formatRuntime(data.runtime || (data.episode_run_time ? data.episode_run_time[0] : 0)),
+    runtimeMinutes: data.runtime || (data.episode_run_time ? data.episode_run_time[0] : 0) || 0,
     status: data.status ?? 'Released',
     budget: formatCurrency(data.budget),
     revenue: formatCurrency(data.revenue),
@@ -183,6 +184,9 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
     productionCompanies: data.production_companies?.map((c) => c.name) ?? [],
     homepage: data.homepage || null,
     mediaType: mediaType,
+    seasons: data.seasons || [],
+    numberOfSeasons: data.number_of_seasons || 0,
+    numberOfEpisodes: data.number_of_episodes || 0,
   };
 };
 
@@ -227,26 +231,84 @@ export const getMovieVideos = async (movieId, mediaType = 'movie', signal) => {
   return trailers.length > 0 ? trailers : results.filter((v) => v.site === 'YouTube');
 };
 
-export const discoverMovies = async ({ genreId, year }, signal) => {
+export const discoverMedia = async ({
+  mediaType = 'movie',
+  genreIds = [],
+  years = [],
+  minRating = 0,
+  sortBy = 'popularity.desc',
+  page = 1
+} = {}, signal) => {
   const apiKey = getApiKey();
+  const endpoint = mediaType === 'tv' ? 'tv' : 'movie';
   
-  let url = `${API_BASE_URL}/discover/movie?language=en-US&page=1&api_key=${apiKey}&include_adult=false`;
+  let url = `${API_BASE_URL}/discover/${endpoint}?language=en-US&page=${page}&api_key=${apiKey}&include_adult=false&sort_by=${sortBy}`;
   
-  if (genreId) {
-    url += `&with_genres=${genreId}`;
+  // Require minimum vote count to prevent obscure 1-vote items when sorting by rating
+  if (sortBy.includes('vote_average') || minRating > 0) {
+    url += `&vote_count.gte=50`;
   }
-  if (year) {
-    url += `&primary_release_year=${year}`;
+
+  // Multi-genre filtering
+  if (genreIds && genreIds.length > 0) {
+    const formattedGenres = Array.isArray(genreIds) ? genreIds.join(',') : genreIds;
+    url += `&with_genres=${formattedGenres}`;
+  }
+  
+  // Multi-year or Decade filtering
+  if (years && years.length > 0) {
+    if (Array.isArray(years)) {
+      if (years.length === 1) {
+        url += mediaType === 'tv' ? `&first_air_date_year=${years[0]}` : `&primary_release_year=${years[0]}`;
+      } else {
+        const numericYears = years.map(Number).filter(n => !isNaN(n)).sort((a, b) => a - b);
+        if (numericYears.length > 0) {
+          const minYear = numericYears[0];
+          const maxYear = numericYears[numericYears.length - 1];
+          if (mediaType === 'tv') {
+            url += `&first_air_date.gte=${minYear}-01-01&first_air_date.lte=${maxYear}-12-31`;
+          } else {
+            url += `&primary_release_date.gte=${minYear}-01-01&primary_release_date.lte=${maxYear}-12-31`;
+          }
+        }
+      }
+    } else if (typeof years === 'string' && years.includes('-')) {
+      const [start, end] = years.split('-');
+      if (mediaType === 'tv') {
+        url += `&first_air_date.gte=${start}-01-01&first_air_date.lte=${end}-12-31`;
+      } else {
+        url += `&primary_release_date.gte=${start}-01-01&primary_release_date.lte=${end}-12-31`;
+      }
+    } else if (typeof years === 'string' && years) {
+      url += mediaType === 'tv' ? `&first_air_date_year=${years}` : `&primary_release_year=${years}`;
+    }
+  }
+
+  if (minRating > 0) {
+    url += `&vote_average.gte=${minRating}`;
   }
 
   const response = await fetchWithTimeout(url, { signal });
 
   if (!response.ok) {
-    throw new Error('Unable to discover movies.');
+    throw new Error('Unable to discover content.');
   }
 
-  const { results } = await response.json();
-  return results.filter((m) => m.poster_path).map(mapMovie);
+  const data = await response.json();
+  const results = data.results || [];
+  return {
+    results: results.filter((m) => m.poster_path).map((item) => mapMovie({ ...item, media_type: mediaType })),
+    totalPages: data.total_pages || 1,
+    totalResults: data.total_results || 0,
+    page: data.page || page
+  };
+};
+
+export const discoverMovies = async ({ genreId, year } = {}, signal) => {
+  const genreIds = genreId ? [genreId] : [];
+  const years = year ? [year] : [];
+  const data = await discoverMedia({ mediaType: 'movie', genreIds, years }, signal);
+  return data.results;
 };
 
 export const getSimilarMovies = async (movieId, mediaType = 'movie', signal) => {
@@ -265,3 +327,72 @@ export const getSimilarMovies = async (movieId, mediaType = 'movie', signal) => 
   return (results || []).filter((m) => m.poster_path).slice(0, 10).map((m) => mapMovie({ ...m, media_type: mediaType }));
 };
 
+export const getWatchProviders = async (movieId, mediaType = 'movie', signal) => {
+  const apiKey = getApiKey();
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/${mediaType}/${movieId}/watch/providers?api_key=${apiKey}`,
+    { signal }
+  );
+  if (!response.ok) return null;
+  const data = await response.json();
+  return data.results || null;
+};
+
+export const getRecommendations = async (movieId, mediaType = 'movie', signal) => {
+  const apiKey = getApiKey();
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/${mediaType}/${movieId}/recommendations?language=en-US&page=1&api_key=${apiKey}`,
+    { signal }
+  );
+  if (!response.ok) return [];
+  const { results } = await response.json();
+  return (results || []).filter((m) => m.poster_path).slice(0, 10).map((m) => mapMovie({ ...m, media_type: mediaType }));
+};
+
+export const getReviews = async (movieId, mediaType = 'movie', signal) => {
+  const apiKey = getApiKey();
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/${mediaType}/${movieId}/reviews?language=en-US&page=1&api_key=${apiKey}`,
+    { signal }
+  );
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.results || [];
+};
+
+export const getFullCast = async (movieId, mediaType = 'movie', signal) => {
+  const apiKey = getApiKey();
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/${mediaType}/${movieId}/credits?language=en-US&api_key=${apiKey}`,
+    { signal }
+  );
+  if (!response.ok) return [];
+  const data = await response.json();
+  // Return more cast members (e.g. up to 30) instead of just top 12
+  return (data.cast || []).slice(0, 30).map((member) => ({
+    id: member.id,
+    name: member.name,
+    character: member.character,
+    profilePath: member.profile_path ? `${PROFILE_BASE_URL}${member.profile_path}` : null,
+  }));
+};
+
+export const getTvSeason = async (seriesId, seasonNumber, signal) => {
+  const apiKey = getApiKey();
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/tv/${seriesId}/season/${seasonNumber}?language=en-US&api_key=${apiKey}`,
+    { signal }
+  );
+  if (!response.ok) return null;
+  return await response.json();
+};
+
+export const getTvEpisode = async (seriesId, seasonNumber, episodeNumber, signal) => {
+  const apiKey = getApiKey();
+  const response = await fetchWithTimeout(
+    `${API_BASE_URL}/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?language=en-US&api_key=${apiKey}`,
+    { signal }
+  );
+  if (!response.ok) return null;
+  return await response.json();
+};

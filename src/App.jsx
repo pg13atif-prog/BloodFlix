@@ -10,6 +10,10 @@ import ProfilePage from "./pages/ProfilePage";
 import { getPopularMovies, getPopularTvShows, getTrending, getSimilarMovies } from "./services/tmdb";
 import { useAuth } from "./context/AuthContext";
 import { getWatchlist } from "./services/firestore";
+import { MovieRowSkeleton } from "./components/SkeletonLoader";
+import AiDiscoveryPage from "./pages/AiDiscoveryPage";
+import TvEpisodePage from "./pages/TvEpisodePage";
+import RecommendedPage from "./pages/RecommendedPage";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -30,6 +34,13 @@ function App() {
     const parseHash = () => {
       const hash = window.location.hash;
       
+      const episodeMatch = hash.match(/^#episode\/tv\/(\d+)\/season\/(\d+)\/episode\/(\d+)/);
+      if (episodeMatch) {
+        setCurrentRoute('episode-detail');
+        setCurrentParams({ seriesId: episodeMatch[1], seasonNumber: episodeMatch[2], episodeNumber: episodeMatch[3] });
+        return;
+      }
+
       const detailMatch = hash.match(/^#(movie|tv)\/(\d+)/);
       if (detailMatch) {
         setCurrentRoute('movie-detail');
@@ -63,6 +74,14 @@ function App() {
           break;
         case '#trending-tv':
           setCurrentRoute('trending-tv');
+          setCurrentParams(null);
+          break;
+        case '#recommended':
+          setCurrentRoute('recommended');
+          setCurrentParams(null);
+          break;
+        case '#ai-discovery':
+          setCurrentRoute('ai-discovery');
           setCurrentParams(null);
           break;
         default:
@@ -137,8 +156,22 @@ function App() {
 
   const renderContent = () => {
     switch (currentRoute) {
+      case 'episode-detail':
+        return <TvEpisodePage
+          seriesId={currentParams.seriesId}
+          seasonNumber={currentParams.seasonNumber}
+          episodeNumber={currentParams.episodeNumber}
+          onBack={() => window.history.length > 2 ? window.history.back() : window.location.hash = ''}
+        />;
+      
       case 'movie-detail':
-        return <MovieDetail movieId={currentParams.id} mediaType={currentParams.type} onBack={() => { window.location.hash = ""; }} />;
+        return <MovieDetail movieId={currentParams.id} mediaType={currentParams.type} onBack={() => { 
+          if (window.history.length > 2) {
+            window.history.back();
+          } else {
+            window.location.hash = ""; 
+          }
+        }} />;
       
       case 'movies':
         return <AdvancedBrowsePage />;
@@ -158,13 +191,25 @@ function App() {
       case 'profile':
         return <ProfilePage />;
         
+      case 'ai-discovery':
+        return <AiDiscoveryPage />;
+
+      case 'recommended':
+        return <RecommendedPage />;
+        
       case 'home':
       default:
         return (
           <>
-            <Hero movie={movies[0]} />
+            <Hero movies={movies.slice(0, 5)} />
             <main>
-              {status === "loading" && <p className="movie-status">Loading popular movies…</p>}
+              {status === "loading" && (
+                <>
+                  <MovieRowSkeleton />
+                  <MovieRowSkeleton />
+                  <MovieRowSkeleton />
+                </>
+              )}
               {status === "error" && (
                 <p className="movie-status">We couldn’t load content right now.</p>
               )}
