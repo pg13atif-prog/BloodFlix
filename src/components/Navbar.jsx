@@ -154,15 +154,18 @@ const Navbar = () => {
                     <p className="dropdown-email">{currentUser.isAnonymous ? 'Guest User' : currentUser.email}</p>
                   </div>
                   <div className="dropdown-divider"></div>
-                  {!currentUser.isAnonymous && (
-                    <button className="dropdown-item" onClick={() => { window.location.hash = 'profile'; setIsDropdownOpen(false); }}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                      Profile
-                    </button>
-                  )}
                   <button className="dropdown-item" onClick={() => { window.location.hash = 'profile'; setIsDropdownOpen(false); }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                    Watchlist
+                    {currentUser.isAnonymous ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                        Watchlist
+                      </>
+                    ) : (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Profile & Watchlist
+                      </>
+                    )}
                   </button>
                   <div className="dropdown-divider"></div>
                   <button className="dropdown-item logout" onClick={() => { logout(); setIsDropdownOpen(false); }}>
