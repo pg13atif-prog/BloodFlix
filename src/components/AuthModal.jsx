@@ -98,7 +98,11 @@ const AuthModal = ({ isOpen, onClose }) => {
                 onClose();
               } catch (err) {
                 console.error("Guest login failed", err);
-                setError("Failed to continue as guest.");
+                if (err.code === 'auth/operation-not-allowed') {
+                  setError("Guest login (Anonymous Auth) is disabled in the Firebase Console. Please enable 'Anonymous' under Authentication -> Sign-in method.");
+                } else {
+                  setError("Failed to continue as guest: " + err.message);
+                }
               }
             }}
           >
