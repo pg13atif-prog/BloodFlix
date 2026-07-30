@@ -77,7 +77,7 @@ const RecommendedPage = () => {
   }, [currentUser]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0b0d14', padding: '100px 4% 4rem' }}>
+    <div className="media-browse-page">
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
         {/* Header */}
@@ -114,11 +114,7 @@ const RecommendedPage = () => {
         )}
 
         {status === 'loading' && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '1.5rem',
-          }}>
+          <div className="media-grid">
             {Array.from({ length: 20 }).map((_, i) => <CardSkeleton key={i} />)}
           </div>
         )}
@@ -146,11 +142,7 @@ const RecommendedPage = () => {
         )}
 
         {status === 'success' && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-            gap: '1.5rem',
-          }}>
+          <div className="media-grid">
             {movies.map(movie => (
               <MovieCard key={movie.id} {...movie} />
             ))}

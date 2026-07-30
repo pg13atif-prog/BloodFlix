@@ -12,7 +12,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+
   // Autocomplete state
   const [suggestions, setSuggestions] = useState([]);
   const [recentSearches, setRecentSearches] = useState(() => {
@@ -61,7 +61,7 @@ const Navbar = () => {
     const handleHashChange = () => {
       const hash = window.location.hash || '#';
       setCurrentPath(hash);
-      
+
       if (hash.startsWith('#search?q=')) {
         const query = decodeURIComponent(hash.split('=')[1]);
         setSearchQuery(query);
@@ -86,7 +86,7 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('hashchange', handleHashChange);
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     handleHashChange();
 
     return () => {
@@ -119,7 +119,7 @@ const Navbar = () => {
 
   const handleSearchKeyDown = (e) => {
     if (!showSuggestions) return;
-    
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setFocusedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
@@ -161,35 +161,37 @@ const Navbar = () => {
               <span className="logo-cine">Cine</span><span className="logo-scope">Scope</span>
             </span>
           </a>
-
-          <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">
-            <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
-                Home
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#movies' ? 'navbar__link--active' : ''}`}>
-                Movies
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
-                TV Shows
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'ai-discovery'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#ai-discovery' ? 'navbar__link--active' : ''}`}>
-                AI Discovery
-              </a>
-            </li>
-            <li>
-              <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'recommended'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#recommended' ? 'navbar__link--active' : ''}`}>
-                Recommended
-              </a>
-            </li>
-          </ul>
+          <span className="navbar__tagline">Search Less. Watch Better.</span>
         </div>
+
+        {/* Centered navigation */}
+        <ul className={`navbar__nav ${isMobileMenuOpen ? 'navbar__nav--open' : ''}`} id="navbar-links">
+          <li>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ''; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
+              Home
+            </a>
+          </li>
+          <li>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'movies'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#movies' ? 'navbar__link--active' : ''}`}>
+              Movies
+            </a>
+          </li>
+          <li>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'tvshows'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
+              TV Shows
+            </a>
+          </li>
+          <li>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'ai-discovery'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#ai-discovery' ? 'navbar__link--active' : ''}`}>
+              AI Discovery
+            </a>
+          </li>
+          <li>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = 'recommended'; setIsMobileMenuOpen(false); }} className={`navbar__link ${currentPath === '#recommended' ? 'navbar__link--active' : ''}`}>
+              Recommended
+            </a>
+          </li>
+        </ul>
 
         <div className="navbar__actions" id="navbar-actions">
           <div className="navbar__search-wrapper" ref={searchContainerRef}>
@@ -243,8 +245,8 @@ const Navbar = () => {
                 {searchQuery.trim().length > 1 && suggestions.length > 0 && (
                   <div className="autocomplete-section">
                     {suggestions.map((item, i) => (
-                      <div 
-                        key={item.id} 
+                      <div
+                        key={item.id}
                         className={`autocomplete-item ${focusedIndex === i ? 'focused' : ''}`}
                         onClick={() => {
                           window.location.hash = `${item.mediaType || 'movie'}/${item.id}`;
@@ -272,7 +274,7 @@ const Navbar = () => {
               </div>
             )}
           </div>
-          
+
           {currentUser ? (
             <div className="navbar__profile-container" ref={dropdownRef}>
               <button
@@ -283,7 +285,7 @@ const Navbar = () => {
               >
                 {avatarLetter}
               </button>
-              
+
               {isDropdownOpen && (
                 <div className="navbar__dropdown">
                   <div className="dropdown-header">
@@ -312,15 +314,15 @@ const Navbar = () => {
           )}
         </div>
       </nav>
-      
+
       {/* Mobile Menu Backdrop */}
       {isMobileMenuOpen && (
         <div className="navbar__backdrop" onClick={() => setIsMobileMenuOpen(false)}></div>
       )}
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </>
   );

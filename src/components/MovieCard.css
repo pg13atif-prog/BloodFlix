@@ -362,3 +362,34 @@
   border-radius: 4px;
   object-fit: cover;
 }
+
+@media (max-width: 768px) {
+  /* Hide the hover card on mobile devices as hover interactions don't translate well to touch screens */
+  .movie-hover-card {
+    display: none !important;
+  }
+  
+  /* Make cards a bit smaller on very small screens to fit at least 2 side by side */
+  .movie-card {
+    width: 140px;
+    min-width: 140px;
+  }
+  
+  .poster-container {
+    height: 210px;
+  }
+  
+  .movie-title {
+    font-size: 0.9rem;
+  }
+  
+  .movie-rating, .movie-year, .movie-genre {
+    font-size: 0.7rem;
+  }
+  
+  .play-button {
+    width: 20px;
+    height: 20px;
+    font-size: 0.5rem;
+  }
+}

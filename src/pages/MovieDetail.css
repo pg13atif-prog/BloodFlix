@@ -843,3 +843,47 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* ── Mobile Responsiveness ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .movie-detail-page {
+    padding-bottom: 2rem;
+  }
+  
+  .detail-container {
+    margin-top: -100px;
+    padding: 0 1rem;
+  }
+  
+  .detail-title {
+    font-size: 2rem;
+  }
+  
+  .detail-tagline {
+    font-size: 1rem;
+  }
+  
+  .detail-actions {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .detail-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .trailer-modal-content {
+    width: 95vw;
+    padding: 1rem;
+  }
+  
+  .modal-close-btn {
+    top: -35px;
+    font-size: 1.5rem;
+  }
+  
+  .review-card {
+    padding: 1rem;
+  }
+}

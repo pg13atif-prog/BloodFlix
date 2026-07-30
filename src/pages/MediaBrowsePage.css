@@ -36,3 +36,19 @@
 .media-state h2 {
   color: #ffffff;
 }
+
+/* ── Mobile Responsiveness ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .media-browse-page {
+    padding: 80px 1rem 2rem;
+  }
+  
+  .media-browse-title {
+    font-size: 1.8rem;
+  }
+  
+  .media-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+}

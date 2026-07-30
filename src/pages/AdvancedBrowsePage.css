@@ -427,3 +427,19 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Mobile Responsiveness ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .advanced-browse-page {
+    padding: 80px 1rem 2rem;
+  }
+  
+  .advanced-browse-title {
+    font-size: 1.8rem;
+  }
+  
+  .filter-panel {
+    padding: 1rem;
+  }
+}
+
