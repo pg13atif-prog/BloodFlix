@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const tmdbApiKey = process.env.TMDB_API_KEY || process.env.VITE_TMDB_API_KEY;
+  const tmdbApiKey = process.env.TMDB_API_KEY || process.env.VITE_TMDB_API_KEY || req.query.api_key;
   if (!tmdbApiKey) {
     return res.status(500).json({ error: 'Server configuration error: missing TMDB API key' });
   }

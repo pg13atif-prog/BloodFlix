@@ -11,7 +11,11 @@ export default defineConfig(({ mode }) => {
         '/api/tmdb': {
           target: 'https://cine-scope-kohl.vercel.app/api/tmdb',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/tmdb/, '')
+          rewrite: (path) => {
+            const apiKey = env.TMDB_API_KEY || env.VITE_TMDB_API_KEY;
+            const separator = path.includes('?') ? '&' : '?';
+            return path.replace(/^\/api\/tmdb/, '') + (apiKey ? `${separator}api_key=${apiKey}` : '');
+          }
         }
       }
     },
