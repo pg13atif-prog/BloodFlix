@@ -190,7 +190,7 @@ const Navbar = () => {
             </button>
           </li>
           <li className="navbar__dropdown-container" onMouseEnter={() => setDiscoverDropdown(true)} onMouseLeave={() => setDiscoverDropdown(false)}>
-            <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className={`navbar__link ${currentPath.startsWith('#discover') || currentPath === '#' || currentPath === '' ? 'navbar__link--active' : ''}`}>
+            <a href="#discover/movies" onClick={(e) => handleNavClick(e, '#discover/movies')} className={`navbar__link ${currentPath.startsWith('#discover') || currentPath === '#movies' || currentPath === '#tvshows' ? 'navbar__link--active' : ''}`}>
               Discover <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '4px', verticalAlign: 'middle', transition: 'transform 0.2s', transform: discoverDropdown ? 'rotate(180deg)' : 'none' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
             </a>
             {discoverDropdown && (

@@ -15,6 +15,7 @@ const DiscoverPage = ({ activeTab = 'movies' }) => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     setShowAdvancedFilters(false);
   }, [activeTab]);
 

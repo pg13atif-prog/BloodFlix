@@ -123,9 +123,14 @@ function App() {
       }
     };
 
+    const handleHashChange = () => {
+      window.scrollTo(0, 0);
+      parseHash();
+    };
+
     parseHash();
-    window.addEventListener("hashchange", parseHash);
-    return () => window.removeEventListener("hashchange", parseHash);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   useEffect(() => {

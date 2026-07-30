@@ -18,6 +18,7 @@ const MovieRow = memo(({ title, movies, link }) => {
 
   const handleSeeAll = () => {
     if (link) {
+      window.scrollTo(0, 0);
       window.location.hash = link;
     }
   };
