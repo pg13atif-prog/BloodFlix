@@ -941,8 +941,22 @@
   }
   
   .detail-container {
-    margin-top: -120px;
+    margin-top: -190px;
     padding: 0 1rem;
+  }
+
+  .btn-back-text {
+    display: none;
+  }
+
+  .btn-back {
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .detail-main-grid {
