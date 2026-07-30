@@ -98,18 +98,19 @@ const SocialPage = () => {
         getWatchlist(friendUid), getLiked(friendUid), getWatched(friendUid)
       ]);
 
-      const myTitles = [...myLiked, ...myWatched].map(m => m.title);
-      const fTitles = [...fLiked, ...fWatched].map(m => m.title);
-      
       const sharedFavorites = myLiked.filter(m => fLiked.find(fm => fm.id === m.id));
 
-      // Calculate Compatibility (naive overlap)
-      const totalUnique = new Set([...myTitles, ...fTitles]).size;
-      const overlap = new Set(myTitles.filter(t => fTitles.includes(t))).size;
-      const compatibility = totalUnique === 0 ? 0 : Math.round((overlap / totalUnique) * 100);
+      // Build rich profiles for AI analysis
+      const buildProfile = (liked, watched, watchlist) => {
+        const all = [...liked, ...watched, ...watchlist];
+        return all.slice(0, 20).map(m => `${m.title} (${m.year}, ${m.category}, ★${m.rating})`);
+      };
 
-      // 3. Ask OpenRouter for Recommendations & Score
-      const compatibilityData = await getFriendCompatibilityRecs(myTitles, fTitles);
+      const myProfile = buildProfile(myLiked, myWatched, myWl);
+      const friendProfile = buildProfile(fLiked, fWatched, fWl);
+
+      // 3. Ask OpenRouter for deep compatibility analysis
+      const compatibilityData = await getFriendCompatibilityRecs(myProfile, friendProfile);
 
       // Fetch TMDB details for each recommendation
       const tmdbPromises = compatibilityData.recommendations.map(async (rec) => {
@@ -193,7 +194,35 @@ const SocialPage = () => {
             <div className="score-circle">
               <span>{matchResult.compatibility}%</span>
             </div>
+            {matchResult.summary && (
+              <p className="compatibility-summary">{matchResult.summary}</p>
+            )}
           </div>
+
+          {matchResult.breakdown && (
+            <div className="compatibility-breakdown">
+              <h3>Taste Breakdown</h3>
+              <div className="breakdown-bars">
+                {[
+                  { label: 'Genre Overlap', value: matchResult.breakdown.genreOverlap, icon: '🎭' },
+                  { label: 'Era Alignment', value: matchResult.breakdown.eraAlignment, icon: '📅' },
+                  { label: 'Rating Standards', value: matchResult.breakdown.ratingStandards, icon: '⭐' },
+                  { label: 'Thematic Taste', value: matchResult.breakdown.thematicTaste, icon: '🎯' },
+                ].map((dim) => (
+                  <div key={dim.label} className="breakdown-row">
+                    <span className="breakdown-label">{dim.icon} {dim.label}</span>
+                    <div className="breakdown-track">
+                      <div
+                        className="breakdown-fill"
+                        style={{ width: `${dim.value}%` }}
+                      />
+                    </div>
+                    <span className="breakdown-value">{dim.value}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {matchResult.sharedFavorites.length > 0 && (
             <div className="shared-favorites">

@@ -171,39 +171,68 @@ export const getAiMovieDebate = async (movieA, movieB) => {
   }
 };
 
-export const getFriendCompatibilityRecs = async (myLikedTitles, friendLikedTitles) => {
+export const getFriendCompatibilityRecs = async (myProfile, friendProfile) => {
   const systemInstruction = `
-    You are CineAI, an expert movie taste analyst.
-    Based on the lists of movies User A and User B like, perform a deep compatibility analysis:
-    1. Calculate a "compatibility" score (integer from 0 to 100) representing how well their movie tastes match based on shared genres, eras, directors, and styles.
-    2. Recommend exactly 5 movies they would BOTH enjoy watching together tonight.
-    
-    Return a JSON object with this exact structure:
+    You are CineAI, the world's leading movie taste analyst. Perform a DEEP multi-dimensional compatibility analysis between two users based on their movie profiles.
+
+    ## Scoring Methodology (score each dimension 0-100):
+    1. **Genre Overlap** — How much do their preferred genres align? (e.g., both love Thriller & Sci-Fi = high score)
+    2. **Era Alignment** — Do they watch movies from similar decades? (e.g., both love 2010s blockbusters = high score)
+    3. **Rating Standards** — Do they rate movies similarly? (e.g., both like highly-rated ★8+ films = high score)
+    4. **Thematic Taste** — Beyond genre, do they gravitate toward similar themes? (cerebral vs popcorn, dark vs lighthearted, etc.)
+
+    The overall **compatibility** score is a weighted average:
+    - Genre Overlap: 35%
+    - Thematic Taste: 30%
+    - Era Alignment: 20%
+    - Rating Standards: 15%
+
+    ## Output Requirements:
+    Return a JSON object with this EXACT structure:
     {
-      "compatibility": 85,
+      "compatibility": 78,
+      "breakdown": {
+        "genreOverlap": 85,
+        "eraAlignment": 70,
+        "ratingStandards": 80,
+        "thematicTaste": 75
+      },
+      "summary": "A 1-2 sentence personality-driven summary of how their tastes complement or clash.",
       "recommendations": [
-        { "title": "Exact Title", "rationale": "A custom 2-3 sentence personalized rationale explaining why this is perfect for BOTH of them." }
+        { "title": "Exact Movie Title", "rationale": "A personalized 2-sentence explanation connecting this pick to BOTH users' specific tastes." }
       ]
     }
-    Do NOT return markdown formatting like \`\`\`json.
+
+    Rules:
+    - Return exactly 5 recommendations.
+    - Recommendations should be movies NEITHER user has listed — suggest something new.
+    - Each rationale must reference specific movies from both users' lists to justify the pick.
+    - Do NOT return markdown formatting like \`\`\`json.
   `;
 
   const prompt = `
-    User A likes: ${myLikedTitles.slice(0, 15).join(', ')}.
-    User B likes: ${friendLikedTitles.slice(0, 15).join(', ')}.
+    ## User A's Movie Profile (title, year, genre, rating):
+    ${myProfile.join('\n    ')}
+
+    ## User B's Movie Profile (title, year, genre, rating):
+    ${friendProfile.join('\n    ')}
   `;
 
   try {
     const res = await callOpenRouter(systemInstruction, prompt, 0.7);
     if (res && typeof res.compatibility === 'number' && Array.isArray(res.recommendations)) {
-      return res;
+      return {
+        compatibility: Math.min(100, Math.max(0, res.compatibility)),
+        breakdown: res.breakdown || null,
+        summary: res.summary || null,
+        recommendations: res.recommendations.slice(0, 5)
+      };
     }
-    // Fallback if formatting was slightly off but returned recommendations
     if (res && Array.isArray(res.recommendations)) {
-      return { compatibility: 50, recommendations: res.recommendations };
+      return { compatibility: 50, breakdown: null, summary: null, recommendations: res.recommendations.slice(0, 5) };
     }
     if (Array.isArray(res)) {
-      return { compatibility: 50, recommendations: res.slice(0, 5) };
+      return { compatibility: 50, breakdown: null, summary: null, recommendations: res.slice(0, 5) };
     }
     throw new Error("Invalid compatibility response structure.");
   } catch (err) {
