@@ -398,20 +398,21 @@ const Navbar = () => {
           <span>Watchlist</span>
         </a>
 
-        <button 
-          onClick={(e) => {
-            e.preventDefault();
-            toggleSearch();
-          }} 
-          className="mobile-nav-item"
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
+        <a 
+          href="#profile" 
+          onClick={(e) => handleNavClick(e, '#profile')} 
+          className={`mobile-nav-item ${currentPath === '#profile' ? 'active' : ''}`}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <span>Search</span>
-        </button>
+          {currentUser ? (
+            <div className="mobile-nav-avatar">{avatarLetter}</div>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          )}
+          <span>Profile</span>
+        </a>
       </nav>
 
       <AuthModal

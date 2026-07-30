@@ -715,4 +715,28 @@
     transform: translateY(-2px);
     stroke: #e50914;
   }
+
+  /* Hide top-bar profile on mobile — it's now in the bottom bar */
+  .navbar__profile-container,
+  .navbar__login-btn {
+    display: none;
+  }
+
+  /* Mobile bottom bar profile avatar */
+  .mobile-nav-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e50914, #ff6b6b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .mobile-nav-item.active .mobile-nav-avatar {
+    box-shadow: 0 0 8px rgba(229, 9, 20, 0.5);
+  }
 }
