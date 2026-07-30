@@ -1,13 +1,44 @@
 import { useState } from 'react';
 import { getAiMovieDebate } from '../../services/gemini';
+import { searchMedia } from '../../services/tmdb';
 import './CineAiTools.css';
 
 const MovieDebate = () => {
   const [movieA, setMovieA] = useState('');
   const [movieB, setMovieB] = useState('');
+  const [suggestionsA, setSuggestionsA] = useState([]);
+  const [suggestionsB, setSuggestionsB] = useState([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+
+  const handleInputChange = async (value, type) => {
+    if (type === 'A') {
+      setMovieA(value);
+      if (value.trim().length > 1) {
+        try {
+          const results = await searchMedia(value);
+          setSuggestionsA(results.slice(0, 5));
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        setSuggestionsA([]);
+      }
+    } else {
+      setMovieB(value);
+      if (value.trim().length > 1) {
+        try {
+          const results = await searchMedia(value);
+          setSuggestionsB(results.slice(0, 5));
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        setSuggestionsB([]);
+      }
+    }
+  };
 
   const handleDebate = async (e) => {
     e.preventDefault();
@@ -38,21 +69,77 @@ const MovieDebate = () => {
       <div className="debate-container">
         <form onSubmit={handleDebate} className="debate-form">
           <div className="versus-inputs">
-            <input 
-              type="text" 
-              placeholder="First Movie..." 
-              value={movieA} 
-              onChange={e => setMovieA(e.target.value)}
-              required
-            />
+            <div className="input-suggest-wrapper">
+              <input 
+                type="text" 
+                placeholder="First Movie..." 
+                value={movieA} 
+                onChange={e => handleInputChange(e.target.value, 'A')}
+                onBlur={() => setTimeout(() => setSuggestionsA([]), 200)}
+                required
+              />
+              {suggestionsA.length > 0 && (
+                <div className="suggestions-dropdown">
+                  {suggestionsA.map((movie) => (
+                    <div 
+                      key={movie.id} 
+                      className="suggestion-item" 
+                      onClick={() => {
+                        setMovieA(movie.title);
+                        setSuggestionsA([]);
+                      }}
+                    >
+                      {movie.poster ? (
+                        <img src={movie.poster} alt={movie.title} className="suggest-poster" />
+                      ) : (
+                        <div className="suggest-poster-placeholder">🎬</div>
+                      )}
+                      <div className="suggest-info">
+                        <span className="suggest-title">{movie.title}</span>
+                        <span className="suggest-meta">{movie.year} • {movie.category}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             <div className="vs-badge">VS</div>
-            <input 
-              type="text" 
-              placeholder="Second Movie..." 
-              value={movieB} 
-              onChange={e => setMovieB(e.target.value)}
-              required
-            />
+            
+            <div className="input-suggest-wrapper">
+              <input 
+                type="text" 
+                placeholder="Second Movie..." 
+                value={movieB} 
+                onChange={e => handleInputChange(e.target.value, 'B')}
+                onBlur={() => setTimeout(() => setSuggestionsB([]), 200)}
+                required
+              />
+              {suggestionsB.length > 0 && (
+                <div className="suggestions-dropdown">
+                  {suggestionsB.map((movie) => (
+                    <div 
+                      key={movie.id} 
+                      className="suggestion-item" 
+                      onClick={() => {
+                        setMovieB(movie.title);
+                        setSuggestionsB([]);
+                      }}
+                    >
+                      {movie.poster ? (
+                        <img src={movie.poster} alt={movie.title} className="suggest-poster" />
+                      ) : (
+                        <div className="suggest-poster-placeholder">🎬</div>
+                      )}
+                      <div className="suggest-info">
+                        <span className="suggest-title">{movie.title}</span>
+                        <span className="suggest-meta">{movie.year} • {movie.category}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <button type="submit" className="btn-primary debate-submit" disabled={loading}>
             {loading ? 'Judging...' : 'Start Debate'}
