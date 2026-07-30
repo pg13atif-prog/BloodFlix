@@ -47,7 +47,7 @@
 .navbar__logo-text {
   font-family: var(--font-logo);
   font-weight: 700;
-  font-size: 1.85rem;
+  font-size: 1.65rem;
   letter-spacing: -0.5px;
   user-select: none;
   display: flex;

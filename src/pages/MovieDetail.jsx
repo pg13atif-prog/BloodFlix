@@ -337,13 +337,14 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
           </div>
         </div>
 
-        {/* Similar Movies Row */}
-        {similarMovies.length > 0 && (
-          <div className="detail-similar-section">
-            <MovieRow title="More Like This" movies={similarMovies} />
-          </div>
-        )}
       </div>
+
+      {/* Similar Movies Row (Outside container for full width edge-to-edge alignment) */}
+      {similarMovies.length > 0 && (
+        <div className="detail-similar-section">
+          <MovieRow title="More Like This" movies={similarMovies} />
+        </div>
+      )}
 
       {/* ── Trailer Video Modal ── */}
       {showTrailerModal && trailerKey && (

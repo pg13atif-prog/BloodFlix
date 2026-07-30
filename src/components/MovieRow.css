@@ -8,7 +8,7 @@
   align-items: flex-end;
   justify-content: space-between;
   max-width: var(--content-max-width);
-  margin: 0 auto 0;
+  margin: 0 auto var(--space-md);
   padding: 0 var(--space-xl);
 }
 
@@ -18,7 +18,6 @@
   font-family: var(--font-heading);
   font-size: clamp(1.4rem, 2vw, 1.75rem);
   font-weight: 600;
-  line-height: 1;
 }
 
 .row-see-all {
@@ -53,7 +52,7 @@
   gap: var(--space-lg);
   width: 100%;
   overflow-x: auto;
-  padding: 4px max(var(--space-xl), calc((100vw - var(--content-max-width)) / 2 + var(--space-xl)));
+  padding: 10px max(var(--space-xl), calc((100vw - var(--content-max-width)) / 2 + var(--space-xl)));
   scroll-behavior: smooth;
   scrollbar-width: none;
 }
