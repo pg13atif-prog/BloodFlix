@@ -142,7 +142,7 @@ const MovieDebate = () => {
             </div>
           </div>
           <button type="submit" className="btn-primary debate-submit" disabled={loading}>
-            {loading ? 'Comparing...' : '✨ Compare Movies'}
+            {loading ? 'Judging...' : 'Start Debate'}
           </button>
         </form>
 

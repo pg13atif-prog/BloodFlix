@@ -76,9 +76,7 @@
   border-color: var(--color-accent, #e50914);
 }
 
-.match-form button {
-  display: none; /* old style removed */
-}
+
 
 .match-btn {
   background: linear-gradient(135deg, var(--color-accent, #e50914), #ff6b6b);
