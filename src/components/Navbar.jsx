@@ -228,7 +228,6 @@ const Navbar = () => {
           className={`navbar__link ${isActive ? 'navbar__link--active' : ''} ${className || ''}`}
         >
           <span className="navbar__link-label">{label}</span>
-          {id === 'cineai' && <span className="navbar__ai-badge">AI</span>}
           {hasDropdown && (
             <svg className={`navbar__chevron ${isOpen ? 'navbar__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
@@ -289,7 +288,7 @@ const Navbar = () => {
           />
           <NavItem
             id="cineai"
-            label="Cine"
+            label="CineAI"
             hash="#cineai"
             isActive={currentPath.startsWith('#cineai')}
             items={cineaiItems}

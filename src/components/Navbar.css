@@ -162,34 +162,17 @@
   transform: scaleX(1);
 }
 
-/* ── CineAI — small premium AI badge ──────────────────────── */
+/* ── CineAI — text red highlight ──────────────────────────── */
 .navbar__link--cineai {
-  gap: 0.35rem;
+  color: var(--color-accent, #e50914);
 }
 
-.navbar__ai-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #fff;
-  background: var(--color-accent, #e50914);
-  padding: 1px 5px;
-  border-radius: 4px;
-  line-height: 1.3;
-  margin-top: -1px;
-  text-transform: uppercase;
+.navbar__link--cineai:hover {
+  color: #ff2a35;
 }
 
-.navbar__link--cineai:hover .navbar__ai-badge {
-  box-shadow: 0 0 8px rgba(229, 9, 20, 0.5);
-}
-
-.navbar__link--cineai.navbar__link--active .navbar__ai-badge {
-  background: #ff2a35;
-  box-shadow: 0 0 10px rgba(229, 9, 20, 0.4);
+.navbar__link--cineai.navbar__link--active {
+  color: var(--color-accent, #e50914);
 }
 
 /* ── Premium Dropdown (Discover / CineAI / Social) ────────── */
