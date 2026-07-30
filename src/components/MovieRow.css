@@ -8,7 +8,7 @@
   align-items: flex-end;
   justify-content: space-between;
   max-width: var(--content-max-width);
-  margin: 0 auto var(--space-md);
+  margin: 0 auto 0;
   padding: 0 var(--space-xl);
 }
 
