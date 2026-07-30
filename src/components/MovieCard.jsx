@@ -7,6 +7,7 @@ import {
   addToLiked, removeFromLiked, isLiked
 } from '../services/firestore';
 import { getWatchProviders, getMovieDetails } from '../services/tmdb';
+import { checkAndUnlockAchievements } from '../services/achievements';
 import './MovieCard.css';
 
 const MovieCard = memo((props) => {
@@ -79,6 +80,7 @@ const MovieCard = memo((props) => {
       } else {
         await addToWatchlist(currentUser.uid, props);
         setIsSaved(true);
+        checkAndUnlockAchievements(currentUser.uid);
       }
     } catch (err) { console.error(err); }
   };
@@ -93,6 +95,7 @@ const MovieCard = memo((props) => {
       } else {
         await addToLiked(currentUser.uid, props);
         setIsLikedItem(true);
+        checkAndUnlockAchievements(currentUser.uid);
       }
     } catch (err) { console.error(err); }
   };
@@ -118,6 +121,7 @@ const MovieCard = memo((props) => {
         
         await addToWatched(currentUser.uid, props, runtime);
         setIsWatchedItem(true);
+        checkAndUnlockAchievements(currentUser.uid);
       }
     } catch (err) { console.error(err); }
   };

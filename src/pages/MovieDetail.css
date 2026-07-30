@@ -426,20 +426,28 @@
 .detail-btn {
   position: relative;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.85rem 1.75rem;
-  border-radius: 30px;
-  font-size: 0.95rem;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: 14px;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border: none;
   overflow: hidden;
   user-select: none;
+  width: 120px;
+  min-width: 110px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .detail-btn svg {
+  width: 22px;
+  height: 22px;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -862,11 +870,11 @@
   }
 
   .detail-info-col {
-    order: 1;
+    order: 2;
   }
 
   .detail-poster-col {
-    order: 2;
+    order: 1;
   }
 
   .detail-poster-wrapper {
@@ -898,30 +906,9 @@
   .detail-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
+    justify-content: center;
+    gap: 0.8rem;
     margin-bottom: 1.5rem;
-  }
-  
-  .detail-actions .btn-primary {
-    flex: 1 1 100%;
-    width: 100%;
-    justify-content: center;
-    padding: 0.85rem 1rem;
-  }
-
-  .detail-actions .btn-secondary {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: 0.7rem 0.4rem;
-    font-size: 0.82rem;
-    justify-content: center;
-    border-radius: 12px;
-    white-space: nowrap;
-  }
-
-  .detail-actions .btn-secondary svg {
-    width: 18px;
-    height: 18px;
   }
 
   .detail-sidebar-box {

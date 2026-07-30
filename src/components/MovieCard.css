@@ -299,6 +299,7 @@
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 4; /* Clamp lower initially to show button cleanly */
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -337,6 +338,7 @@
 
 .movie-hover-card.expanded .hover-synopsis {
   -webkit-line-clamp: unset;
+  line-clamp: unset;
   overflow: visible;
 }
 
@@ -391,5 +393,39 @@
     width: 20px;
     height: 20px;
     font-size: 0.5rem;
+  }
+}
+
+/* ── Fluid overrides for Grid layouts (e.g., browse, search) ── */
+.media-grid .movie-card,
+.search-grid .movie-card {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.media-grid .poster-container,
+.search-grid .poster-container {
+  height: auto !important;
+  aspect-ratio: 2 / 3 !important;
+}
+
+.media-grid .movie-title,
+.search-grid .movie-title {
+  font-size: 0.875rem;
+}
+
+.media-grid .movie-genre,
+.search-grid .movie-genre {
+  font-size: 0.7rem;
+}
+
+@media (max-width: 768px) {
+  .media-grid .movie-title,
+  .search-grid .movie-title {
+    font-size: 0.8rem;
+  }
+  .media-grid .movie-genre,
+  .search-grid .movie-genre {
+    font-size: 0.65rem;
   }
 }

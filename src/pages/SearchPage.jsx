@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react';
 import MovieCard from '../components/MovieCard';
 import { searchMedia } from '../services/tmdb';
+import { useAuth } from '../context/AuthContext';
+import { incrementStat } from '../services/achievements';
 import './SearchPage.css';
 
 const SearchPage = ({ query }) => {
   const [results, setResults] = useState([]);
   const [status, setStatus] = useState('loading');
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     if (!query) {
       setResults([]);
       setStatus('success');
       return;
+    }
+
+    if (currentUser) {
+      incrementStat(currentUser.uid, 'searchesCount');
     }
 
     const controller = new AbortController();

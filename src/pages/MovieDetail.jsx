@@ -16,6 +16,7 @@ import {
 } from '../services/firestore';
 import { useAuth } from '../context/AuthContext';
 import MovieRow from '../components/MovieRow';
+import { checkAndUnlockAchievements, trackDetailView, incrementStat } from '../services/achievements';
 import './MovieDetail.css';
 
 const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
@@ -40,6 +41,13 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   
   const { currentUser } = useAuth();
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -72,6 +80,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
         // Add to recently viewed if logged in
         if (currentUser) {
           addRecentlyViewed(currentUser.uid, detailsData).catch(err => console.error("Could not add to recently viewed", err));
+          trackDetailView(currentUser.uid, detailsData.id, detailsData.productionCountries);
         }
       })
       .catch((err) => {
@@ -132,6 +141,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
       } else {
         await addToWatchlist(currentUser.uid, movie);
         setIsSaved(true);
+        checkAndUnlockAchievements(currentUser.uid);
       }
     } catch (err) {
       console.error('Error updating watchlist:', err);
@@ -148,6 +158,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
       } else {
         await addToLiked(currentUser.uid, movie);
         setIsLikedItem(true);
+        checkAndUnlockAchievements(currentUser.uid);
       }
     } catch (err) { console.error(err); }
   };
@@ -167,6 +178,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
         }
         await addToWatched(currentUser.uid, movie, runtime);
         setIsWatchedItem(true);
+        checkAndUnlockAchievements(currentUser.uid);
       }
     } catch (err) { console.error(err); }
   };
@@ -185,6 +197,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
       await addToWatched(currentUser.uid, movie, seasonRuntime);
       alert(`Season ${selectedSeason} marked as watched!`);
       setIsWatchedItem(true);
+      checkAndUnlockAchievements(currentUser.uid);
     } catch (err) { console.error(err); }
   };
 
@@ -261,6 +274,140 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
     );
   }
 
+  const renderSidebarBoxes = () => (
+    <>
+      {/* Watch Providers Box (Moved to Top of Sidebar for High Visibility) */}
+      <div className="detail-sidebar-box glass-panel watch-providers-box">
+        <h4 className="sidebar-heading">Where to Watch</h4>
+        {!watchProviders ? (
+          <p className="no-providers-text">No official streaming providers available in your region.</p>
+        ) : (
+          <div className="provider-categories">
+            {watchProviders.flatrate && (
+              <div className="provider-category">
+                <span className="provider-label">Stream</span>
+                <div className="provider-logos">
+                  {watchProviders.flatrate.map(p => {
+                    const targetUrl = `https://www.google.com/search?q=watch+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
+                    return (
+                      <a 
+                        key={p.provider_id} 
+                        href={targetUrl}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="provider-logo-link"
+                        title={`Watch ${movie.title} on ${p.provider_name}`}
+                      >
+                        <img src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} alt={p.provider_name} className="provider-logo" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {watchProviders.rent && (
+              <div className="provider-category">
+                <span className="provider-label">Rent</span>
+                <div className="provider-logos">
+                  {watchProviders.rent.map(p => {
+                    const targetUrl = `https://www.google.com/search?q=rent+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
+                    return (
+                      <a 
+                        key={p.provider_id} 
+                        href={targetUrl}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="provider-logo-link"
+                        title={`Rent ${movie.title} on ${p.provider_name}`}
+                      >
+                        <img src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} alt={p.provider_name} className="provider-logo" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {watchProviders.buy && (
+              <div className="provider-category">
+                <span className="provider-label">Buy</span>
+                <div className="provider-logos">
+                  {watchProviders.buy.map(p => {
+                    const targetUrl = `https://www.google.com/search?q=buy+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
+                    return (
+                      <a 
+                        key={p.provider_id} 
+                        href={targetUrl}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="provider-logo-link"
+                        title={`Buy ${movie.title} on ${p.provider_name}`}
+                      >
+                        <img src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} alt={p.provider_name} className="provider-logo" />
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Premium Info Sidebar */}
+      <div className="detail-sidebar-box glass-panel">
+        <h4 className="sidebar-heading">Information</h4>
+        <div className="meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <div className="meta-text">
+            <span className="meta-label">Status</span>
+            <span className="meta-val">{movie.status}</span>
+          </div>
+        </div>
+        <div className="meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <div className="meta-text">
+            <span className="meta-label">Release Date</span>
+            <span className="meta-val">{movie.releaseDate || movie.year}</span>
+          </div>
+        </div>
+        <div className="meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 16 14"></polyline></svg>
+          <div className="meta-text">
+            <span className="meta-label">Runtime</span>
+            <span className="meta-val">{movie.runtime}</span>
+          </div>
+        </div>
+        {movie.budget && (
+          <div className="meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <div className="meta-text">
+              <span className="meta-label">Budget</span>
+              <span className="meta-val">{movie.budget}</span>
+            </div>
+          </div>
+        )}
+        {movie.revenue && (
+          <div className="meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <div className="meta-text">
+              <span className="meta-label">Revenue</span>
+              <span className="meta-val">{movie.revenue}</span>
+            </div>
+          </div>
+        )}
+        {movie.productionCompanies.length > 0 && (
+          <div className="meta-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+            <div className="meta-text">
+              <span className="meta-label">Production</span>
+              <span className="meta-val">{movie.productionCompanies.slice(0, 2).join(', ')}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div className="movie-detail-page">
       {/* ── Top Navigation Bar ── */}
@@ -297,136 +444,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <div className="detail-poster-empty">No Image</div>
               )}
             </div>
-
-            {/* Watch Providers Box (Moved to Top of Sidebar for High Visibility) */}
-            <div className="detail-sidebar-box glass-panel watch-providers-box">
-              <h4 className="sidebar-heading">Where to Watch</h4>
-              {!watchProviders ? (
-                <p className="no-providers-text">No official streaming providers available in your region.</p>
-              ) : (
-                <div className="provider-categories">
-                  {watchProviders.flatrate && (
-                    <div className="provider-category">
-                      <span className="provider-label">Stream</span>
-                      <div className="provider-logos">
-                        {watchProviders.flatrate.map(p => {
-                          const targetUrl = `https://www.google.com/search?q=watch+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
-                          return (
-                            <a 
-                              key={p.provider_id} 
-                              href={targetUrl}
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="provider-logo-link"
-                              title={`Watch ${movie.title} on ${p.provider_name}`}
-                            >
-                              <img src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} alt={p.provider_name} className="provider-logo" />
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {watchProviders.rent && (
-                    <div className="provider-category">
-                      <span className="provider-label">Rent</span>
-                      <div className="provider-logos">
-                        {watchProviders.rent.map(p => {
-                          const targetUrl = `https://www.google.com/search?q=rent+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
-                          return (
-                            <a 
-                              key={p.provider_id} 
-                              href={targetUrl}
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="provider-logo-link"
-                              title={`Rent ${movie.title} on ${p.provider_name}`}
-                            >
-                              <img src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} alt={p.provider_name} className="provider-logo" />
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {watchProviders.buy && (
-                    <div className="provider-category">
-                      <span className="provider-label">Buy</span>
-                      <div className="provider-logos">
-                        {watchProviders.buy.map(p => {
-                          const targetUrl = `https://www.google.com/search?q=buy+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
-                          return (
-                            <a 
-                              key={p.provider_id} 
-                              href={targetUrl}
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="provider-logo-link"
-                              title={`Buy ${movie.title} on ${p.provider_name}`}
-                            >
-                              <img src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} alt={p.provider_name} className="provider-logo" />
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Premium Info Sidebar */}
-            <div className="detail-sidebar-box glass-panel">
-              <h4 className="sidebar-heading">Information</h4>
-              <div className="meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                <div className="meta-text">
-                  <span className="meta-label">Status</span>
-                  <span className="meta-val">{movie.status}</span>
-                </div>
-              </div>
-              <div className="meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <div className="meta-text">
-                  <span className="meta-label">Release Date</span>
-                  <span className="meta-val">{movie.releaseDate || movie.year}</span>
-                </div>
-              </div>
-              <div className="meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 16 14"></polyline></svg>
-                <div className="meta-text">
-                  <span className="meta-label">Runtime</span>
-                  <span className="meta-val">{movie.runtime}</span>
-                </div>
-              </div>
-              {movie.budget && (
-                <div className="meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                  <div className="meta-text">
-                    <span className="meta-label">Budget</span>
-                    <span className="meta-val">{movie.budget}</span>
-                  </div>
-                </div>
-              )}
-              {movie.revenue && (
-                <div className="meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                  <div className="meta-text">
-                    <span className="meta-label">Revenue</span>
-                    <span className="meta-val">{movie.revenue}</span>
-                  </div>
-                </div>
-              )}
-              {movie.productionCompanies.length > 0 && (
-                <div className="meta-item">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                  <div className="meta-text">
-                    <span className="meta-label">Production</span>
-                    <span className="meta-val">{movie.productionCompanies.slice(0, 2).join(', ')}</span>
-                  </div>
-                </div>
-              )}
-            </div>
+            {!isMobile && renderSidebarBoxes()}
           </div>
 
           {/* Right Column: Key Details */}
@@ -463,7 +481,12 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
               {trailerKey ? (
                 <button
                   className="detail-btn btn-primary"
-                  onClick={() => setShowTrailerModal(true)}
+                  onClick={() => {
+                    setShowTrailerModal(true);
+                    if (currentUser) {
+                      incrementStat(currentUser.uid, 'trailersWatchedCount');
+                    }
+                  }}
                 >
                   <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                     <path d="M8 5v14l11-7z" />
@@ -493,6 +516,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <svg viewBox="0 0 24 24" width="20" height="20" fill={isLikedItem ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
+                {isLikedItem ? 'Liked' : 'Like'}
               </button>
               
               <button
@@ -520,6 +544,8 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 {movie.overview || 'No overview description available for this movie.'}
               </p>
             </div>
+
+            {isMobile && renderSidebarBoxes()}
 
             {/* Cast Section */}
             {cast.length > 0 && (

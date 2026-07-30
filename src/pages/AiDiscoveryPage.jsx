@@ -4,6 +4,8 @@ import { searchMedia } from '../services/tmdb';
 import MovieCard from '../components/MovieCard';
 import { CardSkeleton } from '../components/SkeletonLoader';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { incrementStat } from '../services/achievements';
 import './AiDiscoveryPage.css';
 
 const AiDiscoveryPage = () => {
@@ -12,6 +14,7 @@ const AiDiscoveryPage = () => {
     const saved = sessionStorage.getItem('cinescope_ai_results');
     return saved ? JSON.parse(saved) : [];
   });
+  const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -26,6 +29,10 @@ const AiDiscoveryPage = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!prompt.trim()) return;
+
+    if (currentUser) {
+      incrementStat(currentUser.uid, 'aiSearchesCount');
+    }
 
     setLoading(true);
     setError(null);
@@ -128,7 +135,15 @@ const AiDiscoveryPage = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="ai-result-poster">
-                    <MovieCard {...movie} onClick={() => {}} />
+                    <div className="ai-poster-container">
+                      {movie.poster ? (
+                        <img src={movie.poster} alt={`${movie.title} poster`} className="ai-poster-img" loading="lazy" />
+                      ) : (
+                        <div className="ai-poster-fallback">
+                          <span>{movie.title}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="ai-result-content">
                     <h2>{movie.title}</h2>

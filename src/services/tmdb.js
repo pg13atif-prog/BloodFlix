@@ -182,6 +182,7 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
     genres: data.genres?.map((g) => g.name) ?? [],
     category: data.genres?.[0]?.name ?? (mediaType === 'tv' ? 'TV Show' : 'Movie'),
     productionCompanies: data.production_companies?.map((c) => c.name) ?? [],
+    productionCountries: data.production_countries?.map((c) => c.iso_3166_1) ?? [],
     homepage: data.homepage || null,
     mediaType: mediaType,
     seasons: data.seasons || [],

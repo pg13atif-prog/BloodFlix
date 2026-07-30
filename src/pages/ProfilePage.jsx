@@ -8,6 +8,10 @@ import {
 import MovieCard from '../components/MovieCard';
 import './ProfilePage.css';
 
+import { getUserStats, ACHIEVEMENTS_LIST } from '../services/achievements';
+import { ref, get } from 'firebase/database';
+import { db } from '../services/firebase';
+
 // ── Compact List Card with Remove button ──────────────────────────────────────
 const MediaListItem = ({ movie, onRemove, onNavigate }) => {
   const [hovered, setHovered] = useState(false);
@@ -50,6 +54,15 @@ const ProfilePage = () => {
   const [watchlist, setWatchlist]   = useState([]);
   const [liked,     setLiked]       = useState([]);
   const [watched,   setWatched]     = useState([]);
+  const [stats,     setStats]       = useState({
+    aiSearchesCount: 0,
+    trailersWatchedCount: 0,
+    detailViewsCount: 0,
+    uniqueViewedIds: [],
+    viewedCountries: [],
+    searchesCount: 0
+  });
+  const [unlockedAchievements, setUnlockedAchievements] = useState({});
   const [loading,   setLoading]     = useState(true);
   const [activeTab, setActiveTab]   = useState('liked');
 
@@ -59,10 +72,21 @@ const ProfilePage = () => {
       getWatchlist(currentUser.uid),
       getLiked(currentUser.uid),
       getWatched(currentUser.uid),
-    ]).then(([wl, lk, wa]) => {
+      getUserStats(currentUser.uid),
+      get(ref(db, `users/${currentUser.uid}/unlockedAchievements`))
+    ]).then(([wl, lk, wa, userStats, unlockedSnap]) => {
       setWatchlist(wl || []);
       setLiked(lk || []);
       setWatched(wa || []);
+      setStats(userStats || {
+        aiSearchesCount: 0,
+        trailersWatchedCount: 0,
+        detailViewsCount: 0,
+        uniqueViewedIds: [],
+        viewedCountries: [],
+        searchesCount: 0
+      });
+      setUnlockedAchievements(unlockedSnap.exists() ? unlockedSnap.val() : {});
       setLoading(false);
     }).catch(err => { console.error(err); setLoading(false); });
   }, [currentUser]);
@@ -147,55 +171,109 @@ const ProfilePage = () => {
 
         {/* ── Watch Time Box ────────────────────────────────────────── */}
         <div className="watchtime-card">
-          <div className="watchtime-ring-wrap">
-            <svg width="180" height="180" viewBox="0 0 180 180">
-              <defs>
-                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#e50914" />
-                  <stop offset="100%" stopColor="#ff6b35" />
-                </linearGradient>
-              </defs>
-              {/* Track */}
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="12" />
-              {/* Progress */}
-              <circle
-                cx={cx} cy={cy} r={r}
-                fill="none"
-                stroke="url(#ringGrad)"
-                strokeWidth="12"
-                strokeLinecap="round"
-                strokeDasharray={`${dash} ${circ}`}
-                strokeDashoffset={circ / 4}
-                style={{ transition: 'stroke-dasharray 1s ease' }}
-              />
-              <text x={cx} y={cy - 10} textAnchor="middle" fill="#fff" fontSize="28" fontWeight="700">{totalHours}h</text>
-              <text x={cx} y={cy + 18} textAnchor="middle" fill="#aaa" fontSize="13">watched</text>
-            </svg>
+          <div className="watchtime-badge">
+            <div className="watchtime-badge-inner">
+              <div className="watchtime-badge-val">{totalHours}h</div>
+              <div className="watchtime-badge-lbl">watched</div>
+            </div>
           </div>
           <div className="watchtime-stats">
             <h2 className="watchtime-title">Your Watch Time</h2>
             <p className="watchtime-subtitle">Based on movies &amp; episodes marked as Already Watched</p>
             <div className="watchtime-breakdown">
               <div className="wt-stat">
-                <span className="wt-val">{totalDays}</span>
-                <span className="wt-label">Days</span>
+                <span className="wt-val">{watchlist.length}</span>
+                <span className="wt-label">Saved</span>
               </div>
-              <div className="wt-divider" />
-              <div className="wt-stat">
-                <span className="wt-val">{remHours}</span>
-                <span className="wt-label">Hours</span>
-              </div>
-              <div className="wt-divider" />
               <div className="wt-stat">
                 <span className="wt-val">{watched.length}</span>
-                <span className="wt-label">Titles</span>
+                <span className="wt-label">Watched</span>
               </div>
-              <div className="wt-divider" />
+              <div className="wt-stat">
+                <span className="wt-val">{totalHours}h</span>
+                <span className="wt-label">Hours</span>
+              </div>
               <div className="wt-stat">
                 <span className="wt-val">{topGenre}</span>
                 <span className="wt-label">Top Genre</span>
               </div>
+              <div className="wt-stat">
+                <span className="wt-val">{stats.aiSearchesCount}</span>
+                <span className="wt-label">AI Searches</span>
+              </div>
+              <div className="wt-stat">
+                <span className="wt-val">{liked.length}</span>
+                <span className="wt-label">Liked</span>
+              </div>
+              <div className="wt-stat">
+                <span className="wt-val">{stats.trailersWatchedCount}</span>
+                <span className="wt-label">Trailers</span>
+              </div>
+              <div className="wt-stat">
+                <span className="wt-val">{Object.keys(unlockedAchievements).length}</span>
+                <span className="wt-label">Earned</span>
+              </div>
             </div>
+          </div>
+        </div>
+
+        {/* ── Achievements Section ────────────────────────────────────────── */}
+        <div className="achievements-section">
+          <h2 className="achievements-section-title">🏆 Achievements Showcase</h2>
+          <div className="achievements-grid">
+            {ACHIEVEMENTS_LIST.map((ach) => {
+              const isUnlocked = !!unlockedAchievements[ach.id];
+              
+              // Calculate progress if locked and has maxProgress
+              let progressText = '';
+              let pct = 0;
+              if (!isUnlocked && ach.maxProgress) {
+                let currentVal = 0;
+                if (ach.category === 'Watchlist') {
+                  currentVal = watchlist.length;
+                } else if (ach.category === 'Hours Watched') {
+                  currentVal = totalHours;
+                } else if (ach.id === 'explorer') {
+                  currentVal = stats.uniqueViewedIds?.length || 0;
+                } else if (ach.id === 'world_explorer') {
+                  currentVal = stats.viewedCountries?.length || 0;
+                } else if (ach.id === 'genre_hopper') {
+                  // Calculate unique genres manually
+                  const genresSet = new Set();
+                  [...watchlist, ...liked, ...watched].forEach(m => {
+                    if (m.category) genresSet.add(m.category);
+                  });
+                  currentVal = genresSet.size;
+                } else if (ach.id === 'prompt_master') {
+                  currentVal = stats.aiSearchesCount;
+                }
+                
+                pct = Math.min((currentVal / ach.maxProgress) * 100, 100);
+                progressText = `${Math.floor(currentVal)} / ${ach.maxProgress} ${ach.category === 'Hours Watched' ? 'Hours' : ach.id === 'world_explorer' ? 'Countries' : ach.id === 'genre_hopper' ? 'Genres' : 'Titles'}`;
+              }
+
+              return (
+                <div key={ach.id} className={`achievement-card glass-panel ${isUnlocked ? 'unlocked' : 'locked'}`}>
+                  <div className="achievement-icon-wrap">
+                    <span className="achievement-icon">{ach.icon}</span>
+                  </div>
+                  <div className="achievement-info">
+                    <h3 className="achievement-name">{ach.name}</h3>
+                    <p className="achievement-desc">{ach.description}</p>
+                    
+                    {!isUnlocked && ach.maxProgress && (
+                      <div className="achievement-progress-container">
+                        <div className="achievement-progress-bar-wrap">
+                          <div className="achievement-progress-bar" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="achievement-progress-text">{progressText}</span>
+                      </div>
+                    )}
+                  </div>
+                  {isUnlocked && <div className="achievement-unlock-badge">Unlocked</div>}
+                </div>
+              );
+            })}
           </div>
         </div>
 

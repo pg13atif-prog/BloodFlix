@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import { checkAndUnlockAchievements } from "./services/achievements";
 import MovieRow from "./components/MovieRow";
 import MovieDetail from "./pages/MovieDetail";
 import MediaBrowsePage from "./pages/MediaBrowsePage";
@@ -229,12 +230,54 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    if (currentUser) {
+      checkAndUnlockAchievements(currentUser.uid);
+    }
+  }, [currentUser]);
+
   return (
     <>
       <Navbar />
       {renderContent()}
+      <AchievementToasts />
     </>
   );
 }
+
+const AchievementToasts = () => {
+  const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    const handleUnlock = (e) => {
+      const { name, desc } = e.detail;
+      const newToast = { id: Date.now(), name, desc };
+      setToasts(prev => [...prev, newToast]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== newToast.id));
+      }, 4000);
+    };
+
+    window.addEventListener('achievement-unlocked', handleUnlock);
+    return () => window.removeEventListener('achievement-unlocked', handleUnlock);
+  }, []);
+
+  if (toasts.length === 0) return null;
+
+  return (
+    <div className="achievement-toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className="achievement-toast">
+          <div className="toast-trophy">🏆</div>
+          <div className="toast-body">
+            <div className="toast-title">🏆 Achievement Unlocked!</div>
+            <div className="toast-name">{t.name}</div>
+            <div className="toast-desc">"{t.desc}"</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export default App;
