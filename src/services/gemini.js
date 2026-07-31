@@ -340,9 +340,25 @@ export const getAiPlannerRecommendation = async (answers) => {
 };
 
 export const getAiPickForMe = async (excludeTitles = []) => {
+  const themes = [
+    "90s cult classic thriller or crime masterpiece",
+    "mind-bending sci-fi epic or time travel adventure",
+    "high-octane modern action or martial arts spectacle",
+    "unforgettable animated masterpiece (Studio Ghibli, Pixar, or anime)",
+    "spine-tingling horror or psychological mystery",
+    "hilarious laugh-out-loud comedy or satirical fun",
+    "deeply emotional romantic drama or bittersweet love story",
+    "intense historical drama or gladiatorial epic",
+    "critically acclaimed international Oscar-winner",
+    "binge-worthy dark TV series or mystery miniseries"
+  ];
+
+  const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+  const randomSeed = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+
   const systemInstruction = `
-    You are CineAI. Your goal is to pick exactly ONE universally acclaimed, highly entertaining movie or TV show.
-    ${excludeTitles.length > 0 ? `Do NOT recommend any of the following titles: ${excludeTitles.join(', ')}.` : ''}
+    You are CineAI, an expert film sommelier. Your goal is to pick exactly ONE universally acclaimed, highly entertaining movie or TV show matching the requested theme.
+    ${excludeTitles.length > 0 ? `CRITICAL: Do NOT recommend any of the following previously picked titles: ${excludeTitles.join(', ')}.` : ''}
     Return EXACTLY ONE recommendation in JSON format:
     {
       "title": "Exact Title",
@@ -352,14 +368,24 @@ export const getAiPickForMe = async (excludeTitles = []) => {
     Return ONLY JSON.
   `;
 
+  const userPrompt = `Surprise me with a guaranteed certified banger in the theme of: "${selectedTheme}". Request ID: ${randomSeed}.`;
+
   try {
-    return await callOpenRouter(systemInstruction, "Surprise me with a guaranteed crowd-pleaser that is different from previous picks.", 0.95);
+    return await callOpenRouter(systemInstruction, userPrompt, 0.95);
   } catch (err) {
     console.warn('OpenRouter rate limited or unavailable, using Pick For Me fallback:', err.message);
     const pool = [
-      "Inception", "Interstellar", "Pulp Fiction", "The Dark Knight", "Parasite",
+      "Interstellar", "Inception", "Pulp Fiction", "The Dark Knight", "Parasite",
       "Gladiator", "Whiplash", "Spirited Away", "Everything Everywhere All at Once",
-      "Fight Club", "Se7en", "The Matrix", "Dune: Part Two", "Oppenheimer", "Spider-Man: Across the Spider-Verse"
+      "Fight Club", "Se7en", "The Matrix", "Dune: Part Two", "Oppenheimer",
+      "Spider-Man: Across the Spider-Verse", "Goodfellas", "No Country for Old Men",
+      "The Silence of the Lambs", "Mad Max: Fury Road", "La La Land", "Princess Mononoke",
+      "Inglourious Basterds", "Blade Runner 2049", "Get Out", "Oldboy",
+      "The Grand Budapest Hotel", "The Prestige", "Arrival", "Heat", "Prisoners",
+      "Alien", "The Thing", "Coco", "Wall-E", "Superbad", "The Truman Show",
+      "Before Sunrise", "Eternal Sunshine of the Spotless Mind", "Past Lives",
+      "Drive", "Nightcrawler", "Shutter Island", "The Departed", "Knives Out",
+      "1917", "Memories of Murder", "Your Name", "The Shawshank Redemption"
     ];
     const normalizedExcluded = excludeTitles.map(t => t.toLowerCase());
     const available = pool.filter(t => !normalizedExcluded.includes(t.toLowerCase()));
