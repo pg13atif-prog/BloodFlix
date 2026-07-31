@@ -182,14 +182,14 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: -20px;
-  right: -20px;
-  height: 28px;
+  left: -30px;
+  right: -30px;
+  height: 44px;
 }
 
 .nav-dropdown {
   position: absolute;
-  top: calc(100% + 24px);
+  top: calc(100% + 36px) !important;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(12, 14, 22, 0.92);
