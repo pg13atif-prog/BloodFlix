@@ -184,12 +184,12 @@
   top: 100%;
   left: -20px;
   right: -20px;
-  height: 16px;
+  height: 28px;
 }
 
 .nav-dropdown {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 24px);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(12, 14, 22, 0.92);
