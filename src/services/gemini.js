@@ -223,8 +223,9 @@ export const getAiRecommendations = async (prompt) => {
     The user will give you a prompt describing what they want to watch.
 
     CRITICAL FACTUAL ACCURACY RULES:
-    ${tmdbContext ? `- VERIFIED REAL-WORLD CANDIDATES FROM TMDB: ${tmdbContext}
-    - YOU MUST SELECT YOUR 5 RECOMMENDATIONS STRICTLY FROM THE VERIFIED TMDB LIST ABOVE to guarantee 100% factual accuracy.` : '- Ensure every movie title, release year, and actor attribution in your rationale is 100% factually accurate to real life.'}
+    ${tmdbContext ? `- POTENTIAL REAL-WORLD CANDIDATES FROM TMDB: ${tmdbContext}
+    - IMPORTANT: If these TMDB candidates perfectly match the user's intent (e.g. correct actor, genre, and language), you MUST prioritize selecting from them.
+    - HOWEVER, if these candidates are clearly a mismatch (e.g. they belong to an actor with the same name but in the wrong language/industry, or completely irrelevant movies), you MUST IGNORE them and instead generate your own 100% factually accurate recommendations.` : '- Ensure every movie title, release year, and actor attribution in your rationale is 100% factually accurate to real life.'}
 
     You must return a JSON object containing a "recommendations" key, which holds an array of exactly 5 recommendation objects.
     Each recommendation object must have the following keys:
