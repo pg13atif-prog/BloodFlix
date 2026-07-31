@@ -72,8 +72,8 @@ const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) 
   // 1. Try Groq Cloud API first (Primary High-Speed Model Engine - 14,400 free req/day)
   if (groqApiKey) {
     const groqModels = [
-      "llama-3.3-70b-versatile",
       "llama-3.1-8b-instant",
+      "llama-3.3-70b-versatile",
       "mixtral-8x7b-32768",
       "gemma2-9b-it"
     ];
@@ -241,7 +241,7 @@ export const getAiRecommendations = async (prompt) => {
   const systemInstruction = `
     You are an expert movie and TV show recommendation assistant for CineScope, a premium discovery platform.
     The user will give you a prompt describing what they want to watch.
-    You must return a JSON object containing a "recommendations" key, which holds an array of exactly 10 recommendation objects.
+    You must return a JSON object containing a "recommendations" key, which holds an array of exactly 5 recommendation objects.
     Each recommendation object must have the following keys:
     - title: the exact official title of the movie or TV show.
     - mediaType: either "movie" or "tv".
@@ -298,16 +298,15 @@ export const getAiRecommendations = async (prompt) => {
     const matched = scoredMovies.filter(item => item.score > 0).map(item => item.movie);
 
     let selected = [];
-    if (matched.length >= 10) {
-      selected = matched.slice(0, 10);
+    if (matched.length >= 5) {
+      selected = matched.slice(0, 5);
     } else if (matched.length > 0) {
       // Fill remaining with hash-offset picks from the rest of library so prompt is unique
       const seed = hashString(p);
       const pool = scoredMovies.map(item => item.movie);
-      const remainingNeeded = 10 - matched.length;
       
       selected = [...matched];
-      for (let i = 0; i < pool.length && selected.length < 10; i++) {
+      for (let i = 0; i < pool.length && selected.length < 5; i++) {
         const candidate = pool[(seed + i * 7) % pool.length];
         if (!selected.some(m => m.title === candidate.title)) {
           selected.push(candidate);
@@ -318,7 +317,7 @@ export const getAiRecommendations = async (prompt) => {
       const seed = hashString(p);
       const pool = [...MOVIE_LIBRARY];
       selected = [];
-      for (let i = 0; i < pool.length && selected.length < 10; i++) {
+      for (let i = 0; i < pool.length && selected.length < 5; i++) {
         const candidate = pool[(seed + i * 11) % pool.length];
         if (!selected.some(m => m.title === candidate.title)) {
           selected.push(candidate);
