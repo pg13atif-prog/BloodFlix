@@ -82,9 +82,19 @@ const AiDiscoveryPage = () => {
       // 2. Fetch TMDB details for each recommendation
       const tmdbPromises = aiRecs.map(async (rec) => {
         try {
-          const searchData = await searchMedia(rec.title);
-          // Try to find the exact match, prioritizing by mediaType if possible
-          const match = searchData.find(item => item.mediaType === rec.mediaType) || searchData[0];
+          // Construct precise search query with year if returned by AI to avoid wrong remakes/unrelated titles
+          const searchQuery = rec.year ? `${rec.title} ${rec.year}` : rec.title;
+          const searchData = await searchMedia(searchQuery);
+
+          // Find exact match matching mediaType and year if available
+          let match = searchData.find(item => 
+            item.mediaType === (rec.mediaType || 'movie') &&
+            (!rec.year || String(item.year) === String(rec.year))
+          );
+
+          if (!match) {
+            match = searchData.find(item => item.mediaType === (rec.mediaType || 'movie')) || searchData[0];
+          }
 
           if (match) {
             return {

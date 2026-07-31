@@ -221,6 +221,7 @@ export const getAiRecommendations = async (prompt) => {
     You must return a JSON object containing a "recommendations" key, which holds an array of exactly 5 recommendation objects.
     Each recommendation object must have the following keys:
     - title: the exact official title of the movie or TV show.
+    - year: the 4-digit release year (e.g. 1999, 2017, 2021).
     - mediaType: either "movie" or "tv".
     - rationale: a custom 2-3 sentence overview that beautifully blends the plot summary with the specific reason it matches the user's prompt. Make it sound like a premium editorial synopsis.
     Do NOT return markdown formatting like \`\`\`json.
@@ -305,6 +306,7 @@ export const getAiRecommendations = async (prompt) => {
     // Map to clean format
     return selected.map(item => ({
       title: item.title,
+      year: item.year || '',
       mediaType: item.mediaType,
       rationale: item.rationale
     }));
