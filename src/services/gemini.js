@@ -74,13 +74,13 @@ const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) 
   // 1. Try Groq Cloud API first (Primary High-Speed Model Engine)
   if (groqApiKey) {
     try {
-      return await executeGroqRequest("llama-3.1-8b-instant", systemInstruction, userPrompt, temperature);
+      return await executeGroqRequest("llama-3.3-70b-versatile", systemInstruction, userPrompt, temperature);
     } catch (err) {
-      console.warn(`Failed with Groq llama-3.1-8b-instant:`, err.message);
+      console.warn(`Failed with Groq llama-3.3-70b-versatile:`, err.message);
       try {
-        return await executeGroqRequest("llama-3.3-70b-versatile", systemInstruction, userPrompt, temperature);
+        return await executeGroqRequest("llama-3.1-8b-instant", systemInstruction, userPrompt, temperature);
       } catch (err2) {
-        console.warn(`Failed with Groq llama-3.3-70b-versatile:`, err2.message);
+        console.warn(`Failed with Groq llama-3.1-8b-instant:`, err2.message);
       }
     }
   }
