@@ -18,7 +18,7 @@ const MovieDebate = () => {
       if (value.trim().length > 1) {
         try {
           const results = await searchMedia(value);
-          setSuggestionsA(results.slice(0, 5));
+          setSuggestionsA(results.slice(0, 15));
         } catch (err) {
           console.error(err);
         }
@@ -30,7 +30,7 @@ const MovieDebate = () => {
       if (value.trim().length > 1) {
         try {
           const results = await searchMedia(value);
-          setSuggestionsB(results.slice(0, 5));
+          setSuggestionsB(results.slice(0, 15));
         } catch (err) {
           console.error(err);
         }
@@ -85,7 +85,8 @@ const MovieDebate = () => {
                       key={movie.id} 
                       className="suggestion-item" 
                       onClick={() => {
-                        setMovieA(movie.title);
+                        const formattedTitle = movie.year && movie.year !== '—' ? `${movie.title} (${movie.year})` : movie.title;
+                        setMovieA(formattedTitle);
                         setSuggestionsA([]);
                       }}
                     >
@@ -122,7 +123,8 @@ const MovieDebate = () => {
                       key={movie.id} 
                       className="suggestion-item" 
                       onClick={() => {
-                        setMovieB(movie.title);
+                        const formattedTitle = movie.year && movie.year !== '—' ? `${movie.title} (${movie.year})` : movie.title;
+                        setMovieB(formattedTitle);
                         setSuggestionsB([]);
                       }}
                     >

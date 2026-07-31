@@ -1,3 +1,5 @@
+import { getMovieFactSheet } from './tmdb';
+
 const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
 
@@ -372,8 +374,21 @@ export const getAiPickForMe = async (excludeTitles = []) => {
 };
 
 export const getAiMovieDebate = async (movieA, movieB) => {
+  // Fetch ground-truth fact sheets from TMDB in parallel
+  const [factA, factB] = await Promise.all([
+    getMovieFactSheet(movieA),
+    getMovieFactSheet(movieB)
+  ]);
+
   const systemInstruction = `
-    You are a professional film critic judging a bout between two movies.
+    You are a world-class, strictly factual film critic judging a comparative debate between two movies.
+    
+    STRICT FACTUAL GROUND-TRUTH RULES:
+    - You are provided with verified TMDB ground-truth fact sheets for both films below.
+    - You MUST use the provided Director, Music Composer(s), Main Cast, Release Year, and Genres as ABSOLUTE GROUND TRUTH.
+    - NEVER invent or alter music composers, directors, or cast (e.g. if the fact sheet states Music Composer(s): Kalyanji-Anandji, you MUST credit Kalyanji-Anandji for Soundtrack).
+    - Ensure every reason given for a winning category is 100% factually aligned with the verified fact sheets.
+
     Compare them across exactly these 9 categories: Story, Characters, Acting, Direction, VFX, Cinematography, Soundtrack, Ending, Rewatchability.
     Return a JSON object with this exact structure:
     {
@@ -387,8 +402,20 @@ export const getAiMovieDebate = async (movieA, movieB) => {
     Return ONLY JSON.
   `;
 
+  const userPrompt = `
+    Compare Movie A vs Movie B using these VERIFIED GROUND-TRUTH FACT SHEETS:
+
+    --- MOVIE A FACT SHEET ---
+    ${factA.factSummary}
+
+    --- MOVIE B FACT SHEET ---
+    ${factB.factSummary}
+
+    Provide your expert, factually rigorous comparative debate analysis.
+  `;
+
   try {
-    return await callOpenRouter(systemInstruction, `Compare "${movieA}" vs "${movieB}".`, 0.7);
+    return await callOpenRouter(systemInstruction, userPrompt, 0.2);
   } catch (err) {
     console.warn('OpenRouter rate limited or unavailable, using Debate fallback:', err.message);
     return {

@@ -67,7 +67,7 @@ const Navbar = () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         searchMedia(searchQuery.trim(), controller.signal).then(data => {
-          setSuggestions(data.slice(0, 5));
+          setSuggestions(data.slice(0, 10));
           setShowSuggestions(true);
         }).catch(err => console.error(err));
       }, 300);
@@ -440,6 +440,12 @@ const Navbar = () => {
                         </div>
                       </div>
                     ))}
+                    <div
+                      className="autocomplete-footer"
+                      onClick={() => executeSearch(searchQuery)}
+                    >
+                      View all results for "{searchQuery}" &rarr;
+                    </div>
                   </div>
                 )}
                 {searchQuery.trim().length > 1 && suggestions.length === 0 && (

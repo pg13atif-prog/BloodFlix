@@ -113,20 +113,128 @@ export const getTrending = async (mediaType = 'all', timeWindow = 'day', signal)
 };
 
 export const searchMedia = async (query, signal) => {
-  const response = await fetchWithTimeout(
-    `${API_BASE_URL}/search/multi?query=${encodeURIComponent(query)}&include_adult=false&language=en-US&page=1`,
-    { signal },
+  if (!query || !query.trim()) return [];
+  const rawQuery = query.trim();
+
+  // 1. Extract 4-digit year if present (e.g. "don 1978" -> year 1978, clean "don")
+  const yearMatch = rawQuery.match(/\b(19\d\d|20\d\d)\b/);
+  const targetYear = yearMatch ? yearMatch[1] : null;
+
+  // Clean query by removing the year string for better TMDB title matching
+  const cleanedText = targetYear ? rawQuery.replace(/\b(19\d\d|20\d\d)\b/g, '').trim() : rawQuery;
+  const searchKeywords = (cleanedText || rawQuery).toLowerCase();
+  const searchWords = searchKeywords.split(/\s+/).filter(w => w.length > 0);
+
+  // Build parallel fetch promises to maximize recall
+  const promises = [];
+
+  // Call 1: Standard multi-search page 1
+  promises.push(
+    fetchWithTimeout(
+      `${API_BASE_URL}/search/multi?query=${encodeURIComponent(rawQuery)}&include_adult=false&language=en-US&page=1`,
+      { signal }
+    ).then(r => r.ok ? r.json() : { results: [] }).catch(() => ({ results: [] }))
   );
 
-  if (!response.ok) {
-    throw new Error('Unable to perform search.');
+  // Call 2: If cleanedText differs from rawQuery, search multi-search with cleanedText
+  if (cleanedText && cleanedText !== rawQuery) {
+    promises.push(
+      fetchWithTimeout(
+        `${API_BASE_URL}/search/multi?query=${encodeURIComponent(cleanedText)}&include_adult=false&language=en-US&page=1`,
+        { signal }
+      ).then(r => r.ok ? r.json() : { results: [] }).catch(() => ({ results: [] }))
+    );
   }
 
-  const { results } = await response.json();
-  // Filter out people, only keep movies/tv with posters
-  return results
-    .filter((item) => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path)
-    .map(mapMovie);
+  // Call 3: Movie specific search with primary_release_year if year is present
+  if (targetYear) {
+    const q = cleanedText || rawQuery;
+    promises.push(
+      fetchWithTimeout(
+        `${API_BASE_URL}/search/movie?query=${encodeURIComponent(q)}&primary_release_year=${targetYear}&include_adult=false&language=en-US&page=1`,
+        { signal }
+      ).then(r => r.ok ? r.json() : { results: [] }).catch(() => ({ results: [] }))
+    );
+  }
+
+  // Call 4: Page 2 of movie search for short queries so classic movies further down are retrieved
+  if (searchKeywords.length <= 8) {
+    const q = cleanedText || rawQuery;
+    promises.push(
+      fetchWithTimeout(
+        `${API_BASE_URL}/search/movie?query=${encodeURIComponent(q)}&include_adult=false&language=en-US&page=2`,
+        { signal }
+      ).then(r => r.ok ? r.json() : { results: [] }).catch(() => ({ results: [] }))
+    );
+  }
+
+  // Call 5: If multi-word query (e.g. "amitabh bachchan don"), search for the last word (main title candidate)
+  if (searchWords.length >= 2 && !targetYear) {
+    const mainTitleCandidate = searchWords[searchWords.length - 1];
+    if (mainTitleCandidate.length >= 3) {
+      promises.push(
+        fetchWithTimeout(
+          `${API_BASE_URL}/search/movie?query=${encodeURIComponent(mainTitleCandidate)}&include_adult=false&language=en-US&page=1`,
+          { signal }
+        ).then(r => r.ok ? r.json() : { results: [] }).catch(() => ({ results: [] }))
+      );
+    }
+  }
+
+  const responses = await Promise.all(promises);
+
+  // Deduplicate results by ID
+  const itemMap = new Map();
+  responses.forEach(data => {
+    if (data && Array.isArray(data.results)) {
+      data.results.forEach(item => {
+        if ((item.media_type === 'movie' || item.media_type === 'tv' || item.title || item.name) && item.poster_path) {
+          if (!itemMap.has(item.id)) {
+            itemMap.set(item.id, item);
+          }
+        }
+      });
+    }
+  });
+
+  const rawList = Array.from(itemMap.values());
+
+  // Smart scoring and ranking algorithm
+  const scored = rawList.map(item => {
+    let score = 0;
+    const title = (item.title || item.name || '').toLowerCase();
+    const releaseYear = (item.release_date || item.first_air_date || '').slice(0, 4);
+
+    // Exact year match boost (+150)
+    if (targetYear && releaseYear === targetYear) {
+      score += 150;
+    }
+
+    // Exact title match boost (+100)
+    if (title === searchKeywords || (cleanedText && title === cleanedText.toLowerCase())) {
+      score += 100;
+    }
+    // Title starts with match (+50)
+    else if (title.startsWith(searchKeywords) || (cleanedText && title.startsWith(cleanedText.toLowerCase()))) {
+      score += 50;
+    }
+    // Containment of search words (+30)
+    else if (searchWords.every(w => title.includes(w))) {
+      score += 30;
+    }
+
+    // Popularity score weight
+    if (item.popularity) {
+      score += Math.min(item.popularity / 10, 20);
+    }
+
+    return { item, score };
+  });
+
+  // Sort by score descending
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.map(s => mapMovie(s.item));
 };
 
 export const getExternalRatings = async (imdbId, title, year) => {
@@ -148,7 +256,7 @@ export const getExternalRatings = async (imdbId, title, year) => {
 
 export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
   const response = await fetchWithTimeout(
-    `${API_BASE_URL}/${mediaType}/${movieId}?append_to_response=external_ids&language=en-US`,
+    `${API_BASE_URL}/${mediaType}/${movieId}?append_to_response=credits,external_ids&language=en-US`,
     { signal },
   );
 
@@ -167,6 +275,9 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
     const mins = minutes % 60;
     return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
   };
+
+  const crew = data.credits?.crew || [];
+  const cast = data.credits?.cast || [];
 
   return {
     id: data.id,
@@ -195,7 +306,45 @@ export const getMovieDetails = async (movieId, mediaType = 'movie', signal) => {
     seasons: data.seasons || [],
     numberOfSeasons: data.number_of_seasons || 0,
     numberOfEpisodes: data.number_of_episodes || 0,
+    directors: crew.filter((c) => c.job === 'Director').map((c) => c.name),
+    composers: crew.filter((c) => ['Original Music Composer', 'Music', 'Composer', 'Original Score', 'Songs'].includes(c.job) || c.department === 'Sound').slice(0, 3).map((c) => c.name),
+    topCast: cast.slice(0, 6).map((c) => c.name),
   };
+};
+
+export const getMovieFactSheet = async (titleQuery) => {
+  if (!titleQuery) return { title: 'Unknown', factSummary: 'No information available.' };
+  try {
+    const matches = await searchMedia(titleQuery);
+    if (!matches || matches.length === 0) {
+      return { title: titleQuery, factSummary: `Title: "${titleQuery}"` };
+    }
+    const best = matches[0];
+    const details = await getMovieDetails(best.id, best.mediaType);
+    
+    const directors = details.directors?.length ? details.directors.join(', ') : 'N/A';
+    const composers = details.composers?.length ? details.composers.join(', ') : 'N/A';
+    const topCast = details.topCast?.length ? details.topCast.join(', ') : 'N/A';
+    const genres = details.genres?.length ? details.genres.join(', ') : 'N/A';
+
+    const factSummary = `Title: "${details.title}" (${details.year})
+Type: ${details.mediaType === 'tv' ? 'TV Series' : 'Movie'}
+Director: ${directors}
+Music Composer(s): ${composers}
+Main Cast: ${topCast}
+Genres: ${genres}
+Overview: ${details.overview || details.tagline || 'N/A'}`;
+
+    return {
+      title: details.title,
+      year: details.year,
+      factSummary,
+      details
+    };
+  } catch (err) {
+    console.error(`Failed to fetch fact sheet for ${titleQuery}:`, err);
+    return { title: titleQuery, factSummary: `Title: "${titleQuery}"` };
+  }
 };
 
 export const getMovieCredits = async (movieId, mediaType = 'movie', signal) => {

@@ -236,7 +236,10 @@ function App() {
 
       case 'recommended':
         return <RecommendedPage />;
-        
+
+      case 'search':
+        return <SearchPage query={currentParams?.query} />;
+
       case 'profile':
         return <ProfilePage />;
 
