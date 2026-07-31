@@ -69,56 +69,31 @@ const executeRequest = async (model, systemInstruction, userPrompt, temperature,
 };
 
 const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) => {
-  // 1. Try Groq Cloud API first (Primary High-Speed Model Engine - 14,400 free req/day)
+  // 1. Try Groq Cloud API first (Primary High-Speed Model Engine)
   if (groqApiKey) {
-    const groqModels = [
-      "llama-3.1-8b-instant",
-      "llama-3.3-70b-versatile",
-      "mixtral-8x7b-32768",
-      "gemma2-9b-it"
-    ];
-
-    for (const model of groqModels) {
+    try {
+      return await executeGroqRequest("llama-3.1-8b-instant", systemInstruction, userPrompt, temperature);
+    } catch (err) {
+      console.warn(`Failed with Groq llama-3.1-8b-instant:`, err.message);
       try {
-        return await executeGroqRequest(model, systemInstruction, userPrompt, temperature);
-      } catch (err) {
-        console.warn(`Failed with Groq model ${model}:`, err.message);
+        return await executeGroqRequest("llama-3.3-70b-versatile", systemInstruction, userPrompt, temperature);
+      } catch (err2) {
+        console.warn(`Failed with Groq llama-3.3-70b-versatile:`, err2.message);
       }
     }
   }
 
-  // 2. Failover to OpenRouter if Groq is unavailable
+  // 2. Failover to OpenRouter
   if (openRouterApiKey) {
-    const openRouterModels = [
-      "openrouter/free",
-      "google/gemma-4-31b-it:free",
-      "google/gemma-4-26b-a4b-it:free",
-      "nvidia/nemotron-3-nano-30b-a3b:free",
-      "openai/gpt-oss-20b:free"
-    ];
-
-    let lastError = null;
-
-    for (const model of openRouterModels) {
-      try {
-        return await executeRequest(model, systemInstruction, userPrompt, temperature, true);
-      } catch (err) {
-        console.warn(`Failed with OpenRouter model ${model} (structured output):`, err.message);
-        lastError = err;
-        
-        if (
-          err.message.includes("structured-outputs") || 
-          err.message.includes("response_format") || 
-          err.message.includes("structured_outputs") ||
-          err.message.includes("429") ||
-          err.message.includes("404")
-        ) {
-          try {
-            return await executeRequest(model, systemInstruction, userPrompt, temperature, false);
-          } catch (innerErr) {
-            console.warn(`Failed with OpenRouter model ${model} (fallback raw):`, innerErr.message);
-            lastError = innerErr;
-          }
+    try {
+      return await executeRequest("openrouter/free", systemInstruction, userPrompt, temperature, true);
+    } catch (err) {
+      console.warn(`Failed with OpenRouter free model:`, err.message);
+      if (err.message.includes("structured") || err.message.includes("format")) {
+        try {
+          return await executeRequest("openrouter/free", systemInstruction, userPrompt, temperature, false);
+        } catch (innerErr) {
+          console.warn(`Failed with OpenRouter fallback raw:`, innerErr.message);
         }
       }
     }

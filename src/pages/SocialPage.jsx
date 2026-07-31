@@ -132,9 +132,14 @@ const SocialPage = () => {
 
       const hydratedRecs = (await Promise.all(tmdbPromises)).filter(Boolean);
 
+      const friendWatchedNotMe = fWatched.filter(fm => !myWatched.find(m => m.id === fm.id));
+      const myWatchedNotFriend = myWatched.filter(m => !fWatched.find(fm => fm.id === m.id));
+
       setMatchResult({
         compatibility: compatibilityData.compatibility,
         sharedFavorites,
+        friendWatchedNotMe,
+        myWatchedNotFriend,
         recommendations: hydratedRecs
       });
 
@@ -229,6 +234,28 @@ const SocialPage = () => {
               <h3>You Both Loved</h3>
               <div className="social-grid">
                 {matchResult.sharedFavorites.map(movie => (
+                  <MovieCard key={movie.id} {...movie} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {matchResult.friendWatchedNotMe.length > 0 && (
+            <div className="unique-watched">
+              <h3>They've Seen, But You Haven't</h3>
+              <div className="social-grid">
+                {matchResult.friendWatchedNotMe.map(movie => (
+                  <MovieCard key={movie.id} {...movie} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {matchResult.myWatchedNotFriend.length > 0 && (
+            <div className="unique-watched">
+              <h3>You've Seen, But They Haven't</h3>
+              <div className="social-grid">
+                {matchResult.myWatchedNotFriend.map(movie => (
                   <MovieCard key={movie.id} {...movie} />
                 ))}
               </div>
