@@ -1,4 +1,4 @@
-import { getMovieFactSheet } from './tmdb';
+import { getMovieFactSheet, getTMDBContextForPrompt } from './tmdb';
 
 const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
 const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
@@ -215,9 +215,17 @@ const hashString = (str) => {
 };
 
 export const getAiRecommendations = async (prompt) => {
+  // Fetch ground-truth TMDB filmography/candidates for the user's prompt (RAG)
+  const tmdbContext = await getTMDBContextForPrompt(prompt);
+
   const systemInstruction = `
     You are an expert movie and TV show recommendation assistant for CineScope, a premium discovery platform.
     The user will give you a prompt describing what they want to watch.
+
+    CRITICAL FACTUAL ACCURACY RULES:
+    ${tmdbContext ? `- VERIFIED REAL-WORLD CANDIDATES FROM TMDB: ${tmdbContext}
+    - YOU MUST SELECT YOUR 5 RECOMMENDATIONS STRICTLY FROM THE VERIFIED TMDB LIST ABOVE to guarantee 100% factual accuracy.` : '- Ensure every movie title, release year, and actor attribution in your rationale is 100% factually accurate to real life.'}
+
     You must return a JSON object containing a "recommendations" key, which holds an array of exactly 5 recommendation objects.
     Each recommendation object must have the following keys:
     - title: the exact official title of the movie or TV show.

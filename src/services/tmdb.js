@@ -561,3 +561,64 @@ export const getTvEpisode = async (seriesId, seasonNumber, episodeNumber, signal
   if (!response.ok) return null;
   return await response.json();
 };
+
+export const getTMDBContextForPrompt = async (prompt) => {
+  if (!prompt || !prompt.trim()) return null;
+  const p = prompt.trim();
+
+  try {
+    // 1. Clean prompt to extract potential person / actor / director names
+    const cleanForPerson = p
+      .replace(/'s\b/gi, '')
+      .replace(/\b(classic|movies|movie|films|film|best|top|shows|show|actor|director|cinema|all|starred|in|bengali|hindi|tamil|telugu|bollywood|hollywood)\b/gi, '')
+      .trim();
+
+    const personQuery = cleanForPerson.length >= 3 ? cleanForPerson : p;
+
+    const personRes = await fetchWithTimeout(
+      `${API_BASE_URL}/search/person?query=${encodeURIComponent(personQuery)}&include_adult=false&language=en-US&page=1`
+    );
+
+    if (personRes.ok) {
+      const personData = await personRes.json();
+      if (personData.results && personData.results.length > 0) {
+        const topPerson = personData.results[0];
+        
+        // Fetch person's movie credits
+        const creditsRes = await fetchWithTimeout(
+          `${API_BASE_URL}/person/${topPerson.id}/movie_credits?language=en-US`
+        );
+        if (creditsRes.ok) {
+          const creditsData = await creditsRes.json();
+          const allMedia = [...(creditsData.cast || []), ...(creditsData.crew || [])];
+          
+          // Sort by vote_count / popularity to get major real-world films
+          const sorted = allMedia
+            .filter(m => m.poster_path && m.title)
+            .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
+
+          const uniqueMap = new Map();
+          sorted.forEach(m => {
+            if (!uniqueMap.has(m.id)) uniqueMap.set(m.id, m);
+          });
+          const topList = Array.from(uniqueMap.values()).slice(0, 15);
+
+          if (topList.length > 0) {
+            const formattedList = topList.map(m => `"${m.title}" (${(m.release_date || '').slice(0,4)})`).join(', ');
+            return `Verified TMDB Filmography for ${topPerson.name}: [${formattedList}]`;
+          }
+        }
+      }
+    }
+
+    // 2. Otherwise, do a general media search to fetch candidate movies
+    const mediaCandidates = await searchMedia(p);
+    if (mediaCandidates && mediaCandidates.length > 0) {
+      const formattedList = mediaCandidates.slice(0, 12).map(m => `"${m.title}" (${m.year})`).join(', ');
+      return `Relevant TMDB titles matching query: [${formattedList}]`;
+    }
+  } catch (err) {
+    console.error('Error fetching TMDB context for prompt:', err);
+  }
+  return null;
+};
