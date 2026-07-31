@@ -116,12 +116,16 @@ export const searchMedia = async (query, signal) => {
   if (!query || !query.trim()) return [];
   const rawQuery = query.trim();
 
-  // 1. Extract 4-digit year if present (e.g. "don 1978" -> year 1978, clean "don")
+  // 1. Extract 4-digit year if present (e.g. "don (1978)" -> year 1978, clean "don")
   const yearMatch = rawQuery.match(/\b(19\d\d|20\d\d)\b/);
   const targetYear = yearMatch ? yearMatch[1] : null;
 
-  // Clean query by removing the year string for better TMDB title matching
-  const cleanedText = targetYear ? rawQuery.replace(/\b(19\d\d|20\d\d)\b/g, '').trim() : rawQuery;
+  // Clean query by removing parenthetical year strings and symbols for accurate TMDB title matching
+  const cleanedText = rawQuery
+    .replace(/\(\s*(19\d\d|20\d\d)\s*\)/g, '')
+    .replace(/\b(19\d\d|20\d\d)\b/g, '')
+    .replace(/[()]/g, '')
+    .trim();
   const searchKeywords = (cleanedText || rawQuery).toLowerCase();
   const searchWords = searchKeywords.split(/\s+/).filter(w => w.length > 0);
 
