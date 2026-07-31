@@ -1,4 +1,36 @@
 const openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+
+const executeGroqRequest = async (model, systemInstruction, userPrompt, temperature) => {
+  const body = {
+    model,
+    messages: [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: userPrompt }
+    ],
+    temperature,
+    response_format: { type: "json_object" }
+  };
+
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${groqApiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Groq API error (${model}): ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data.choices[0].message.content;
+  const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(cleanText);
+};
 
 const executeRequest = async (model, systemInstruction, userPrompt, temperature, useJsonFormat) => {
   const body = {
@@ -37,49 +69,62 @@ const executeRequest = async (model, systemInstruction, userPrompt, temperature,
 };
 
 const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) => {
-  if (!openRouterApiKey) {
-    throw new Error('OpenRouter API key is missing.');
+  // 1. Try Groq Cloud API first (Primary High-Speed Model Engine - 14,400 free req/day)
+  if (groqApiKey) {
+    const groqModels = [
+      "llama-3.3-70b-versatile",
+      "llama-3.1-8b-instant",
+      "mixtral-8x7b-32768",
+      "gemma2-9b-it"
+    ];
+
+    for (const model of groqModels) {
+      try {
+        return await executeGroqRequest(model, systemInstruction, userPrompt, temperature);
+      } catch (err) {
+        console.warn(`Failed with Groq model ${model}:`, err.message);
+      }
+    }
   }
 
-  // Fallback list of models, prioritizing active free models on OpenRouter
-  const models = [
-    "openrouter/free",
-    "google/gemma-4-31b-it:free",
-    "google/gemma-4-26b-a4b-it:free",
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-    "openai/gpt-oss-20b:free",
-    "inclusionai/ling-3.0-flash:free"
-  ];
+  // 2. Failover to OpenRouter if Groq is unavailable
+  if (openRouterApiKey) {
+    const openRouterModels = [
+      "openrouter/free",
+      "google/gemma-4-31b-it:free",
+      "google/gemma-4-26b-a4b-it:free",
+      "nvidia/nemotron-3-nano-30b-a3b:free",
+      "openai/gpt-oss-20b:free"
+    ];
 
-  let lastError = null;
+    let lastError = null;
 
-  for (const model of models) {
-    try {
-      // Try with structured outputs first
-      return await executeRequest(model, systemInstruction, userPrompt, temperature, true);
-    } catch (err) {
-      console.warn(`Failed with model ${model} (structured output):`, err.message);
-      lastError = err;
-      
-      // If it failed because of structured-outputs compatibility, retry WITHOUT response_format
-      if (
-        err.message.includes("structured-outputs") || 
-        err.message.includes("response_format") || 
-        err.message.includes("structured_outputs") ||
-        err.message.includes("429") ||
-        err.message.includes("404")
-      ) {
-        try {
-          return await executeRequest(model, systemInstruction, userPrompt, temperature, false);
-        } catch (innerErr) {
-          console.warn(`Failed with model ${model} (fallback raw):`, innerErr.message);
-          lastError = innerErr;
+    for (const model of openRouterModels) {
+      try {
+        return await executeRequest(model, systemInstruction, userPrompt, temperature, true);
+      } catch (err) {
+        console.warn(`Failed with OpenRouter model ${model} (structured output):`, err.message);
+        lastError = err;
+        
+        if (
+          err.message.includes("structured-outputs") || 
+          err.message.includes("response_format") || 
+          err.message.includes("structured_outputs") ||
+          err.message.includes("429") ||
+          err.message.includes("404")
+        ) {
+          try {
+            return await executeRequest(model, systemInstruction, userPrompt, temperature, false);
+          } catch (innerErr) {
+            console.warn(`Failed with OpenRouter model ${model} (fallback raw):`, innerErr.message);
+            lastError = innerErr;
+          }
         }
       }
     }
   }
 
-  throw new Error(`All fallback models failed. Last error: ${lastError?.message}`);
+  throw new Error("All AI API providers (Groq and OpenRouter) failed or rate-limited.");
 };
 
 /* ── Extensive Movie & TV Library for Smart Prompt Matching ───────────────────── */
