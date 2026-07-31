@@ -71,37 +71,55 @@ const executeRequest = async (model, systemInstruction, userPrompt, temperature,
 };
 
 const callOpenRouter = async (systemInstruction, userPrompt, temperature = 0.7) => {
-  // 1. Try Groq Cloud API first (Primary High-Speed Model Engine)
-  if (groqApiKey) {
-    try {
-      return await executeGroqRequest("llama-3.3-70b-versatile", systemInstruction, userPrompt, temperature);
-    } catch (err) {
-      console.warn(`Failed with Groq llama-3.3-70b-versatile:`, err.message);
+  // 1. Try Qwen models on OpenRouter first as explicitly requested
+  if (openRouterApiKey) {
+    const qwenModels = [
+      "qwen/qwen-2.5-72b-instruct",
+      "qwen/qwen-2.5-coder-32b-instruct",
+      "qwen/qwen-2.5-32b-instruct",
+      "qwen/qwen-2.5-72b-instruct:free"
+    ];
+    for (const model of qwenModels) {
       try {
-        return await executeGroqRequest("llama-3.1-8b-instant", systemInstruction, userPrompt, temperature);
-      } catch (err2) {
-        console.warn(`Failed with Groq llama-3.1-8b-instant:`, err2.message);
+        return await executeRequest(model, systemInstruction, userPrompt, temperature, true);
+      } catch (err) {
+        console.warn(`Failed with OpenRouter model ${model}:`, err.message);
       }
     }
   }
 
-  // 2. Failover to OpenRouter
+  // 2. Try Groq Cloud API (Qwen & LLaMA Models)
+  if (groqApiKey) {
+    const groqModels = [
+      "qwen-2.5-32b",
+      "qwen-2.5-coder-32b",
+      "llama-3.3-70b-versatile",
+      "llama-3.1-8b-instant"
+    ];
+    for (const model of groqModels) {
+      try {
+        return await executeGroqRequest(model, systemInstruction, userPrompt, temperature);
+      } catch (err) {
+        console.warn(`Failed with Groq ${model}:`, err.message);
+      }
+    }
+  }
+
+  // 3. Failover to OpenRouter free router
   if (openRouterApiKey) {
     try {
       return await executeRequest("openrouter/free", systemInstruction, userPrompt, temperature, true);
     } catch (err) {
       console.warn(`Failed with OpenRouter free model:`, err.message);
-      if (err.message.includes("structured") || err.message.includes("format")) {
-        try {
-          return await executeRequest("openrouter/free", systemInstruction, userPrompt, temperature, false);
-        } catch (innerErr) {
-          console.warn(`Failed with OpenRouter fallback raw:`, innerErr.message);
-        }
+      try {
+        return await executeRequest("openrouter/free", systemInstruction, userPrompt, temperature, false);
+      } catch (innerErr) {
+        console.warn(`Failed with OpenRouter fallback raw:`, innerErr.message);
       }
     }
   }
 
-  throw new Error("All AI API providers (Groq and OpenRouter) failed or rate-limited.");
+  throw new Error("All AI API providers (Qwen, Groq, OpenRouter) failed or rate-limited.");
 };
 
 /* ── Extensive Movie & TV Library for Smart Prompt Matching ───────────────────── */
