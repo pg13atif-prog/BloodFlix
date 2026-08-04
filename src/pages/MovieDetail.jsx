@@ -13,8 +13,10 @@ import {
 import { 
   addToWatchlist, removeFromWatchlist, isInWatchlist, addRecentlyViewed,
   addToWatched, removeFromWatched, isWatched,
-  addToLiked, removeFromLiked, isLiked
+  addToLiked, removeFromLiked, isLiked,
+  addCustomReview, getCustomReviews
 } from '../services/firestore';
+import AuthModal from '../components/AuthModal';
 import { useAuth } from '../context/AuthContext';
 import MovieRow from '../components/MovieRow';
 import { checkAndUnlockAchievements, trackDetailView, incrementStat } from '../services/achievements';
@@ -45,6 +47,12 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const { currentUser } = useAuth();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
+  const [customReviews, setCustomReviews] = useState([]);
+  const [newReviewContent, setNewReviewContent] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -63,9 +71,10 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
       getSimilarMovies(movieId, mediaType, controller.signal),
       getWatchProviders(movieId, mediaType, controller.signal),
       getRecommendations(movieId, mediaType, controller.signal),
-      getReviews(movieId, mediaType, controller.signal)
+      getReviews(movieId, mediaType, controller.signal),
+      getCustomReviews(movieId)
     ])
-      .then(([detailsData, castData, videosData, similarData, providersData, recsData, reviewsData]) => {
+      .then(([detailsData, castData, videosData, similarData, providersData, recsData, reviewsData, customReviewsData]) => {
         setMovie(detailsData);
         setCast(castData);
         setTrailerKey(videosData[0]?.key || null);
@@ -80,6 +89,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
         
         setRecommendations(recsData);
         setReviews(reviewsData);
+        setCustomReviews(customReviewsData);
         setStatus('success');
         
         // Add to recently viewed if logged in
@@ -209,6 +219,38 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const getGenreColor = (genre) => {
     const safeGenre = genre.toLowerCase().replace(/[^a-z0-9-]/g, '-');
     return `var(--color-genre-${safeGenre}, var(--color-genre-default))`;
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!currentUser || currentUser.isAnonymous) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (!newReviewContent.trim()) return;
+
+    setIsSubmittingReview(true);
+    try {
+      const email = currentUser.email || '';
+      const username = email ? email.split('@')[0] : 'User';
+      const reviewData = {
+        content: newReviewContent.trim(),
+        rating: newReviewRating,
+        author: username,
+      };
+      await addCustomReview(movieId, currentUser.uid, reviewData);
+      setCustomReviews(prev => [
+        { ...reviewData, userId: currentUser.uid, createdAt: new Date().toISOString() },
+        ...prev
+      ]);
+      setNewReviewContent('');
+      setNewReviewRating(5);
+    } catch (err) {
+      console.error("Failed to post review", err);
+      alert("Failed to post review.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   // Merge similar and recommendations into a single deduplicated array
@@ -634,10 +676,73 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
               </div>
             )}
 
-            {/* Reviews Section */}
+            {/* Custom Reviews Form & List */}
+            <div className="detail-section">
+              <h3 className="section-title">Reviews by CineScope Users</h3>
+              
+              <div className="write-review-card">
+                <form onSubmit={handleSubmitReview} className="write-review-form">
+                  <div className="review-rating-input">
+                    <label>Your Rating:</label>
+                    <select 
+                      value={newReviewRating} 
+                      onChange={e => setNewReviewRating(Number(e.target.value))}
+                    >
+                      {[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5].map(r => (
+                        <option key={r} value={r}>{r} Stars</option>
+                      ))}
+                    </select>
+                  </div>
+                  <textarea
+                    placeholder="What did you think about this title?"
+                    value={newReviewContent}
+                    onChange={(e) => setNewReviewContent(e.target.value)}
+                    onFocus={() => {
+                      if (!currentUser || currentUser.isAnonymous) {
+                        setIsAuthModalOpen(true);
+                      }
+                    }}
+                    rows={4}
+                    required
+                  ></textarea>
+                  <button 
+                    type="submit" 
+                    className="btn-primary submit-review-btn"
+                    disabled={isSubmittingReview || (!currentUser || currentUser.isAnonymous)}
+                  >
+                    {isSubmittingReview ? 'Posting...' : 'Post Review'}
+                  </button>
+                </form>
+              </div>
+
+              {customReviews.length > 0 ? (
+                <div className="reviews-list custom-reviews-list">
+                  {customReviews.map((review, i) => (
+                    <div key={i} className="review-card">
+                      <div className="review-header">
+                        <div className="review-avatar">
+                          <span>{review.author.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div className="review-meta">
+                          <h4>A review by {review.author}</h4>
+                          <span className="review-rating">★ {review.rating}</span>
+                        </div>
+                      </div>
+                      <div className="review-content">
+                        <p>{review.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="no-reviews-msg" style={{color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', marginTop: '1rem'}}>No user reviews yet. Be the first to review!</p>
+              )}
+            </div>
+
+            {/* TMDB Reviews Section */}
             {reviews.length > 0 && (
               <div className="detail-section">
-                <h3 className="section-title">Reviews</h3>
+                <h3 className="section-title">Reviews from Web</h3>
                 <div className="reviews-list">
                   {reviews.slice(0, 3).map((review) => (
                     <div key={review.id} className="review-card">
@@ -824,6 +929,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
           </div>
         </div>
       )}
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </div>
   );
 };

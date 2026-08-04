@@ -4,7 +4,9 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInAnonymously,
-  signOut 
+  signOut,
+  EmailAuthProvider,
+  linkWithCredential
 } from 'firebase/auth';
 import { auth } from '../services/firebase';
 
@@ -38,6 +40,12 @@ export const AuthProvider = ({ children }) => {
     return signOut(auth);
   };
 
+  // Link Guest to Email
+  const linkGuestAccount = (email, password) => {
+    const credential = EmailAuthProvider.credential(email, password);
+    return linkWithCredential(auth.currentUser, credential);
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -53,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     login,
     loginAsGuest,
     logout,
+    linkGuestAccount
   };
 
   return (

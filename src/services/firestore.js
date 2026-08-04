@@ -170,3 +170,24 @@ export const getLiked = async (userId) => {
   }
   return [];
 };
+
+// ── Custom Reviews ──
+export const addCustomReview = async (movieId, userId, reviewData) => {
+  if (!movieId || !userId || !reviewData) return;
+  const reviewRef = ref(db, `reviews/${movieId}/${userId}`);
+  await set(reviewRef, {
+    ...reviewData,
+    userId,
+    createdAt: new Date().toISOString()
+  });
+};
+
+export const getCustomReviews = async (movieId) => {
+  if (!movieId) return [];
+  const reviewsRef = ref(db, `reviews/${movieId}`);
+  const snapshot = await get(reviewsRef);
+  if (snapshot.exists()) {
+    return Object.values(snapshot.val()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+  return [];
+};

@@ -409,11 +409,27 @@ const Navbar = () => {
               <div className="autocomplete-dropdown glass-panel">
                 {searchQuery.trim().length === 0 && recentSearches.length > 0 && (
                   <div className="autocomplete-section">
-                    <h4>Recent Searches</h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4>Recent Searches</h4>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setRecentSearches([]); }}
+                        style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem', cursor: 'pointer', padding: '0 0.5rem' }}
+                      >Clear All</button>
+                    </div>
                     {recentSearches.map((term, i) => (
                       <div key={i} className="autocomplete-item" onClick={() => executeSearch(term)}>
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        <span>{term}</span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{term}</span>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRecentSearches(prev => prev.filter(t => t !== term));
+                          }}
+                          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '0.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Remove search"
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
                   </div>

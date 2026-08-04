@@ -51,7 +51,12 @@ const MediaListItem = ({ movie, onRemove, onNavigate }) => {
 
 // ── Main Profile Page ─────────────────────────────────────────────────────────
 const ProfilePage = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, linkGuestAccount } = useAuth();
+
+  const [linkEmail, setLinkEmail] = useState('');
+  const [linkPassword, setLinkPassword] = useState('');
+  const [linkError, setLinkError] = useState('');
+  const [isLinking, setIsLinking] = useState(false);
 
   const [watchlist, setWatchlist]   = useState([]);
   const [liked,     setLiked]       = useState([]);
@@ -140,6 +145,26 @@ const ProfilePage = () => {
     setWatched(p => p.filter(m => m.id !== id));
   };
 
+  const handleLinkAccount = async (e) => {
+    e.preventDefault();
+    setLinkError('');
+    setIsLinking(true);
+    try {
+      await linkGuestAccount(linkEmail, linkPassword);
+      // Optional: alert or toast here
+    } catch (err) {
+      console.error(err);
+      if (err.code === 'auth/email-already-in-use') {
+        setLinkError('This email is already in use by another account.');
+      } else if (err.code === 'auth/weak-password') {
+        setLinkError('Password should be at least 6 characters.');
+      } else {
+        setLinkError(err.message);
+      }
+    }
+    setIsLinking(false);
+  };
+
   if (loading) {
     return <div className="page-container" style={{ paddingTop: '100px', textAlign: 'center', color: '#fff' }}>Loading Profile...</div>;
   }
@@ -204,6 +229,37 @@ const ProfilePage = () => {
       </div>
 
       <div className="profile-v2-body">
+
+        {currentUser.isAnonymous && (
+          <div className="guest-link-banner glass-panel">
+            <div className="guest-link-info">
+              <h3>Secure Your Guest Account</h3>
+              <p>Link your account to an email and password to permanently save your watch history, lists, and achievements.</p>
+            </div>
+            <form className="guest-link-form" onSubmit={handleLinkAccount}>
+              {linkError && <p className="link-error">{linkError}</p>}
+              <div className="link-inputs">
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  value={linkEmail}
+                  onChange={e => setLinkEmail(e.target.value)}
+                  required
+                />
+                <input 
+                  type="password" 
+                  placeholder="Password (Min 6)" 
+                  value={linkPassword}
+                  onChange={e => setLinkPassword(e.target.value)}
+                  required
+                />
+                <button type="submit" className="btn-primary" disabled={isLinking}>
+                  {isLinking ? 'Linking...' : 'Link Account'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* ── Compact Watch Time & Stats Box ──────────────────────── */}
         <div className="watchtime-card compact-stats">

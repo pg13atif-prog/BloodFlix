@@ -26,6 +26,7 @@
   margin: 0 auto;
   justify-content: center;
   flex-wrap: wrap;
+  padding: 0 1rem;
 }
 
 .friend-code-card, .match-card {
@@ -316,5 +317,14 @@
   .breakdown-label {
     flex: 0 0 130px;
     font-size: 0.85rem;
+  }
+  
+  .friend-code-card, .match-card {
+    padding: 1.5rem;
+    min-width: 100%;
+  }
+
+  .social-content {
+    gap: 1.5rem;
   }
 }
