@@ -60,6 +60,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const [friendsList, setFriendsList] = useState([]);
   const [recLoading, setRecLoading] = useState(false);
   const [recFeedback, setRecFeedback] = useState('');
+  const [friendSearch, setFriendSearch] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -1016,30 +1017,54 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
       )}
 
       {showRecModal && (
-        <div className="modal-overlay" onClick={() => setShowRecModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
-            <button className="modal-close" onClick={() => setShowRecModal(false)}>✕</button>
+        <div className="modal-overlay" onClick={() => { setShowRecModal(false); setFriendSearch(''); }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <button className="modal-close" onClick={() => { setShowRecModal(false); setFriendSearch(''); }}>✕</button>
             <h2>Recommend to a Friend</h2>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '-0.75rem', marginBottom: '1.25rem' }}>Send <strong style={{ color: '#fff' }}>{movie?.title}</strong> to a friend</p>
             {recLoading ? (
-              <p>Loading friends...</p>
-            ) : friendsList.length === 0 ? (
-              <p>You have no friends yet. Add some friends from the Friends page!</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto', marginTop: '1rem' }}>
-                {friendsList.map(f => (
-                  <div key={f.uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : f.username.charAt(0).toUpperCase()}
-                      </div>
-                      <span style={{ fontWeight: '500' }}>{f.username}</span>
-                    </div>
-                    <button className="btn-primary btn-sm" onClick={() => handleSendRec(f.uid)}>Send</button>
-                  </div>
-                ))}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 0', color: '#94a3b8' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite', marginRight: '0.75rem' }}><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="32" strokeLinecap="round" /></svg>
+                Loading friends...
               </div>
+            ) : friendsList.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem 0', color: '#94a3b8' }}>
+                <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👥</p>
+                <p>You have no friends yet.</p>
+                <button className="btn-primary btn-sm" style={{ marginTop: '0.75rem' }} onClick={() => { setShowRecModal(false); window.location.hash = '#friends'; }}>Add Friends</button>
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Search friends..."
+                  value={friendSearch}
+                  onChange={e => setFriendSearch(e.target.value)}
+                  style={{ width: '100%', padding: '0.7rem 1rem', borderRadius: '10px', background: 'rgba(255,255,255,0.07)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', outline: 'none', fontSize: '0.9rem', marginBottom: '0.75rem', transition: 'border-color 0.2s' }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '280px', overflowY: 'auto' }}>
+                  {friendsList
+                    .filter(f => !friendSearch || f.username.toLowerCase().includes(friendSearch.toLowerCase()))
+                    .map(f => (
+                    <div key={f.uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '0.65rem 0.75rem', borderRadius: '10px', transition: 'background 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'linear-gradient(135deg, rgba(229,9,20,0.3), rgba(99,102,241,0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', fontSize: '0.95rem', fontWeight: '600', color: '#fff', flexShrink: 0 }}>
+                          {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : f.username.charAt(0).toUpperCase()}
+                        </div>
+                        <span style={{ fontWeight: '500', fontSize: '0.95rem' }}>{f.username}</span>
+                      </div>
+                      <button className="btn-primary btn-sm" onClick={() => handleSendRec(f.uid)} style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', borderRadius: '8px' }}>Send</button>
+                    </div>
+                  ))}
+                  {friendsList.filter(f => !friendSearch || f.username.toLowerCase().includes(friendSearch.toLowerCase())).length === 0 && (
+                    <p style={{ textAlign: 'center', color: '#64748b', padding: '1rem 0', fontSize: '0.9rem' }}>No friends match "{friendSearch}"</p>
+                  )}
+                </div>
+              </>
             )}
-            {recFeedback && <p style={{ color: recFeedback.includes('successfully') ? '#4ade80' : '#ef4444', marginTop: '1rem', textAlign: 'center' }}>{recFeedback}</p>}
+            {recFeedback && <p style={{ color: recFeedback.includes('successfully') ? '#4ade80' : '#ef4444', marginTop: '1rem', textAlign: 'center', fontSize: '0.9rem', fontWeight: '500' }}>{recFeedback}</p>}
           </div>
         </div>
       )}
