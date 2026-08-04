@@ -13,9 +13,9 @@ import {
 import { 
   addToWatchlist, removeFromWatchlist, isInWatchlist, addRecentlyViewed,
   addToWatched, removeFromWatched, isWatched,
-  addToLiked, removeFromLiked, isLiked
+  addToLiked, removeFromLiked, isLiked,
+  addCustomReview, getCustomReviews
 } from '../services/firestore';
-import { addCustomReview, getCustomReviews } from '../services/reviews';
 import { getRelationships, getFriendData, recommendMovie } from '../services/friends';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../context/AuthContext';
