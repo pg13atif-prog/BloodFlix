@@ -1156,3 +1156,22 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ── See All Cast Button ── */
+.see-all-cast-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.see-all-cast-btn:hover {
+  background: rgba(229, 9, 20, 0.2);
+  border-color: var(--color-accent, #e50914);
+  color: #fff;
+}

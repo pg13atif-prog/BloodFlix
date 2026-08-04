@@ -52,6 +52,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [showAllCast, setShowAllCast] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -63,6 +64,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     const controller = new AbortController();
     setStatus('loading');
+    setShowAllCast(false);
 
     Promise.all([
       getMovieDetails(movieId, mediaType, controller.signal),
@@ -655,10 +657,28 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
             {/* Cast Section */}
             {cast.length > 0 && (
               <div className="detail-section">
-                <h3 className="section-title">Full Cast</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 className="section-title" style={{ marginBottom: 0 }}>Cast</h3>
+                  {cast.length > 5 && (
+                    <button 
+                      onClick={() => setShowAllCast(!showAllCast)} 
+                      className="see-all-cast-btn"
+                    >
+                      {showAllCast ? 'Show Less' : 'See All'}
+                    </button>
+                  )}
+                </div>
                 <div className="cast-grid">
-                  {cast.map((person) => (
-                    <div key={person.id} className="cast-card">
+                  {(showAllCast ? cast : cast.slice(0, 5)).map((person) => (
+                    <a
+                      key={person.id}
+                      className="cast-card"
+                      href={`https://www.imdb.com/find/?q=${encodeURIComponent(person.name)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`View ${person.name} on IMDb`}
+                      style={{ textDecoration: 'none' }}
+                    >
                       <div className="cast-avatar">
                         {person.profilePath ? (
                           <img src={person.profilePath} alt={person.name} loading="lazy" />
@@ -670,7 +690,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                         <p className="cast-name">{person.name}</p>
                         <p className="cast-character">{person.character}</p>
                       </div>
-                    </div>
+                    </a>
                   ))}
                 </div>
               </div>
