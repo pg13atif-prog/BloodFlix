@@ -55,6 +55,12 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [showAllCast, setShowAllCast] = useState(false);
 
+  // Recommend State
+  const [showRecModal, setShowRecModal] = useState(false);
+  const [friendsList, setFriendsList] = useState([]);
+  const [recLoading, setRecLoading] = useState(false);
+  const [recFeedback, setRecFeedback] = useState('');
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
