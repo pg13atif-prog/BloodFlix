@@ -13,9 +13,10 @@ import {
 import { 
   addToWatchlist, removeFromWatchlist, isInWatchlist, addRecentlyViewed,
   addToWatched, removeFromWatched, isWatched,
-  addToLiked, removeFromLiked, isLiked,
-  addCustomReview, getCustomReviews
+  addToLiked, removeFromLiked, isLiked
 } from '../services/firestore';
+import { addCustomReview, getCustomReviews } from '../services/reviews';
+import { getRelationships, getFriendData, recommendMovie } from '../services/friends';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../context/AuthContext';
 import MovieRow from '../components/MovieRow';
@@ -200,6 +201,38 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
     } catch (err) { console.error(err); }
   };
   
+  const handleOpenRecommend = async () => {
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    setShowRecModal(true);
+    setRecFeedback('');
+    if (friendsList.length > 0) return;
+    setRecLoading(true);
+    try {
+      const rels = await getRelationships(currentUser.uid);
+      const friendsData = await Promise.all(rels.friends.map(id => getFriendData(id)));
+      setFriendsList(friendsData.filter(Boolean).sort((a,b) => a.username.localeCompare(b.username)));
+    } catch(err) {
+      console.error(err);
+      setRecFeedback("Failed to load friends.");
+    } finally {
+      setRecLoading(false);
+    }
+  };
+
+  const handleSendRec = async (friendId) => {
+    setRecFeedback('');
+    try {
+      await recommendMovie(currentUser.uid, currentUser.email?.split('@')[0] || 'Friend', friendId, movie);
+      setRecFeedback('Recommendation sent successfully!');
+      setTimeout(() => { setShowRecModal(false); setRecFeedback(''); }, 1500);
+    } catch(err) {
+      setRecFeedback(err.message || 'Failed to send.');
+    }
+  };
+
   const handleMarkSeasonWatched = async () => {
     if (!currentUser) return alert('Please log in to mark a season as watched.');
     if (!seasonDetails || !seasonDetails.episodes) return;
@@ -642,6 +675,21 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 </button>
                 <span className="action-label">{isWatchedItem ? 'Watched' : 'Watched'}</span>
               </div>
+
+              {/* Recommend */}
+              <div className="action-item">
+                <button
+                  className="squircle-btn btn-secondary"
+                  onClick={handleOpenRecommend}
+                  title="Recommend to a Friend"
+                >
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 2L11 13" />
+                    <path d="M22 2L15 22L11 13L2 9L22 2z" />
+                  </svg>
+                </button>
+                <span className="action-label">Recommend</span>
+              </div>
             </div>
 
             {/* Overview */}
@@ -946,6 +994,35 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 Open Full Episode Page
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showRecModal && (
+        <div className="modal-overlay" onClick={() => setShowRecModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+            <button className="modal-close" onClick={() => setShowRecModal(false)}>✕</button>
+            <h2>Recommend to a Friend</h2>
+            {recLoading ? (
+              <p>Loading friends...</p>
+            ) : friendsList.length === 0 ? (
+              <p>You have no friends yet. Add some friends from the Friends page!</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto', marginTop: '1rem' }}>
+                {friendsList.map(f => (
+                  <div key={f.uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : f.username.charAt(0).toUpperCase()}
+                      </div>
+                      <span style={{ fontWeight: '500' }}>{f.username}</span>
+                    </div>
+                    <button className="btn-primary btn-sm" onClick={() => handleSendRec(f.uid)}>Send</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {recFeedback && <p style={{ color: recFeedback.includes('successfully') ? '#4ade80' : '#ef4444', marginTop: '1rem', textAlign: 'center' }}>{recFeedback}</p>}
           </div>
         </div>
       )}

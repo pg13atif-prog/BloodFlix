@@ -63,16 +63,27 @@ const SocialPage = () => {
     initUser();
   }, [currentUser]);
 
-  const handleMatch = async (e) => {
-    e.preventDefault();
-    if (!searchCode.trim()) return;
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('?match=')) {
+      const code = hash.split('?match=')[1];
+      if (code) {
+        setSearchCode(code);
+        // We use a timeout to allow state to settle, or just pass it directly
+        setTimeout(() => executeMatch(code), 100);
+      }
+    }
+  }, []);
+
+  const executeMatch = async (codeToUse) => {
+    if (!codeToUse) return;
     
     setMatchLoading(true);
     setMatchError(null);
     setMatchResult(null);
 
     try {
-      const codeToSearch = searchCode.trim().toUpperCase();
+      const codeToSearch = codeToUse.trim().toUpperCase();
       if (codeToSearch === friendCode) {
         throw new Error("You can't match with yourself!");
       }
@@ -143,6 +154,11 @@ const SocialPage = () => {
     } finally {
       setMatchLoading(false);
     }
+  };
+
+  const handleMatch = (e) => {
+    e.preventDefault();
+    executeMatch(searchCode);
   };
 
   if (loading) return null;

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import { searchMedia } from '../services/tmdb';
+import { getNotifications, removeNotification } from '../services/friends';
+import { addToWatchlist, addToLiked, addToWatched } from '../services/firestore';
 import './Navbar.css';
 
 /* ── Dropdown menu configs ─────────────────────────────────── */
@@ -45,7 +47,11 @@ const Navbar = () => {
 
   // Mobile accordion
   const [mobileAccordion, setMobileAccordion] = useState(null);
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+  
+  // Notifications
+  const [notifications, setNotifications] = useState([]);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const hasUnreadNotifications = notifications.length > 0;
 
   // Autocomplete state
   const [suggestions, setSuggestions] = useState([]);
@@ -59,6 +65,14 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const searchContainerRef = useRef(null);
   const { currentUser, logout } = useAuth();
+
+  useEffect(() => {
+    if (currentUser) {
+      getNotifications(currentUser.uid).then(setNotifications).catch(console.error);
+    } else {
+      setNotifications([]);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     localStorage.setItem('cinescope_recent_searches', JSON.stringify(recentSearches));
@@ -184,6 +198,28 @@ const Navbar = () => {
     if (isSearchActive) setSearchQuery('');
   };
 
+  const handleNotificationAction = async (notif, actionType) => {
+    try {
+      if (actionType === 'watchlist') {
+        await addToWatchlist(currentUser.uid, notif.movie);
+      } else if (actionType === 'liked') {
+        await addToLiked(currentUser.uid, notif.movie);
+      } else if (actionType === 'watched') {
+        await addToWatched(currentUser.uid, notif.movie, 120); // Dummy runtime
+      }
+      await removeNotification(currentUser.uid, notif.id);
+      setNotifications(prev => prev.filter(n => n.id !== notif.id));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to process recommendation.');
+    }
+  };
+
+  const handleDismissNotification = async (notif) => {
+    await removeNotification(currentUser.uid, notif.id);
+    setNotifications(prev => prev.filter(n => n.id !== notif.id));
+  };
+
   const email = currentUser?.email || '';
   const avatarLetter = email ? email.charAt(0).toUpperCase() : '?';
 
@@ -303,13 +339,6 @@ const Navbar = () => {
             isActive={currentPath.startsWith('#cineai')}
             items={cineaiItems}
             className="navbar__link--cineai"
-          />
-          <NavItem
-            id="friends"
-            label="Friends"
-            hash="#friends"
-            isActive={currentPath === '#friends' || currentPath === '#social'}
-            items={friendsItems}
           />
           <NavItem
             id="watchlist"
@@ -517,16 +546,12 @@ const Navbar = () => {
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                       Friends
                     </button>
-                    <button type="button" className="dropdown-item" onClick={(e) => handleNavClick(e, '#notifications')}>
+                    <button type="button" className="dropdown-item" onClick={() => setIsNotificationsOpen(true)}>
                       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
                         {hasUnreadNotifications && <span style={{ position: 'absolute', top: '0px', right: '0px', width: '6px', height: '6px', background: '#e50914', borderRadius: '50%' }}></span>}
                       </div>
                       Notifications
-                    </button>
-                    <button type="button" className="dropdown-item" onClick={(e) => handleNavClick(e, '#settings')}>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                      Settings
                     </button>
                     <div className="dropdown-divider"></div>
                     <button className="dropdown-item logout" onClick={() => { logout(); setIsDropdownOpen(false); }}>
@@ -633,6 +658,37 @@ const Navbar = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
+
+      {isNotificationsOpen && (
+        <div className="modal-overlay" onClick={() => setIsNotificationsOpen(false)}>
+          <div className="modal-content notifications-modal" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setIsNotificationsOpen(false)}>✕</button>
+            <h2>Notifications</h2>
+            {notifications.length === 0 ? (
+              <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '2rem' }}>You have no notifications.</p>
+            ) : (
+              <div className="notifications-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+                {notifications.map(notif => (
+                  <div key={notif.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <strong>{notif.fromName}</strong>
+                      <button onClick={() => handleDismissNotification(notif)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>✕</button>
+                    </div>
+                    <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', marginBottom: '1rem' }}>
+                      recommended you <strong>{notif.movie.title}</strong>
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn-secondary btn-sm" onClick={() => handleNotificationAction(notif, 'watchlist')}>+ Watchlist</button>
+                      <button className="btn-secondary btn-sm" onClick={() => handleNotificationAction(notif, 'liked')}>❤️ Liked</button>
+                      <button className="btn-secondary btn-sm" onClick={() => handleNotificationAction(notif, 'watched')}>👁️ Watched</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 };

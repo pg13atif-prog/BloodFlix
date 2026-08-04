@@ -1,5 +1,6 @@
 import { ref, get, set, remove, update } from 'firebase/database';
 import { db } from './firebase';
+import { isInWatchlist, isLiked, isWatched } from './firestore';
 
 // Helper to generate a 6-character alphanumeric code
 const generateCode = () => {
@@ -136,5 +137,58 @@ export const updateUserProfile = async (userId, data) => {
   const updates = {};
   if (data.displayName !== undefined) updates[`users/${userId}/displayName`] = data.displayName;
   if (data.avatarUrl !== undefined) updates[`users/${userId}/avatarUrl`] = data.avatarUrl;
+  await update(ref(db), updates);
+};
+
+// ── Notifications & Recommendations ──────────────────────────────────────────
+
+export const recommendMovie = async (fromId, fromName, toId, movieData) => {
+  if (!fromId || !toId || !movieData) return;
+
+  // Check if target user already has it
+  const [inWatchlist, inLiked, inWatched] = await Promise.all([
+    isInWatchlist(toId, movieData.id).catch(() => false),
+    isLiked(toId, movieData.id).catch(() => false),
+    isWatched(toId, movieData.id).catch(() => false)
+  ]);
+
+  if (inWatchlist || inLiked || inWatched) {
+    let listName = inWatched ? 'Already Watched' : (inLiked ? 'Liked' : 'Watchlist');
+    throw new Error(`Your friend already has this movie in their ${listName} list!`);
+  }
+
+  // Push notification
+  const notifId = Date.now().toString();
+  const updates = {};
+  updates[`users/${toId}/notifications/${notifId}`] = {
+    id: notifId,
+    type: 'recommendation',
+    fromId,
+    fromName,
+    movie: {
+      id: movieData.id,
+      title: movieData.title || movieData.name,
+      poster: movieData.poster || movieData.poster_path ? (movieData.poster || `https://image.tmdb.org/t/p/w500${movieData.poster_path}`) : null,
+      mediaType: movieData.mediaType || movieData.media_type || 'movie',
+      year: movieData.year || movieData.release_date?.split('-')[0] || movieData.first_air_date?.split('-')[0] || '',
+      category: movieData.category || ''
+    },
+    timestamp: Date.now()
+  };
+  
+  await update(ref(db), updates);
+};
+
+export const getNotifications = async (userId) => {
+  const snap = await get(ref(db, `users/${userId}/notifications`));
+  if (!snap.exists()) return [];
+  const data = snap.val();
+  return Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
+};
+
+export const removeNotification = async (userId, notifId) => {
+  if (!userId || !notifId) return;
+  const updates = {};
+  updates[`users/${userId}/notifications/${notifId}`] = null;
   await update(ref(db), updates);
 };

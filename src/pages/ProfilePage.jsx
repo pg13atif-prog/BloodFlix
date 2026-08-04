@@ -8,9 +8,8 @@ import {
 import MovieCard from '../components/MovieCard';
 import './ProfilePage.css';
 
-import { getUserStats, ACHIEVEMENTS_LIST } from '../services/achievements';
 import { ensureFriendCode, getFriendData, updateUserProfile } from '../services/friends';
-import { uploadAvatar } from '../services/storage';
+import { getUserStats, ACHIEVEMENTS_LIST } from '../services/achievements';
 import { ref, get } from 'firebase/database';
 import { db } from '../services/firebase';
 
@@ -221,19 +220,51 @@ const ProfilePage = () => {
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    try {
-      setUploading(true);
-      const url = await uploadAvatar(currentUser.uid, file);
-      if (url) {
-        await updateUserProfile(currentUser.uid, { avatarUrl: url });
-        setProfileData(prev => ({ ...prev, avatar: url }));
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to upload avatar. Please make sure Firebase Storage is enabled in your project.");
-    } finally {
-      setUploading(false);
-    }
+    
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 200;
+        const MAX_HEIGHT = 200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Compress heavily as a JPEG to keep base64 string small
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+        
+        try {
+          await updateUserProfile(currentUser.uid, { avatarUrl: dataUrl });
+          setProfileData(prev => ({ ...prev, avatar: dataUrl }));
+        } catch (err) {
+          console.error(err);
+          alert("Failed to upload avatar.");
+        } finally {
+          setUploading(false);
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   // Circular arc helper (svg-based watchtime ring)

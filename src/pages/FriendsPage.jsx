@@ -8,8 +8,10 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   cancelFriendRequest,
-  removeFriend
+  removeFriend,
+  recommendMovie
 } from '../services/friends';
+import { searchMedia } from '../services/tmdb';
 import './FriendsPage.css';
 
 const FriendsPage = () => {
@@ -27,6 +29,14 @@ const FriendsPage = () => {
   const [searchResult, setSearchResult] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
+
+  // Recommend Modal State
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const [recSearchQuery, setRecSearchQuery] = useState('');
+  const [recSearchResults, setRecSearchResults] = useState([]);
+  const [recSearchLoading, setRecSearchLoading] = useState(false);
+  const [recFeedback, setRecFeedback] = useState('');
 
   // List Search & Sort
   const [listSearch, setListSearch] = useState('');
@@ -71,7 +81,7 @@ const FriendsPage = () => {
       } else if (res.uid === currentUser.uid) {
         setSearchError('You cannot search for your own code.');
       } else {
-        setSearchResult({ ...res, compatibility: Math.floor(Math.random() * 41) + 60 }); // Mock 60-100%
+        setSearchResult({ ...res });
       }
     } catch (err) {
       setSearchError('An error occurred.');
@@ -107,6 +117,38 @@ const FriendsPage = () => {
     if (window.confirm("Are you sure you want to remove this friend?")) {
       await removeFriend(currentUser.uid, id);
       loadRelationships();
+    }
+  };
+
+  const handleRecommendSearch = async (e) => {
+    e.preventDefault();
+    if (!recSearchQuery.trim()) return;
+    setRecSearchLoading(true);
+    setRecFeedback('');
+    try {
+      const results = await searchMedia(recSearchQuery.trim());
+      setRecSearchResults(results.slice(0, 5));
+    } catch (err) {
+      console.error(err);
+      setRecFeedback('Failed to search.');
+    } finally {
+      setRecSearchLoading(false);
+    }
+  };
+
+  const handleSendRecommendation = async (movieData) => {
+    setRecFeedback('');
+    try {
+      await recommendMovie(currentUser.uid, currentUser.email?.split('@')[0] || 'Friend', selectedFriend.uid, movieData);
+      setRecFeedback(`Successfully recommended ${movieData.title || movieData.name}!`);
+      setTimeout(() => {
+        setShowRecommendModal(false);
+        setRecSearchResults([]);
+        setRecSearchQuery('');
+        setRecFeedback('');
+      }, 1500);
+    } catch (err) {
+      setRecFeedback(err.message || 'Failed to recommend.');
     }
   };
 
@@ -165,15 +207,15 @@ const FriendsPage = () => {
                     {filteredFriends.map(f => (
                       <div key={f.uid} className="friend-card">
                         <div className="friend-card-header">
-                          <div className="friend-avatar">{f.avatar || f.username.charAt(0).toUpperCase()}</div>
+                          <div className="friend-avatar">{f.avatar ? <img src={f.avatar} style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}} alt=""/> : f.username.charAt(0).toUpperCase()}</div>
                           <div className="friend-info">
                             <h4>{f.username}</h4>
                             <p>Fav Genre: {f.favoriteGenre}</p>
                           </div>
                         </div>
                         <div className="friend-card-actions">
-                          <button className="btn-primary btn-sm" onClick={() => window.location.hash = '#social'}>Movie Match</button>
-                          <button className="btn-secondary btn-sm" onClick={() => alert('Recommend movie feature coming soon!')}>Recommend</button>
+                          <button className="btn-primary btn-sm" onClick={() => window.location.hash = `#social?match=${f.friendCode}`}>Movie Match</button>
+                          <button className="btn-secondary btn-sm" onClick={() => { setSelectedFriend(f); setShowRecommendModal(true); }}>Recommend</button>
                           <button className="btn-danger btn-sm" onClick={() => handleRemove(f.uid)}>Remove</button>
                         </div>
                       </div>
@@ -194,7 +236,7 @@ const FriendsPage = () => {
                     {incoming.map(req => (
                       <div key={req.uid} className="request-card">
                         <div className="req-user">
-                          <div className="friend-avatar-sm">{req.avatar || req.username.charAt(0).toUpperCase()}</div>
+                          <div className="friend-avatar-sm">{req.avatar ? <img src={req.avatar} style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}} alt=""/> : req.username.charAt(0).toUpperCase()}</div>
                           <span>{req.username}</span>
                         </div>
                         <div className="req-actions">
@@ -214,7 +256,7 @@ const FriendsPage = () => {
                     {outgoing.map(req => (
                       <div key={req.uid} className="request-card">
                         <div className="req-user">
-                          <div className="friend-avatar-sm">{req.avatar || req.username.charAt(0).toUpperCase()}</div>
+                          <div className="friend-avatar-sm">{req.avatar ? <img src={req.avatar} style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}} alt=""/> : req.username.charAt(0).toUpperCase()}</div>
                           <span>{req.username}</span>
                         </div>
                         <div className="req-actions">
@@ -248,11 +290,10 @@ const FriendsPage = () => {
                 {searchResult && (
                   <div className="search-result-card glass-panel">
                     <div className="search-result-header">
-                      <div className="friend-avatar-lg">{searchResult.avatar || searchResult.username.charAt(0).toUpperCase()}</div>
+                      <div className="friend-avatar-lg">{searchResult.avatar ? <img src={searchResult.avatar} style={{width:'100%', height:'100%', borderRadius:'50%', objectFit:'cover'}} alt=""/> : searchResult.username.charAt(0).toUpperCase()}</div>
                       <div className="search-result-info">
                         <h2>{searchResult.username}</h2>
                         <p>Favorite Genre: {searchResult.favoriteGenre}</p>
-                        <p className="compatibility-preview">Compatibility Preview: <span>{searchResult.compatibility}%</span></p>
                       </div>
                     </div>
                     {friends.find(f => f.uid === searchResult.uid) ? (
@@ -273,6 +314,38 @@ const FriendsPage = () => {
           </>
         )}
       </div>
+
+      {showRecommendModal && selectedFriend && (
+        <div className="modal-overlay" onClick={() => setShowRecommendModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <button className="modal-close" onClick={() => setShowRecommendModal(false)}>✕</button>
+            <h2>Recommend to {selectedFriend.username}</h2>
+            <form onSubmit={handleRecommendSearch} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <input 
+                type="text" 
+                placeholder="Search for a movie or TV show..." 
+                value={recSearchQuery}
+                onChange={(e) => setRecSearchQuery(e.target.value)}
+                style={{ flex: 1, padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', outline: 'none' }}
+              />
+              <button type="submit" className="btn-primary" disabled={recSearchLoading}>Search</button>
+            </form>
+            {recFeedback && <p style={{ color: recFeedback.includes('Success') ? '#4ade80' : '#ef4444', marginBottom: '1rem' }}>{recFeedback}</p>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+              {recSearchResults.map(res => (
+                <div key={res.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px' }}>
+                  {res.poster ? <img src={res.poster} alt="" style={{ width: '40px', height: '60px', objectFit: 'cover', borderRadius: '4px' }} /> : <div style={{ width: '40px', height: '60px', background: '#333', borderRadius: '4px' }} />}
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ margin: 0 }}>{res.title || res.name}</h4>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>{res.year}</p>
+                  </div>
+                  <button className="btn-secondary btn-sm" onClick={() => handleSendRecommendation(res)}>Send</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
