@@ -9,7 +9,8 @@ import MovieCard from '../components/MovieCard';
 import './ProfilePage.css';
 
 import { getUserStats, ACHIEVEMENTS_LIST } from '../services/achievements';
-import { ensureFriendCode } from '../services/friends';
+import { ensureFriendCode, getFriendData, updateUserProfile } from '../services/friends';
+import { uploadAvatar } from '../services/storage';
 import { ref, get } from 'firebase/database';
 import { db } from '../services/firebase';
 
@@ -76,6 +77,11 @@ const ProfilePage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'title' | 'rating'
   const [friendCode, setFriendCode] = useState('');
+  
+  const [profileData, setProfileData] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!currentUser) { setLoading(false); return; }
@@ -85,8 +91,9 @@ const ProfilePage = () => {
       getWatched(currentUser.uid),
       getUserStats(currentUser.uid),
       get(ref(db, `users/${currentUser.uid}/unlockedAchievements`)),
-      ensureFriendCode(currentUser.uid, currentUser.email)
-    ]).then(([wl, lk, wa, userStats, unlockedSnap, code]) => {
+      ensureFriendCode(currentUser.uid, currentUser.email),
+      getFriendData(currentUser.uid)
+    ]).then(([wl, lk, wa, userStats, unlockedSnap, code, pData]) => {
       setWatchlist(wl || []);
       setLiked(lk || []);
       setWatched(wa || []);
@@ -100,6 +107,8 @@ const ProfilePage = () => {
       });
       setUnlockedAchievements(unlockedSnap.exists() ? unlockedSnap.val() : {});
       setFriendCode(code || '');
+      setProfileData(pData);
+      setEditName(pData?.username || '');
       setLoading(false);
     }).catch(err => { console.error(err); setLoading(false); });
   }, [currentUser]);
@@ -192,8 +201,40 @@ const ProfilePage = () => {
   }
 
   const email = currentUser.email || '';
-  const username = email ? email.split('@')[0] : 'Guest';
-  const avatarLetter = email ? email.charAt(0).toUpperCase() : '?';
+  const username = profileData?.username || (email ? email.split('@')[0] : 'Guest');
+  const avatarLetter = username.charAt(0).toUpperCase() || '?';
+  const avatarImage = profileData?.avatar || null;
+
+  const handleSaveProfile = async () => {
+    try {
+      setUploading(true);
+      await updateUserProfile(currentUser.uid, { displayName: editName });
+      setProfileData(prev => ({ ...prev, username: editName }));
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const url = await uploadAvatar(currentUser.uid, file);
+      if (url) {
+        await updateUserProfile(currentUser.uid, { avatarUrl: url });
+        setProfileData(prev => ({ ...prev, avatar: url }));
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload avatar. Please make sure Firebase Storage is enabled in your project.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   // Circular arc helper (svg-based watchtime ring)
   const ringPct = Math.min(totalDays / 30, 1); // max ring fill = 30 days
@@ -218,24 +259,59 @@ const ProfilePage = () => {
       <div className="profile-hero">
         <div className="profile-hero-overlay" />
         <div className="profile-hero-content">
-          <div className="profile-avatar-xl">{avatarLetter}</div>
-          <div>
-            <h1 className="profile-hero-name">{username}</h1>
-            <p className="profile-hero-email">{email}</p>
-            {friendCode && (
-              <div className="profile-friend-code-display">
-                <span className="fc-label">Friend Code:</span>
-                <span className="fc-code">{friendCode}</span>
-                <button 
-                  className="fc-copy-btn" 
-                  onClick={() => navigator.clipboard.writeText(friendCode)}
-                  title="Copy Friend Code"
-                >
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </button>
-              </div>
+          <div className="profile-avatar-wrapper">
+            <div className="profile-avatar-xl">
+              {avatarImage ? <img src={avatarImage} alt="Avatar" style={{width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%'}}/> : avatarLetter}
+            </div>
+            {isEditing && (
+              <label className="avatar-upload-btn" title="Change Avatar">
+                <input type="file" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} style={{display:'none'}} />
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+              </label>
             )}
           </div>
+          <div>
+            {isEditing ? (
+              <div className="edit-profile-form">
+                <input 
+                  type="text" 
+                  value={editName} 
+                  onChange={(e) => setEditName(e.target.value)} 
+                  className="edit-name-input"
+                  placeholder="Display Name"
+                  autoFocus
+                />
+                <div className="edit-profile-actions">
+                  <button className="btn-primary btn-sm" onClick={handleSaveProfile} disabled={uploading}>{uploading ? 'Saving...' : 'Save'}</button>
+                  <button className="btn-secondary btn-sm" onClick={() => setIsEditing(false)}>Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h1 className="profile-hero-name">
+                  {username}
+                  <button className="edit-profile-btn" onClick={() => { setEditName(username); setIsEditing(true); }} title="Edit Profile">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  </button>
+                </h1>
+                <p className="profile-hero-email">{email}</p>
+                {friendCode && (
+                  <div className="profile-friend-code-display">
+                    <span className="fc-label">Friend Code:</span>
+                    <span className="fc-code">{friendCode}</span>
+                    <button 
+                      className="fc-copy-btn" 
+                      onClick={() => navigator.clipboard.writeText(friendCode)}
+                      title="Copy Friend Code"
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          
           <button className="profile-logout-btn" onClick={() => { logout(); window.location.hash = ''; }}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />

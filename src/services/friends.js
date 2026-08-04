@@ -52,9 +52,9 @@ export const searchByFriendCode = async (code) => {
     uid: friendId,
     friendCode: data.friendCode,
     email: data.email,
-    username: data.email ? data.email.split('@')[0] : 'Guest',
+    username: data.displayName || (data.email ? data.email.split('@')[0] : 'Guest'),
     favoriteGenre: data.favoriteGenre || 'Unknown',
-    avatar: data.avatar || null
+    avatar: data.avatarUrl || data.avatar || null
   };
 };
 
@@ -66,9 +66,9 @@ export const getFriendData = async (userId) => {
     uid: userId,
     friendCode: data.friendCode,
     email: data.email,
-    username: data.email ? data.email.split('@')[0] : 'Guest',
+    username: data.displayName || (data.email ? data.email.split('@')[0] : 'Guest'),
     favoriteGenre: data.favoriteGenre || 'Unknown',
-    avatar: data.avatar || null
+    avatar: data.avatarUrl || data.avatar || null
   };
 };
 
@@ -129,4 +129,12 @@ export const getRelationships = async (userId) => {
   const outgoing = data.outgoingRequests ? Object.keys(data.outgoingRequests) : [];
   
   return { friends, incoming, outgoing };
+};
+
+export const updateUserProfile = async (userId, data) => {
+  if (!userId) return;
+  const updates = {};
+  if (data.displayName !== undefined) updates[`users/${userId}/displayName`] = data.displayName;
+  if (data.avatarUrl !== undefined) updates[`users/${userId}/avatarUrl`] = data.avatarUrl;
+  await update(ref(db), updates);
 };
