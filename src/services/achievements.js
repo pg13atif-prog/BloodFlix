@@ -200,14 +200,20 @@ const getUnlockedRef = (userId) => ref(db, `users/${userId}/unlockedAchievements
 export const getUserStats = async (userId) => {
   if (!userId) return null;
   const snapshot = await get(getStatsRef(userId));
+  const ensureArray = (val) => {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    if (typeof val === 'object') return Object.values(val);
+    return [];
+  };
   if (snapshot.exists()) {
     const val = snapshot.val();
     return {
       aiSearchesCount: val.aiSearchesCount || 0,
       trailersWatchedCount: val.trailersWatchedCount || 0,
       detailViewsCount: val.detailViewsCount || 0,
-      uniqueViewedIds: val.uniqueViewedIds || [],
-      viewedCountries: val.viewedCountries || [],
+      uniqueViewedIds: ensureArray(val.uniqueViewedIds),
+      viewedCountries: ensureArray(val.viewedCountries),
       searchesCount: val.searchesCount || 0,
     };
   }

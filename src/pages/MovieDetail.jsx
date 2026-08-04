@@ -67,15 +67,22 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
     setStatus('loading');
     setShowAllCast(false);
 
+    const safeCall = (promise, fallback) => promise.catch(err => {
+      if (err.name !== 'AbortError') {
+        console.warn("Non-critical detail fetch failed:", err);
+      }
+      return fallback;
+    });
+
     Promise.all([
       getMovieDetails(movieId, mediaType, controller.signal),
-      getFullCast(movieId, mediaType, controller.signal),
-      getMovieVideos(movieId, mediaType, controller.signal),
-      getSimilarMovies(movieId, mediaType, controller.signal),
-      getWatchProviders(movieId, mediaType, controller.signal),
-      getRecommendations(movieId, mediaType, controller.signal),
-      getReviews(movieId, mediaType, controller.signal),
-      getCustomReviews(movieId)
+      safeCall(getFullCast(movieId, mediaType, controller.signal), []),
+      safeCall(getMovieVideos(movieId, mediaType, controller.signal), []),
+      safeCall(getSimilarMovies(movieId, mediaType, controller.signal), []),
+      safeCall(getWatchProviders(movieId, mediaType, controller.signal), null),
+      safeCall(getRecommendations(movieId, mediaType, controller.signal), []),
+      safeCall(getReviews(movieId, mediaType, controller.signal), []),
+      safeCall(getCustomReviews(movieId), [])
     ])
       .then(([detailsData, castData, videosData, similarData, providersData, recsData, reviewsData, customReviewsData]) => {
         setMovie(detailsData);
@@ -83,8 +90,12 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
         setTrailerKey(videosData[0]?.key || null);
         setSimilarMovies(similarData);
         
-        // Fetch IMDb and Rotten Tomatoes ratings
-        getExternalRatings(detailsData.imdb_id, detailsData.title, detailsData.release_date?.split('-')[0]).then(setExternalRatings);
+        // Fetch IMDb and Rotten Tomatoes ratings safely
+        if (detailsData) {
+          getExternalRatings(detailsData.imdbId, detailsData.title, detailsData.releaseDate?.split('-')[0])
+            .then(setExternalRatings)
+            .catch(() => {});
+        }
 
         // Providers logic (filter by US for now if geolocation not available)
         const usProviders = providersData?.US || providersData?.GB || providersData?.CA || null;
@@ -95,10 +106,10 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
         setCustomReviews(customReviewsData);
         setStatus('success');
         
-        // Add to recently viewed if logged in
-        if (currentUser) {
+        // Add to recently viewed if logged in (safely)
+        if (currentUser && detailsData) {
           addRecentlyViewed(currentUser.uid, detailsData).catch(err => console.error("Could not add to recently viewed", err));
-          trackDetailView(currentUser.uid, detailsData.id, detailsData.productionCountries);
+          trackDetailView(currentUser.uid, detailsData.id, detailsData.productionCountries).catch(err => console.error("Could not track detail view", err));
         }
       })
       .catch((err) => {
@@ -477,7 +488,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
             </div>
           </div>
         )}
-        {movie.productionCompanies.length > 0 && (
+        {movie.productionCompanies && movie.productionCompanies.length > 0 && (
           <div className="meta-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
             <div className="meta-text">
