@@ -4,10 +4,8 @@ import './CineAiPage.css';
 const AI_TOOLS = [
   {
     id: 'what-to-watch',
-    badge: 'Natural Language AI',
     title: 'What Should I Watch?',
     description: 'Describe your exact mood, genre blend, or vibe in plain English and get 5 hyper-tailored recommendations.',
-    example: 'e.g. "A mind-bending sci-fi thriller with a plot twist, under 2 hours"',
     accentColor: '#e50914',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -20,10 +18,8 @@ const AI_TOOLS = [
   },
   {
     id: 'planner',
-    badge: 'Guided Night Planner',
     title: 'Movie Night Planner',
     description: 'Answer 3 quick preferences about mood, pace, and runtime to find the single perfect movie for your night.',
-    example: 'Zero decision fatigue • Instant consensus',
     accentColor: '#8b5cf6',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -36,10 +32,8 @@ const AI_TOOLS = [
   },
   {
     id: 'pick-for-me',
-    badge: '1-Click Instant Pick',
     title: 'Pick For Me',
     description: 'The ultimate decision cure. One click fetches one high-confidence movie recommendation with zero hassle.',
-    example: 'Curated top-rated gems & hidden masterpieces',
     accentColor: '#ec4899',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -49,10 +43,8 @@ const AI_TOOLS = [
   },
   {
     id: 'debate',
-    badge: 'AI Battle Arena',
     title: 'Movie Debate',
     description: 'Torn between two movies? Let our AI pit them head-to-head across 9 key criteria and declare a clear winner.',
-    example: 'Plot, Acting, Pacing, Rewatchability & more',
     accentColor: '#f59e0b',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -72,9 +64,6 @@ const CineAiPage = () => {
       <div className="cineai-glow-2"></div>
 
       <div className="cineai-hub-header">
-        <div className="cineai-badge">
-          <span className="cineai-badge-sparkle">✨</span> INTELLIGENT DISCOVERY SUITE
-        </div>
         <h1>
           Cine<span className="ai-gradient-text">AI</span> Engine
         </h1>
@@ -90,17 +79,11 @@ const CineAiPage = () => {
               <div className="cineai-card-icon-wrapper" style={{ '--accent': tool.accentColor }}>
                 {tool.icon}
               </div>
-              <span className="cineai-card-badge">{tool.badge}</span>
             </div>
 
             <div className="cineai-card-body">
               <h2>{tool.title}</h2>
               <p>{tool.description}</p>
-              {tool.example && (
-                <div className="cineai-card-example">
-                  <span>{tool.example}</span>
-                </div>
-              )}
             </div>
 
             <div className="cineai-card-footer">
