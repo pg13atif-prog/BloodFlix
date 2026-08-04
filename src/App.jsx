@@ -19,6 +19,7 @@ import CineAiPage from "./pages/CineAiPage";
 import SocialPage from "./pages/SocialPage";
 import AchievementsPage from "./pages/AchievementsPage";
 import WatchlistPage from "./pages/WatchlistPage";
+import FriendsPage from "./pages/FriendsPage";
 
 // CineAI Tools
 import MoviePlanner from "./pages/cineai/MoviePlanner";
@@ -90,6 +91,10 @@ function App() {
           break;
         case '#social':
           setCurrentRoute('social');
+          setCurrentParams(null);
+          break;
+        case '#friends':
+          setCurrentRoute('friends');
           setCurrentParams(null);
           break;
         case '#watchlist':
@@ -230,6 +235,9 @@ function App() {
 
       case 'social':
         return <SocialPage />;
+
+      case 'friends':
+        return <FriendsPage />;
 
       case 'watchlist':
         return <WatchlistPage />;

@@ -5,12 +5,9 @@ import { db } from '../services/firebase';
 import { getWatchlist, getLiked, getWatched } from '../services/firestore';
 import { getFriendCompatibilityRecs } from '../services/gemini';
 import { searchMedia } from '../services/tmdb';
+import { ensureFriendCode } from '../services/friends';
 import MovieCard from '../components/MovieCard';
 import './SocialPage.css';
-
-const generateFriendCode = () => {
-  return 'CS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-};
 
 const SocialPage = () => {
   const { currentUser } = useAuth();
@@ -53,17 +50,14 @@ const SocialPage = () => {
     }
 
     const initUser = async () => {
-      const codeRef = ref(db, `users/${currentUser.uid}/friendCode`);
-      const snap = await get(codeRef);
-      if (snap.exists()) {
-        setFriendCode(snap.val());
-      } else {
-        const newCode = generateFriendCode();
-        await set(codeRef, newCode);
-        await set(ref(db, `friendCodes/${newCode}`), currentUser.uid);
-        setFriendCode(newCode);
+      try {
+        const code = await ensureFriendCode(currentUser.uid, currentUser.email);
+        setFriendCode(code || '');
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initUser();
@@ -160,14 +154,8 @@ const SocialPage = () => {
         <p>Compare tastes with friends and find the perfect movie to watch together.</p>
       </div>
 
-      <div className="social-content">
-        <div className="friend-code-card">
-          <h2>Your Friend Code</h2>
-          <div className="code-display">{friendCode}</div>
-          <p>Share this code with a friend so they can match with you.</p>
-        </div>
-
-        <div className="match-card">
+      <div className="social-content" style={{ display: 'flex', justifyContent: 'center' }}>
+        <div className="match-card" style={{ maxWidth: '600px', width: '100%' }}>
           <h2>Match with a Friend</h2>
           <form onSubmit={handleMatch} className="match-form">
             <input 

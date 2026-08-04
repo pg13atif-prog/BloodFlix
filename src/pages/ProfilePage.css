@@ -82,6 +82,49 @@
   margin: 0;
 }
 
+.profile-friend-code-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fc-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.fc-code {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.fc-copy-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.fc-copy-btn:hover {
+  color: #fff;
+}
+
 .profile-logout-btn {
   margin-left: auto;
   display: flex;

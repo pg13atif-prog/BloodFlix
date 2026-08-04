@@ -190,8 +190,8 @@
 .nav-dropdown {
   position: absolute;
   top: calc(100% + 12px) !important;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  transform: none;
   background: rgba(12, 14, 22, 0.92);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);

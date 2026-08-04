@@ -9,6 +9,7 @@ import MovieCard from '../components/MovieCard';
 import './ProfilePage.css';
 
 import { getUserStats, ACHIEVEMENTS_LIST } from '../services/achievements';
+import { ensureFriendCode } from '../services/friends';
 import { ref, get } from 'firebase/database';
 import { db } from '../services/firebase';
 
@@ -74,6 +75,7 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab]   = useState('liked');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [sortBy, setSortBy] = useState('recent'); // 'recent' | 'title' | 'rating'
+  const [friendCode, setFriendCode] = useState('');
 
   useEffect(() => {
     if (!currentUser) { setLoading(false); return; }
@@ -82,8 +84,9 @@ const ProfilePage = () => {
       getLiked(currentUser.uid),
       getWatched(currentUser.uid),
       getUserStats(currentUser.uid),
-      get(ref(db, `users/${currentUser.uid}/unlockedAchievements`))
-    ]).then(([wl, lk, wa, userStats, unlockedSnap]) => {
+      get(ref(db, `users/${currentUser.uid}/unlockedAchievements`)),
+      ensureFriendCode(currentUser.uid, currentUser.email)
+    ]).then(([wl, lk, wa, userStats, unlockedSnap, code]) => {
       setWatchlist(wl || []);
       setLiked(lk || []);
       setWatched(wa || []);
@@ -96,6 +99,7 @@ const ProfilePage = () => {
         searchesCount: 0
       });
       setUnlockedAchievements(unlockedSnap.exists() ? unlockedSnap.val() : {});
+      setFriendCode(code || '');
       setLoading(false);
     }).catch(err => { console.error(err); setLoading(false); });
   }, [currentUser]);
@@ -218,6 +222,19 @@ const ProfilePage = () => {
           <div>
             <h1 className="profile-hero-name">{username}</h1>
             <p className="profile-hero-email">{email}</p>
+            {friendCode && (
+              <div className="profile-friend-code-display">
+                <span className="fc-label">Friend Code:</span>
+                <span className="fc-code">{friendCode}</span>
+                <button 
+                  className="fc-copy-btn" 
+                  onClick={() => navigator.clipboard.writeText(friendCode)}
+                  title="Copy Friend Code"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+              </div>
+            )}
           </div>
           <button className="profile-logout-btn" onClick={() => { logout(); window.location.hash = ''; }}>
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
