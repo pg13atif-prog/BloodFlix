@@ -47,14 +47,43 @@ const fetchWithTimeout = async (url, options = {}) => {
   }
 
   try {
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       ...rest,
       signal: controller.signal
     });
+    
+    // If the proxy API endpoint returns an error, fallback directly to TMDB API
+    if (!response.ok && url.startsWith('/api/tmdb')) {
+      const directPath = url.replace('/api/tmdb', '');
+      const separator = directPath.includes('?') ? '&' : '?';
+      const directUrl = `https://api.themoviedb.org/3${directPath}${separator}api_key=a8774e9165aeff756bdfdea2742a3d1f`;
+      try {
+        const fallbackResponse = await fetch(directUrl, {
+          ...rest,
+          signal: controller.signal
+        });
+        if (fallbackResponse.ok) {
+          response = fallbackResponse;
+        }
+      } catch (e) {
+        // Ignore fallback error and keep original response
+      }
+    }
+
     clearTimeout(id);
     return response;
   } catch (err) {
     clearTimeout(id);
+    if (url.startsWith('/api/tmdb')) {
+      try {
+        const directPath = url.replace('/api/tmdb', '');
+        const separator = directPath.includes('?') ? '&' : '?';
+        const directUrl = `https://api.themoviedb.org/3${directPath}${separator}api_key=a8774e9165aeff756bdfdea2742a3d1f`;
+        return await fetch(directUrl, { ...rest });
+      } catch (e) {
+        throw err;
+      }
+    }
     throw err;
   } finally {
     if (signal) {

@@ -208,7 +208,7 @@ function App() {
         />;
       
       case 'movie-detail':
-        return <MovieDetail movieId={currentParams.id} mediaType={currentParams.type} onBack={() => { 
+        return <MovieDetail movieId={currentParams?.id} mediaType={currentParams?.type || 'movie'} onBack={() => { 
           if (window.history.length > 2) {
             window.history.back();
           } else {
