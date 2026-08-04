@@ -535,13 +535,35 @@ export const getFullCast = async (movieId, mediaType = 'movie', signal) => {
   );
   if (!response.ok) return [];
   const data = await response.json();
-  // Return more cast members (e.g. up to 30) instead of just top 12
-  return (data.cast || []).slice(0, 30).map((member) => ({
-    id: member.id,
-    name: member.name,
-    character: member.character,
-    profilePath: member.profile_path ? `${PROFILE_BASE_URL}${member.profile_path}` : null,
-  }));
+  const rawCast = (data.cast || []).slice(0, 30);
+
+  // Fetch IMDb IDs for cast members concurrently
+  const castWithImdb = await Promise.all(
+    rawCast.map(async (member) => {
+      let imdbId = null;
+      try {
+        const extRes = await fetchWithTimeout(
+          `${API_BASE_URL}/person/${member.id}/external_ids`,
+          { signal }
+        );
+        if (extRes.ok) {
+          const extData = await extRes.json();
+          imdbId = extData.imdb_id || null;
+        }
+      } catch (e) {
+        // Silently fallback if external ID fetch fails
+      }
+      return {
+        id: member.id,
+        name: member.name,
+        character: member.character,
+        profilePath: member.profile_path ? `${PROFILE_BASE_URL}${member.profile_path}` : null,
+        imdbId
+      };
+    })
+  );
+
+  return castWithImdb;
 };
 
 export const getTvSeason = async (seriesId, seasonNumber, signal) => {

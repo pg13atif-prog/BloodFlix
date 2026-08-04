@@ -659,7 +659,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
               <div className="detail-section">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <h3 className="section-title" style={{ marginBottom: 0 }}>Cast</h3>
-                  {cast.length > 5 && (
+                  {cast.length > 6 && (
                     <button 
                       onClick={() => setShowAllCast(!showAllCast)} 
                       className="see-all-cast-btn"
@@ -669,11 +669,11 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                   )}
                 </div>
                 <div className="cast-grid">
-                  {(showAllCast ? cast : cast.slice(0, 5)).map((person) => (
+                  {(showAllCast ? cast : cast.slice(0, 6)).map((person) => (
                     <a
                       key={person.id}
                       className="cast-card"
-                      href={`https://www.imdb.com/find/?q=${encodeURIComponent(person.name)}`}
+                      href={person.imdbId ? `https://www.imdb.com/name/${person.imdbId}/` : `https://www.imdb.com/find/?q=${encodeURIComponent(person.name)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title={`View ${person.name} on IMDb`}
