@@ -192,10 +192,10 @@
   top: calc(100% + 12px) !important;
   left: 0;
   transform: none;
-  /* Transparent enough to reveal the softened artwork, while preserving contrast. */
-  background: linear-gradient(135deg, rgba(20, 25, 37, 0.42), rgba(7, 10, 18, 0.30));
-  backdrop-filter: blur(28px) saturate(155%) brightness(0.72);
+  /* Rich dark glass background for high contrast & fallback readability */
+  background: linear-gradient(135deg, rgba(18, 22, 34, 0.85), rgba(9, 12, 20, 0.78));
   -webkit-backdrop-filter: blur(28px) saturate(155%) brightness(0.72);
+  backdrop-filter: blur(28px) saturate(155%) brightness(0.72);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 24px;
   min-width: 320px;
@@ -411,8 +411,8 @@
   max-height: 380px;
   overflow-y: auto;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(56px) saturate(145%) brightness(0.60);
-  -webkit-backdrop-filter: blur(56px) saturate(145%) brightness(0.60);
+  -webkit-backdrop-filter: blur(40px) saturate(145%) brightness(0.70);
+  backdrop-filter: blur(40px) saturate(145%) brightness(0.70);
   z-index: 1000;
   display: flex;
   flex-direction: column;
@@ -506,8 +506,8 @@
   background:
     linear-gradient(135deg, rgba(31, 36, 48, 0.60), rgba(9, 11, 18, 0.52)),
     rgba(10, 12, 20, 0.54);
-  backdrop-filter: blur(56px) saturate(145%) brightness(0.60);
-  -webkit-backdrop-filter: blur(56px) saturate(145%) brightness(0.60);
+  -webkit-backdrop-filter: blur(40px) saturate(145%) brightness(0.70);
+  backdrop-filter: blur(40px) saturate(145%) brightness(0.70);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
