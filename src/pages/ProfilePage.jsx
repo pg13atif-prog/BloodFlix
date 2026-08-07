@@ -12,6 +12,7 @@ import { ensureFriendCode, getFriendData, updateUserProfile } from '../services/
 import { getUserStats, ACHIEVEMENTS_LIST } from '../services/achievements';
 import { ref, get } from 'firebase/database';
 import { db } from '../services/firebase';
+import CustomSelect from '../components/CustomSelect';
 
 import AuthModal from '../components/AuthModal';
 
@@ -459,16 +460,17 @@ const ProfilePage = () => {
 
           <div className="profile-sort-container">
             <label htmlFor="profile-sort">Sort by:</label>
-            <select
+            <CustomSelect
               id="profile-sort"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="profile-sort-select"
-            >
-              <option value="recent">Recently Added</option>
-              <option value="title">Title (A-Z)</option>
-              <option value="rating">Rating (High to Low)</option>
-            </select>
+              options={[
+                { value: 'recent', label: 'Recently Added' },
+                { value: 'title', label: 'Title (A-Z)' },
+                { value: 'rating', label: 'Rating (High to Low)' }
+              ]}
+            />
           </div>
         </div>
 

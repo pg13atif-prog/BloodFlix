@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import MovieCard from '../components/MovieCard';
 import { CardSkeleton } from '../components/SkeletonLoader';
+import CustomSelect from '../components/CustomSelect';
 import { discoverMedia, genres } from '../services/tmdb';
 import { motion, AnimatePresence } from 'framer-motion';
 import './AdvancedBrowsePage.css';
@@ -291,16 +292,13 @@ const AdvancedBrowsePage = ({ initialMediaType = 'movie', hideHeaderTitle = fals
                   {/* Sort By */}
                   <div className="filter-group">
                     <label htmlFor="sort-select">Sort By</label>
-                    <select
+                    <CustomSelect
                       id="sort-select"
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
                       className="filter-select"
-                    >
-                      {SORT_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
-                    </select>
+                      options={SORT_OPTIONS}
+                    />
                   </div>
 
                   {/* Reset All */}

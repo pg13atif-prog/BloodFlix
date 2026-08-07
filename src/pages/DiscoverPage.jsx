@@ -4,6 +4,7 @@ import MovieRow from '../components/MovieRow';
 import MovieCard from '../components/MovieCard';
 import { MovieRowSkeleton, CardSkeleton } from '../components/SkeletonLoader';
 import { motion, AnimatePresence } from 'framer-motion';
+import CustomSelect from '../components/CustomSelect';
 import './DiscoverPage.css';
 
 const DECADES = [
@@ -266,15 +267,12 @@ const DiscoverPage = ({ activeTab = 'movies' }) => {
 
                 <div className="filter-sort-group">
                   <span className="filter-sort-label">SORT BY</span>
-                  <select
+                  <CustomSelect
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="filter-sort-select"
-                  >
-                    {SORT_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+                    options={SORT_OPTIONS}
+                  />
                 </div>
               </div>
 

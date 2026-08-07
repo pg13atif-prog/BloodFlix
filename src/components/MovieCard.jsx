@@ -11,7 +11,7 @@ import { checkAndUnlockAchievements } from '../services/achievements';
 import './MovieCard.css';
 
 const MovieCard = memo((props) => {
-  const { id, title, year, rating, poster, category, mediaType, backdrop, overview, onClick } = props;
+  const { id, title, year, rating, poster, category, mediaType, backdrop, overview, disableHover, onClick } = props;
   const [isHovered, setIsHovered] = useState(false);
   const [hoverPosition, setHoverPosition] = useState(null);
   const [isSaved, setIsSaved] = useState(false);
@@ -38,6 +38,8 @@ const MovieCard = memo((props) => {
   }, [currentUser, id]);
 
   const handleMouseEnter = () => {
+    if (disableHover) return;
+    
     // Only show hover on desktop
     if (window.innerWidth < 768) return;
     

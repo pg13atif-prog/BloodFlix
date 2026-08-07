@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getWatchlist, removeFromWatchlist } from '../services/firestore';
 import MovieCard from '../components/MovieCard';
+import CustomSelect from '../components/CustomSelect';
 import './WatchlistPage.css';
 
 const WatchlistPage = () => {
@@ -87,16 +88,26 @@ const WatchlistPage = () => {
             className="watchlist-search"
           />
           
-          <select value={filter} onChange={(e) => setFilter(e.target.value)} className="watchlist-select">
-            <option value="all">All Items</option>
-            <option value="movies">Movies</option>
-            <option value="tv">TV Shows</option>
-          </select>
+          <CustomSelect 
+            value={filter} 
+            onChange={(e) => setFilter(e.target.value)} 
+            className="watchlist-select"
+            options={[
+              { value: 'all', label: 'All Items' },
+              { value: 'movies', label: 'Movies' },
+              { value: 'tv', label: 'TV Shows' }
+            ]}
+          />
 
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="watchlist-select">
-            <option value="recent">Recently Added</option>
-            <option value="alpha">Alphabetical</option>
-          </select>
+          <CustomSelect 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)} 
+            className="watchlist-select"
+            options={[
+              { value: 'recent', label: 'Recently Added' },
+              { value: 'alpha', label: 'Alphabetical' }
+            ]}
+          />
 
           <div className="view-toggles">
             <button 
@@ -128,7 +139,7 @@ const WatchlistPage = () => {
             <div key={movie.id} className="watchlist-item-wrapper">
               {viewMode === 'grid' ? (
                 <div className="watchlist-card-wrapper">
-                  <MovieCard {...movie} />
+                  <MovieCard {...movie} disableHover={true} />
                   <button className="watchlist-remove-btn" onClick={(e) => handleRemove(e, movie.id)} title="Remove from Watchlist" aria-label="Remove">✕</button>
                 </div>
               ) : (

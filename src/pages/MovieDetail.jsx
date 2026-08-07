@@ -18,6 +18,7 @@ import {
 } from '../services/firestore';
 import { getRelationships, getFriendData, recommendMovie } from '../services/friends';
 import AuthModal from '../components/AuthModal';
+import CustomSelect from '../components/CustomSelect';
 import { useAuth } from '../context/AuthContext';
 import MovieRow from '../components/MovieRow';
 import { checkAndUnlockAchievements, trackDetailView, incrementStat } from '../services/achievements';
@@ -770,14 +771,14 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <form onSubmit={handleSubmitReview} className="write-review-form">
                   <div className="review-rating-input">
                     <label>Your Rating:</label>
-                    <select 
+                    <CustomSelect 
                       value={newReviewRating} 
                       onChange={e => setNewReviewRating(Number(e.target.value))}
-                    >
-                      {[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5].map(r => (
-                        <option key={r} value={r}>{r} Stars</option>
-                      ))}
-                    </select>
+                      options={[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5].map(r => ({
+                        value: r,
+                        label: `${r} Stars`
+                      }))}
+                    />
                   </div>
                   <textarea
                     placeholder="What did you think about this title?"
@@ -868,18 +869,15 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <div className="season-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <h3 className="section-title" style={{ marginBottom: 0 }}>Episodes</h3>
-                    <select 
+                    <CustomSelect 
                       value={selectedSeason} 
                       onChange={(e) => setSelectedSeason(Number(e.target.value))}
                       className="season-selector"
-                      style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}
-                    >
-                      {movie.seasons.filter(s => s.season_number > 0).map(s => (
-                        <option key={s.season_number} value={s.season_number} style={{ color: 'black' }}>
-                          Season {s.season_number}
-                        </option>
-                      ))}
-                    </select>
+                      options={movie.seasons.filter(s => s.season_number > 0).map(s => ({
+                        value: s.season_number,
+                        label: `Season ${s.season_number}`
+                      }))}
+                    />
                   </div>
                   <button onClick={handleMarkSeasonWatched} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.9rem', gap: '8px' }}>
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6L9 17l-5-5" /></svg>

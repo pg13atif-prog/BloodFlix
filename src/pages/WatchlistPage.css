@@ -127,7 +127,7 @@
 }
 
 .watchlist-card-wrapper:hover {
-  transform: translateY(-6px) scale(1.03);
+  transform: translateY(-4px) scale(1.02);
   z-index: 5;
 }
 
