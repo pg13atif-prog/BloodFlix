@@ -4,6 +4,7 @@
   min-height: 100vh;
   padding-bottom: 6rem;
   overflow: hidden;
+  background: #0a0a0a;
 }
 
 /* Ambient glow background blobs */
@@ -13,7 +14,7 @@
   left: 30%;
   width: 450px;
   height: 450px;
-  background: radial-gradient(circle, rgba(229, 9, 20, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(circle, rgba(229, 9, 20, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
   pointer-events: none;
   z-index: 0;
   filter: blur(50px);
@@ -25,7 +26,7 @@
   right: 20%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, rgba(0, 0, 0, 0) 70%);
   pointer-events: none;
   z-index: 0;
   filter: blur(60px);
@@ -37,8 +38,6 @@
   text-align: center;
   margin-bottom: 3.5rem;
 }
-
-
 
 .cineai-hub-header h1 {
   font-size: 3.5rem;
@@ -63,170 +62,134 @@
   line-height: 1.6;
 }
 
-/* 2x2 Balanced Grid Layout */
+/* 2x2 grid */
 .cineai-tools-grid {
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  max-width: 1020px;
+  gap: 1.75rem;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
 
-/* Glassmorphism Card Styling */
+/* Tile cards */
 .cineai-card {
-  background: rgba(18, 22, 34, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 2.2rem;
+  --accent: #e50914;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 40px;
+  padding: 2.25rem 2.5rem;
   text-decoration: none;
   color: #fff;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.cineai-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 20px;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent 60%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+  min-height: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 .cineai-card:hover {
-  background: rgba(25, 30, 48, 0.85);
-  border-color: rgba(229, 9, 20, 0.4);
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(229, 9, 20, 0.18), 0 0 20px rgba(0, 0, 0, 0.6);
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
 }
 
 .cineai-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .cineai-card-icon-wrapper {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--accent, #e50914);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.cineai-card:hover .cineai-card-icon-wrapper {
-  background: var(--accent, #e50914);
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.4);
-  transform: scale(1.08);
+  flex-shrink: 0;
 }
 
 .cineai-card-icon-wrapper svg {
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
 }
 
-
+.cineai-card-body {
+  flex: 1;
+}
 
 .cineai-card-body h2 {
-  font-size: 1.6rem;
-  font-weight: 800;
-  margin-bottom: 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.85rem;
   color: #ffffff;
   letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .cineai-card-body p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.98rem;
-  line-height: 1.6;
-  margin-bottom: 1.25rem;
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  margin: 0;
 }
-
-
 
 .cineai-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 1.2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 2rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .cineai-launch-text {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 0.92rem;
+  font-weight: 600;
   color: #ffffff;
-  transition: color 0.2s ease;
-}
-
-.cineai-card:hover .cineai-launch-text {
-  color: var(--color-accent, #e50914);
 }
 
 .cineai-arrow-circle {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  transition: all 0.3s ease;
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: background 0.2s ease;
 }
 
 .cineai-arrow-circle svg {
   width: 16px;
   height: 16px;
-  transition: transform 0.3s ease;
 }
 
 .cineai-card:hover .cineai-arrow-circle {
-  background: var(--color-accent, #e50914);
-  border-color: transparent;
-  box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+  background: rgba(255, 255, 255, 0.07);
 }
 
-.cineai-card:hover .cineai-arrow-circle svg {
-  transform: translateX(2px);
-}
-
-/* Mobile Breakpoint */
+/* Mobile */
 @media (max-width: 820px) {
   .cineai-tools-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
-  
+
   .cineai-hub-header h1 {
     font-size: 2.5rem;
   }
 
   .cineai-card {
-    padding: 1.75rem;
+    padding: 1.85rem 1.75rem;
+    min-height: auto;
+    border-radius: 32px;
   }
 }

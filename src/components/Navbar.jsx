@@ -252,13 +252,17 @@ const Navbar = () => {
   /* ── Helper: nav item with optional dropdown ─────────────── */
   const NavItem = ({ id, label, icon, hash, isActive, items, className }) => {
     const hasDropdown = items && items.length > 0;
-    const isOpen = openDropdown === id;
+    const suppressDropdown =
+      (id === 'discover' && currentPath.startsWith('#discover')) ||
+      (id === 'cineai' && currentPath === '#cineai');
+    const canOpenDropdown = hasDropdown && !suppressDropdown;
+    const isOpen = canOpenDropdown && openDropdown === id;
 
     return (
       <li
         className={`navbar__nav-item ${hasDropdown ? 'navbar__dropdown-container' : ''}`}
-        onMouseEnter={() => hasDropdown && setOpenDropdown(id)}
-        onMouseLeave={() => hasDropdown && setOpenDropdown(null)}
+        onMouseEnter={() => canOpenDropdown && setOpenDropdown(id)}
+        onMouseLeave={() => canOpenDropdown && setOpenDropdown(null)}
       >
         <a
           href={hash}
@@ -268,14 +272,14 @@ const Navbar = () => {
           <span className="navbar__link-label">
             {id === 'cineai' ? <>Cine<span className="navbar__ai-text">AI</span></> : label}
           </span>
-          {hasDropdown && (
+          {canOpenDropdown && (
             <svg className={`navbar__chevron ${isOpen ? 'navbar__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           )}
         </a>
         <AnimatePresence>
-          {hasDropdown && isOpen && renderPremiumDropdown(items)}
+          {canOpenDropdown && isOpen && renderPremiumDropdown(items)}
         </AnimatePresence>
       </li>
     );

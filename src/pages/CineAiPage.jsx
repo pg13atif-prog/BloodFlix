@@ -74,9 +74,14 @@ const CineAiPage = () => {
 
       <div className="cineai-tools-grid">
         {AI_TOOLS.map(tool => (
-          <a key={tool.id} href={`#cineai/${tool.id}`} className="cineai-card">
+          <a
+            key={tool.id}
+            href={`#cineai/${tool.id}`}
+            className="cineai-card"
+            style={{ '--accent': tool.accentColor }}
+          >
             <div className="cineai-card-top">
-              <div className="cineai-card-icon-wrapper" style={{ '--accent': tool.accentColor }}>
+              <div className="cineai-card-icon-wrapper">
                 {tool.icon}
               </div>
             </div>

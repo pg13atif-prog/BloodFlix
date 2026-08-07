@@ -183,17 +183,17 @@ const ProfilePage = () => {
 
   if (!currentUser) {
     return (
-      <div className="profile-page page-container" style={{ paddingTop: '120px', paddingBottom: '4rem' }}>
-        <div style={{ maxWidth: '440px', margin: '0 auto', background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '3rem 2rem', backdropFilter: 'blur(16px)', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.6)' }}>
-          <div style={{ width: '68px', height: '68px', background: 'rgba(229, 9, 20, 0.15)', border: '1.5px solid rgba(229, 9, 20, 0.4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#e50914' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <div className="profile-guest-page">
+        <section className="profile-guest-card" aria-labelledby="profile-guest-title">
+          <div className="profile-guest-badge" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem', color: '#fff' }}>Welcome to CineScope</h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.5 }}>Sign in to view your personalized profile, save favorite movies, track watch time, and earn achievements.</p>
-          <button style={{ width: '100%', padding: '0.85rem', fontSize: '1rem', fontWeight: 700, borderRadius: '30px', background: 'linear-gradient(135deg, #e50914 0%, #ff3b47 100%)', border: 'none', color: '#fff', cursor: 'pointer', boxShadow: '0 4px 15px rgba(229, 9, 20, 0.4)' }} onClick={() => setIsAuthModalOpen(true)}>
+          <h2 id="profile-guest-title" className="profile-guest-title">Welcome to CineScope</h2>
+          <p className="profile-guest-subtitle">Sign in to view your personalized profile, save favorite movies, track watch time, and earn achievements.</p>
+          <button className="profile-guest-cta" onClick={() => setIsAuthModalOpen(true)}>
             Sign In / Register
           </button>
-        </div>
+        </section>
         <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
       </div>
     );

@@ -164,20 +164,23 @@ const Hero = ({ movies = [], movie = null, loading = false }) => {
                   id="btn-play"
                   type="button"
                   onClick={() => setShowTrailerModal(true)}
+                  aria-label="Watch Official Trailer"
+                  title="Watch Official Trailer"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M8 5v14l11-7z" />
                   </svg>
-                  Watch Official Trailer
                 </button>
               ) : (
-                <button className="hero__btn hero__btn--play disabled" id="btn-play-disabled" type="button" disabled>
-                  Trailer Unavailable
+                <button className="hero__btn hero__btn--play disabled" id="btn-play-disabled" type="button" disabled aria-label="Trailer unavailable" title="Trailer unavailable">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
                 </button>
               )}
 
               {/* View Details Button */}
-              <button className="hero__btn hero__btn--info" id="btn-more-info" type="button" onClick={handleNavigate}>
+              <button className="hero__btn hero__btn--info" id="btn-more-info" type="button" onClick={handleNavigate} aria-label="View Details" title="View Details">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -191,7 +194,6 @@ const Hero = ({ movies = [], movie = null, loading = false }) => {
                   <line x1="12" y1="16" x2="12" y2="12" />
                   <line x1="12" y1="8" x2="12.01" y2="8" />
                 </svg>
-                View Details
               </button>
             </div>
           </motion.div>
