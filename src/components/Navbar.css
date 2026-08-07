@@ -192,17 +192,22 @@
   top: calc(100% + 12px) !important;
   left: 0;
   transform: none;
-  /* Rich dark glass background for high contrast & fallback readability */
-  background: linear-gradient(135deg, rgba(18, 22, 34, 0.85), rgba(9, 12, 20, 0.78));
-  -webkit-backdrop-filter: blur(28px) saturate(155%) brightness(0.72);
-  backdrop-filter: blur(28px) saturate(155%) brightness(0.72);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  /* Premium Liquid Glass: Radial specular sheen + fluid deep tint */
+  background:
+    radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.14) 0%, transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(229, 9, 20, 0.10) 0%, transparent 60%),
+    linear-gradient(145deg, rgba(22, 28, 44, 0.68) 0%, rgba(8, 11, 20, 0.58) 100%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%) brightness(1.08);
+  backdrop-filter: blur(36px) saturate(190%) brightness(1.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 24px;
   min-width: 320px;
   padding: 8px;
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 24px 60px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1.5px 0 0 rgba(0, 0, 0, 0.5);
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -215,15 +220,22 @@
   align-items: flex-start;
   gap: 1.2rem;
   padding: 1.25rem;
-  border-radius: 12px;
+  border-radius: 16px;
   text-decoration: none;
   color: #fff;
-  transition: background 0.15s ease;
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  position: relative;
 }
 
 .nav-dropdown__item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px) scale(1.01);
 }
 
 .nav-dropdown__icon {
