@@ -19,21 +19,18 @@
   --auth-accent: #ef233c;
   --auth-accent-light: #ff4659;
   --auth-accent-rgb: 239, 35, 60;
-  background: linear-gradient(
-    160deg,
-    rgba(40, 15, 15, 0.92) 0%,
-    rgba(20, 8, 12, 0.95) 50%,
-    rgba(30, 12, 12, 0.92) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-heavy-bg);
+  -webkit-backdrop-filter: var(--glass-heavy-filter);
+  backdrop-filter: var(--glass-heavy-filter);
+  border: var(--glass-heavy-border);
   padding: 2.5rem 2.25rem 2rem;
   border-radius: 18px;
   width: 92%;
   max-width: 400px;
   position: relative;
   box-shadow:
-    0 0 60px rgba(var(--auth-accent-rgb), 0.10),
-    0 25px 60px -12px rgba(0, 0, 0, 0.65);
+    0 0 60px rgba(var(--auth-accent-rgb), 0.15),
+    var(--glass-heavy-shadow);
   animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

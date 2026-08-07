@@ -58,6 +58,41 @@
   --color-genre-western: #a8a29e;
   --color-genre-tv: #cbd5e1;
   --color-genre-default: #94a3b8;
+
+  /* ---------- Premium Liquid Glass (Physically Accurate Refraction) ---------- */
+  /* Heavy: For modals, overlays, large focused panels */
+  --glass-heavy-bg: 
+    radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(229, 9, 20, 0.10) 0%, transparent 60%),
+    linear-gradient(145deg, rgba(22, 28, 44, 0.75) 0%, rgba(8, 11, 20, 0.65) 100%);
+  --glass-heavy-filter: blur(48px) saturate(200%) brightness(1.1);
+  --glass-heavy-border: 1px solid rgba(255, 255, 255, 0.2);
+  --glass-heavy-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    inset 0 1.5px 0 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 0 0 rgba(0, 0, 0, 0.6);
+
+  /* Medium: For dropdowns, sidebars, larger cards */
+  --glass-med-bg: 
+    radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.12) 0%, transparent 50%),
+    linear-gradient(145deg, rgba(22, 28, 44, 0.55) 0%, rgba(8, 11, 20, 0.45) 100%);
+  --glass-med-filter: blur(32px) saturate(180%) brightness(1.1);
+  --glass-med-border: 1px solid rgba(255, 255, 255, 0.15);
+  --glass-med-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.4);
+
+  /* Light: For small cards, list items, subtle panels */
+  --glass-light-bg: 
+    linear-gradient(145deg, rgba(30, 35, 50, 0.4) 0%, rgba(15, 18, 30, 0.3) 100%);
+  --glass-light-filter: blur(16px) saturate(150%) brightness(1.05);
+  --glass-light-border: 1px solid rgba(255, 255, 255, 0.1);
+  --glass-light-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    inset 0 0.5px 0 0 rgba(255, 255, 255, 0.2),
+    inset 0 -0.5px 0 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ---------- Global Animations ---------- */
@@ -205,9 +240,9 @@ button {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: var(--glass-heavy-filter);
+  -webkit-backdrop-filter: var(--glass-heavy-filter);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,11 +261,13 @@ button {
   max-width: 480px;
   max-height: 85vh;
   overflow-y: auto;
-  background: linear-gradient(145deg, #13172a, #0e1220);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-heavy-bg);
+  backdrop-filter: var(--glass-heavy-filter);
+  -webkit-backdrop-filter: var(--glass-heavy-filter);
+  border: var(--glass-heavy-border);
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 40px rgba(229, 9, 20, 0.08);
+  box-shadow: 0 0 40px rgba(229, 9, 20, 0.08), var(--glass-heavy-shadow);
   animation: modalSlideUp 0.25s ease;
   color: #e2e8f0;
 }

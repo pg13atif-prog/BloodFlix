@@ -216,7 +216,7 @@
   left: 0;
   width: 100%;
   background: rgba(20, 20, 20, 0.95);
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-light-filter);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
   max-height: 360px;
@@ -390,8 +390,8 @@
   border-radius: 20px;
   padding: 2rem;
   align-items: center;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: var(--glass-med-filter);
+  -webkit-backdrop-filter: var(--glass-med-filter);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
   max-width: 800px;
   margin: 0 auto;

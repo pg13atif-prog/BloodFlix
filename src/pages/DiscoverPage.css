@@ -80,8 +80,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: var(--glass-med-filter);
+  -webkit-backdrop-filter: var(--glass-med-filter);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -111,8 +111,8 @@
 
 .discover-filter-card {
   background: rgba(25, 28, 35, 0.7);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: var(--glass-light-filter);
+  -webkit-backdrop-filter: var(--glass-light-filter);
   border: 1px solid rgba(229, 9, 20, 0.15);
   border-radius: 18px;
   padding: 1.75rem;
