@@ -385,97 +385,148 @@ const Navbar = () => {
           />
 
           {/* ── Mobile Accordion Sections ─────────────────── */}
+          {/* USER PROFILE SECTION AT THE TOP */}
+          {currentUser ? (
+            <li className="mobile-accordion-section mobile-profile-section-top">
+              <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'profile' ? null : 'profile')}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span className="mobile-profile-avatar">{avatarLetter}</span>
+                  <span style={{ fontWeight: 600 }}>{currentUser.isAnonymous ? 'Guest Account' : (currentUser.email?.split('@')[0] || 'Profile')}</span>
+                </span>
+                <svg className={`mobile-accordion-chevron ${mobileAccordion === 'profile' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <AnimatePresence>
+                {mobileAccordion === 'profile' && (
+                  <motion.div
+                    className="mobile-accordion-content"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <a href="#profile" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#profile')}>
+                      <span className="mobile-accordion-icon">👤</span>
+                      <div><span className="mobile-accordion-label">My Profile</span><br/><span className="mobile-accordion-desc">View stats & activity</span></div>
+                    </a>
+                    <a href="#achievements" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#achievements')}>
+                      <span className="mobile-accordion-icon">🏆</span>
+                      <div><span className="mobile-accordion-label">Achievements</span><br/><span className="mobile-accordion-desc">View unlocked badges</span></div>
+                    </a>
+                    <a href="#friends" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#friends')}>
+                      <span className="mobile-accordion-icon">👥</span>
+                      <div><span className="mobile-accordion-label">Friends</span><br/><span className="mobile-accordion-desc">Manage friends & requests</span></div>
+                    </a>
+                    <button className="mobile-accordion-item" onClick={() => { setIsNotificationsOpen(true); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <span className="mobile-accordion-icon" style={{ position: 'relative' }}>
+                        🔔
+                        {hasUnreadNotifications && <span className="mobile-notif-dot"></span>}
+                      </span>
+                      <div><span className="mobile-accordion-label">Notifications</span><br/><span className="mobile-accordion-desc">{notifications.length > 0 ? `${notifications.length} new` : 'No new notifications.'}</span></div>
+                    </button>
+                    <button className="mobile-accordion-item mobile-logout-item" onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <span className="mobile-accordion-icon">🚪</span>
+                      <div><span className="mobile-accordion-label" style={{ color: '#e50914' }}>Log Out</span><br/><span className="mobile-accordion-desc">Sign out of account</span></div>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </li>
+          ) : (
+            <li className="mobile-accordion-section mobile-auth-section-top">
+              <button className="mobile-accordion-trigger" onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <span className="mobile-profile-avatar" style={{ background: 'rgba(255,255,255,0.1)' }}>👤</span>
+                  <span style={{ fontWeight: 600 }}>Sign In / Register</span>
+                </span>
+              </button>
+            </li>
+          )}
+
+          {/* OTHER NAVIGATION OPTIONS BELOW */}
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'discover' ? null : 'discover')}>
               <span>Discover</span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'discover' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
-            {mobileAccordion === 'discover' && (
-              <div className="mobile-accordion-content">
-                {discoverItems.map(item => (
-                  <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
-                    <span className="mobile-accordion-icon">{item.icon}</span>
-                    <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
-                  </a>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {mobileAccordion === 'discover' && (
+                <motion.div
+                  className="mobile-accordion-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {discoverItems.map(item => (
+                    <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
+                      <span className="mobile-accordion-icon">{item.icon}</span>
+                      <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
+                    </a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </li>
+
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'cineai' ? null : 'cineai')}>
               <span>Cine<span className="navbar__ai-text">AI</span></span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'cineai' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
-            {mobileAccordion === 'cineai' && (
-              <div className="mobile-accordion-content">
-                {cineaiItems.map(item => (
-                  <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
-                    <span className="mobile-accordion-icon">{item.icon}</span>
-                    <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
-                  </a>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {mobileAccordion === 'cineai' && (
+                <motion.div
+                  className="mobile-accordion-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {cineaiItems.map(item => (
+                    <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
+                      <span className="mobile-accordion-icon">{item.icon}</span>
+                      <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
+                    </a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </li>
+
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'friends' ? null : 'friends')}>
               <span>Friends</span>
               <svg className={`mobile-accordion-chevron ${mobileAccordion === 'friends' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </button>
-            {mobileAccordion === 'friends' && (
-              <div className="mobile-accordion-content">
-                {friendsItems.map(item => (
-                  <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
-                    <span className="mobile-accordion-icon">{item.icon}</span>
-                    <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
-                  </a>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {mobileAccordion === 'friends' && (
+                <motion.div
+                  className="mobile-accordion-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  {friendsItems.map(item => (
+                    <a key={item.hash} href={item.hash} className="mobile-accordion-item" onClick={(e) => handleNavClick(e, item.hash)}>
+                      <span className="mobile-accordion-icon">{item.icon}</span>
+                      <div><span className="mobile-accordion-label">{item.label}</span><br/><span className="mobile-accordion-desc">{item.desc}</span></div>
+                    </a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </li>
+
           <li className="mobile-accordion-section mobile-accordion-single">
             <a href="#watchlist" className="mobile-accordion-trigger" onClick={(e) => handleNavClick(e, '#watchlist')}>
               <span>Watchlist</span>
             </a>
           </li>
-          {currentUser && (
-            <li className="mobile-accordion-section mobile-profile-section">
-              <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'profile' ? null : 'profile')}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <span className="mobile-profile-avatar">{avatarLetter}</span>
-                  {currentUser.isAnonymous ? 'Guest' : (currentUser.email?.split('@')[0] || 'Profile')}
-                </span>
-                <svg className={`mobile-accordion-chevron ${mobileAccordion === 'profile' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              {mobileAccordion === 'profile' && (
-                <div className="mobile-accordion-content">
-                  <a href="#profile" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#profile')}>
-                    <span className="mobile-accordion-icon">👤</span>
-                    <div><span className="mobile-accordion-label">My Profile</span><br/><span className="mobile-accordion-desc">View your profile and stats.</span></div>
-                  </a>
-                  <a href="#achievements" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#achievements')}>
-                    <span className="mobile-accordion-icon">🏆</span>
-                    <div><span className="mobile-accordion-label">Achievements</span><br/><span className="mobile-accordion-desc">View your unlocked achievements.</span></div>
-                  </a>
-                  <a href="#friends" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#friends')}>
-                    <span className="mobile-accordion-icon">👥</span>
-                    <div><span className="mobile-accordion-label">Friends</span><br/><span className="mobile-accordion-desc">Manage your friends list.</span></div>
-                  </a>
-                  <button className="mobile-accordion-item" onClick={() => { setIsNotificationsOpen(true); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    <span className="mobile-accordion-icon" style={{ position: 'relative' }}>
-                      🔔
-                      {hasUnreadNotifications && <span className="mobile-notif-dot"></span>}
-                    </span>
-                    <div><span className="mobile-accordion-label">Notifications</span><br/><span className="mobile-accordion-desc">{notifications.length > 0 ? `${notifications.length} new` : 'No new notifications.'}</span></div>
-                  </button>
-                  <button className="mobile-accordion-item mobile-logout-item" onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    <span className="mobile-accordion-icon">🚪</span>
-                    <div><span className="mobile-accordion-label" style={{ color: '#e50914' }}>Log Out</span><br/><span className="mobile-accordion-desc">Sign out of your account.</span></div>
-                  </button>
-                </div>
-              )}
-            </li>
-          )}
         </ul>
 
         <div className="navbar__actions" id="navbar-actions">

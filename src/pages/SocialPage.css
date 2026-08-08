@@ -1,7 +1,13 @@
 .social-page {
-  padding-top: 100px;
+  padding: 120px 2.5rem 6rem;
   min-height: 100vh;
-  padding-bottom: 5rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 860px) {
+  .social-page {
+    padding: 95px 1.25rem 5rem;
+  }
 }
 
 .social-header {
