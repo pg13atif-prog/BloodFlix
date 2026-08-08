@@ -275,14 +275,14 @@ button {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: var(--glass-heavy-filter);
-  -webkit-backdrop-filter: var(--glass-heavy-filter);
+  z-index: 10010;
+  background: rgba(6, 9, 16, 0.8);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1.25rem;
   animation: modalFadeIn 0.2s ease;
 }
 

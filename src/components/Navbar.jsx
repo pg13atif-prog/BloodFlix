@@ -839,20 +839,20 @@ const Navbar = () => {
             {notifications.length === 0 ? (
               <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', padding: '2rem' }}>You have no notifications.</p>
             ) : (
-              <div className="notifications-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem', maxHeight: '400px', overflowY: 'auto' }}>
+              <div className="notifications-list">
                 {notifications.map(notif => (
-                  <div key={notif.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div key={notif.id} className="notification-card-item">
+                    <div className="notif-card-header">
                       <strong>{notif.fromName}</strong>
-                      <button onClick={() => handleDismissNotification(notif)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>✕</button>
+                      <button onClick={() => handleDismissNotification(notif)} className="notif-dismiss-btn" title="Dismiss">✕</button>
                     </div>
-                    <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', marginBottom: '1rem' }}>
-                      recommended you <strong>{notif.movie.title}</strong>
+                    <p className="notif-card-body">
+                      recommended you <strong>{notif.movie?.title || 'a movie'}</strong>
                     </p>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn-secondary btn-sm" onClick={() => handleNotificationAction(notif, 'watchlist')}>+ Watchlist</button>
-                      <button className="btn-secondary btn-sm" onClick={() => handleNotificationAction(notif, 'liked')}>❤️ Liked</button>
-                      <button className="btn-secondary btn-sm" onClick={() => handleNotificationAction(notif, 'watched')}>👁️ Watched</button>
+                    <div className="notif-card-actions">
+                      <button className="notif-action-btn" onClick={() => handleNotificationAction(notif, 'watchlist')}>+ Watchlist</button>
+                      <button className="notif-action-btn" onClick={() => handleNotificationAction(notif, 'liked')}>❤️ Liked</button>
+                      <button className="notif-action-btn" onClick={() => handleNotificationAction(notif, 'watched')}>👁️ Watched</button>
                     </div>
                   </div>
                 ))}
