@@ -41,6 +41,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentPath, setCurrentPath] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProfileDropupOpen, setIsProfileDropupOpen] = useState(false);
 
   // Desktop hover dropdowns
   const [openDropdown, setOpenDropdown] = useState(null); // 'discover' | 'cineai' | 'social' | null
@@ -64,8 +65,24 @@ const Navbar = () => {
 
   const navRef = useRef(null);
   const dropdownRef = useRef(null);
+  const dropupRef = useRef(null);
   const searchContainerRef = useRef(null);
   const { currentUser, logout } = useAuth();
+
+  // Prevent background scrolling when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     if (currentUser) {
@@ -127,6 +144,9 @@ const Navbar = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
       }
+      if (dropupRef.current && !dropupRef.current.contains(e.target)) {
+        setIsProfileDropupOpen(false);
+      }
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
         setShowSuggestions(false);
       }
@@ -184,6 +204,7 @@ const Navbar = () => {
     if (e) e.preventDefault();
     setIsMobileMenuOpen(false);
     setIsDropdownOpen(false);
+    setIsProfileDropupOpen(false);
     setOpenDropdown(null);
 
     const normalizedTarget = targetHash === '#' ? '' : targetHash;
@@ -193,6 +214,23 @@ const Navbar = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       window.location.hash = normalizedTarget;
+    }
+  };
+
+  const handleMobileProfileClick = (e) => {
+    if (e) e.preventDefault();
+    if (!currentUser) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    const currentHash = window.location.hash || '';
+    if (currentHash === '#profile') {
+      setIsProfileDropupOpen(prev => !prev);
+    } else {
+      setIsProfileDropupOpen(false);
+      window.location.hash = '#profile';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -385,65 +423,6 @@ const Navbar = () => {
           />
 
           {/* ── Mobile Accordion Sections ─────────────────── */}
-          {/* USER PROFILE SECTION AT THE TOP */}
-          {currentUser ? (
-            <li className="mobile-accordion-section mobile-profile-section-top">
-              <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'profile' ? null : 'profile')}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  <span className="mobile-profile-avatar">{avatarLetter}</span>
-                  <span style={{ fontWeight: 600 }}>{currentUser.isAnonymous ? 'Guest Account' : (currentUser.email?.split('@')[0] || 'Profile')}</span>
-                </span>
-                <svg className={`mobile-accordion-chevron ${mobileAccordion === 'profile' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              </button>
-              <AnimatePresence>
-                {mobileAccordion === 'profile' && (
-                  <motion.div
-                    className="mobile-accordion-content"
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                    style={{ overflow: 'hidden' }}
-                  >
-                    <a href="#profile" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#profile')}>
-                      <span className="mobile-accordion-icon">👤</span>
-                      <div><span className="mobile-accordion-label">My Profile</span><br/><span className="mobile-accordion-desc">View stats & activity</span></div>
-                    </a>
-                    <a href="#achievements" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#achievements')}>
-                      <span className="mobile-accordion-icon">🏆</span>
-                      <div><span className="mobile-accordion-label">Achievements</span><br/><span className="mobile-accordion-desc">View unlocked badges</span></div>
-                    </a>
-                    <a href="#friends" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#friends')}>
-                      <span className="mobile-accordion-icon">👥</span>
-                      <div><span className="mobile-accordion-label">Friends</span><br/><span className="mobile-accordion-desc">Manage friends & requests</span></div>
-                    </a>
-                    <button className="mobile-accordion-item" onClick={() => { setIsNotificationsOpen(true); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
-                      <span className="mobile-accordion-icon" style={{ position: 'relative' }}>
-                        🔔
-                        {hasUnreadNotifications && <span className="mobile-notif-dot"></span>}
-                      </span>
-                      <div><span className="mobile-accordion-label">Notifications</span><br/><span className="mobile-accordion-desc">{notifications.length > 0 ? `${notifications.length} new` : 'No new notifications.'}</span></div>
-                    </button>
-                    <button className="mobile-accordion-item mobile-logout-item" onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
-                      <span className="mobile-accordion-icon">🚪</span>
-                      <div><span className="mobile-accordion-label" style={{ color: '#e50914' }}>Log Out</span><br/><span className="mobile-accordion-desc">Sign out of account</span></div>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </li>
-          ) : (
-            <li className="mobile-accordion-section mobile-auth-section-top">
-              <button className="mobile-accordion-trigger" onClick={() => { setIsAuthModalOpen(true); setIsMobileMenuOpen(false); }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                  <span className="mobile-profile-avatar" style={{ background: 'rgba(255,255,255,0.1)' }}>👤</span>
-                  <span style={{ fontWeight: 600 }}>Sign In / Register</span>
-                </span>
-              </button>
-            </li>
-          )}
-
-          {/* OTHER NAVIGATION OPTIONS BELOW */}
           <li className="mobile-accordion-section">
             <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'discover' ? null : 'discover')}>
               <span>Discover</span>
@@ -778,7 +757,7 @@ const Navbar = () => {
 
         <a 
           href="#profile" 
-          onClick={(e) => handleNavClick(e, '#profile')} 
+          onClick={handleMobileProfileClick} 
           className={`mobile-nav-item ${currentPath === '#profile' ? 'active' : ''}`}
         >
           {currentUser ? (
@@ -792,6 +771,59 @@ const Navbar = () => {
           <span>Profile</span>
         </a>
       </nav>
+
+      {/* Mobile Profile Dropup Menu (Triggers on 2nd tap of Profile button) */}
+      <AnimatePresence>
+        {isProfileDropupOpen && currentUser && (
+          <motion.div
+            className="mobile-profile-dropup"
+            initial={{ opacity: 0, y: 15, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            ref={dropupRef}
+          >
+            <div className="dropup-header">
+              <span className="mobile-profile-avatar">{avatarLetter}</span>
+              <div className="dropup-user-info">
+                <span className="dropup-username">{currentUser.isAnonymous ? 'Guest User' : (currentUser.email?.split('@')[0] || 'Profile')}</span>
+                <small className="dropup-email">{currentUser.email || 'Guest Account'}</small>
+              </div>
+            </div>
+            <div className="dropup-divider" />
+
+            <a href="#profile" className="dropup-item" onClick={(e) => { handleNavClick(e, '#profile'); setIsProfileDropupOpen(false); }}>
+              <span className="dropup-icon">👤</span>
+              <span>My Profile</span>
+            </a>
+
+            <a href="#achievements" className="dropup-item" onClick={(e) => { handleNavClick(e, '#achievements'); setIsProfileDropupOpen(false); }}>
+              <span className="dropup-icon">🏆</span>
+              <span>Achievements</span>
+            </a>
+
+            <a href="#friends" className="dropup-item" onClick={(e) => { handleNavClick(e, '#friends'); setIsProfileDropupOpen(false); }}>
+              <span className="dropup-icon">👥</span>
+              <span>Friends</span>
+            </a>
+
+            <button className="dropup-item" onClick={() => { setIsNotificationsOpen(true); setIsProfileDropupOpen(false); }}>
+              <span className="dropup-icon" style={{ position: 'relative' }}>
+                🔔
+                {hasUnreadNotifications && <span className="mobile-notif-dot"></span>}
+              </span>
+              <span>Notifications {notifications.length > 0 ? `(${notifications.length})` : ''}</span>
+            </button>
+
+            <div className="dropup-divider" />
+
+            <button className="dropup-item logout" onClick={() => { logout(); setIsProfileDropupOpen(false); }}>
+              <span className="dropup-icon">🚪</span>
+              <span style={{ color: '#e50914' }}>Log Out</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AuthModal
         isOpen={isAuthModalOpen}

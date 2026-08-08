@@ -445,6 +445,7 @@
   border-radius: 12px;
   max-height: 380px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   box-shadow: var(--glass-med-shadow);
   -webkit-backdrop-filter: var(--glass-med-filter);
   backdrop-filter: var(--glass-med-filter);
@@ -719,6 +720,7 @@
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     pointer-events: auto;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .navbar__nav.navbar__nav--open {
@@ -969,5 +971,101 @@
 
   .mobile-nav-item.active .mobile-nav-avatar {
     box-shadow: 0 0 8px rgba(229, 9, 20, 0.5);
+  }
+
+  /* ---------- Mobile Profile Dropup Menu ---------- */
+  .mobile-profile-dropup {
+    position: fixed;
+    bottom: 72px;
+    right: 12px;
+    width: 250px;
+    background: rgba(12, 16, 26, 0.96);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 20px;
+    padding: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(229, 9, 20, 0.3);
+    z-index: 10008;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overscroll-behavior: contain;
+  }
+
+  .dropup-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .dropup-user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .dropup-username {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dropup-email {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dropup-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 4px 0;
+  }
+
+  .dropup-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .dropup-item:hover,
+  .dropup-item:active {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .dropup-item.logout {
+    color: #e50914;
+  }
+
+  .dropup-item.logout:hover,
+  .dropup-item.logout:active {
+    background: rgba(229, 9, 20, 0.12);
+  }
+
+  .dropup-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
   }
 }
