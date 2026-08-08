@@ -24,6 +24,113 @@ import MovieRow from '../components/MovieRow';
 import { checkAndUnlockAchievements, trackDetailView, incrementStat } from '../services/achievements';
 import './MovieDetail.css';
 
+const PROVIDER_URL_MAP = {
+  'Netflix': (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`,
+  'Amazon Prime Video': (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`,
+  'Amazon Video': (title) => `https://www.amazon.com/s?k=${encodeURIComponent(title)}&i=instant-video`,
+  'Apple TV Plus': (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,
+  'Apple TV': (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,
+  'Apple iTunes': (title) => `https://tv.apple.com/search?term=${encodeURIComponent(title)}`,
+  'Disney Plus': (title) => `https://www.disneyplus.com/search/${encodeURIComponent(title)}`,
+  'Hulu': (title) => `https://www.hulu.com/search?q=${encodeURIComponent(title)}`,
+  'HBO Max': (title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`,
+  'Max': (title) => `https://play.max.com/search?q=${encodeURIComponent(title)}`,
+  'Paramount Plus': (title) => `https://www.paramountplus.com/search/?q=${encodeURIComponent(title)}`,
+  'Paramount+ Amazon Channel': (title) => `https://www.paramountplus.com/search/?q=${encodeURIComponent(title)}`,
+  'Paramount Plus Apple TV Channel': (title) => `https://www.paramountplus.com/search/?q=${encodeURIComponent(title)}`,
+  'Peacock': (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`,
+  'Peacock Premium': (title) => `https://www.peacocktv.com/search?q=${encodeURIComponent(title)}`,
+  'Crunchyroll': (title) => `https://www.crunchyroll.com/search?q=${encodeURIComponent(title)}`,
+  'YouTube': (title) => `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' full movie')}`,
+  'YouTube Premium': (title) => `https://www.youtube.com/results?search_query=${encodeURIComponent(title + ' full movie')}`,
+  'Google Play Movies': (title) => `https://play.google.com/store/search?q=${encodeURIComponent(title)}&c=movies`,
+  'Vudu': (title) => `https://www.vudu.com/content/movies/search?searchString=${encodeURIComponent(title)}`,
+  'Fandango At Home': (title) => `https://www.vudu.com/content/movies/search?searchString=${encodeURIComponent(title)}`,
+  'Microsoft Store': (title) => `https://www.microsoft.com/en-us/search/shop/movies-tv?q=${encodeURIComponent(title)}`,
+  'Mubi': (title) => `https://mubi.com/en/search?query=${encodeURIComponent(title)}`,
+  'Tubi TV': (title) => `https://tubitv.com/search/${encodeURIComponent(title)}`,
+  'Tubi': (title) => `https://tubitv.com/search/${encodeURIComponent(title)}`,
+  'Zee5': (title) => `https://www.zee5.com/search?q=${encodeURIComponent(title)}`,
+  'JioCinema': (title) => `https://www.jiocinema.com/search/${encodeURIComponent(title)}`,
+  'Hotstar': (title) => `https://www.hotstar.com/in/search?q=${encodeURIComponent(title)}`,
+  'Disney+ Hotstar': (title) => `https://www.hotstar.com/in/search?q=${encodeURIComponent(title)}`,
+  'Stan': (title) => `https://www.stan.com.au/search?q=${encodeURIComponent(title)}`,
+  'Starz': (title) => `https://www.starz.com/search?q=${encodeURIComponent(title)}`,
+  'Showtime': (title) => `https://www.sho.com/search?q=${encodeURIComponent(title)}`,
+  'Curiosity Stream': (title) => `https://curiositystream.com/search?q=${encodeURIComponent(title)}`,
+  'Shudder': (title) => `https://www.shudder.com/search?q=${encodeURIComponent(title)}`,
+  'AMC Plus': (title) => `https://www.amcplus.com/search?q=${encodeURIComponent(title)}`,
+  'BritBox': (title) => `https://www.britbox.com/search?q=${encodeURIComponent(title)}`,
+  'Kanopy': (title) => `https://www.kanopy.com/en/search?query=${encodeURIComponent(title)}`,
+  'Plex': (title) => `https://watch.plex.tv/search?q=${encodeURIComponent(title)}`,
+  'Pluto TV': (title) => `https://pluto.tv/search/details/${encodeURIComponent(title)}`,
+  'SonyLIV': (title) => `https://www.sonyliv.com/search?searchTerm=${encodeURIComponent(title)}`,
+  'Voot': (title) => `https://www.voot.com/search/${encodeURIComponent(title)}`,
+  'MX Player': (title) => `https://www.mxplayer.in/search?q=${encodeURIComponent(title)}`,
+};
+
+const getProviderUrl = (providerName, movieTitle) => {
+  if (!providerName) return `https://www.google.com/search?q=${encodeURIComponent(`watch ${movieTitle}`)}`;
+  
+  if (PROVIDER_URL_MAP[providerName]) {
+    return PROVIDER_URL_MAP[providerName](movieTitle);
+  }
+
+  const p = providerName.toLowerCase();
+  const title = encodeURIComponent(movieTitle || '');
+
+  if (p.includes('apple') || p.includes('itunes')) return `https://tv.apple.com/search?term=${title}`;
+  if (p.includes('netflix')) return `https://www.netflix.com/search?q=${title}`;
+  if (p.includes('amazon') || p.includes('prime')) return `https://www.amazon.com/s?k=${title}&i=instant-video`;
+  if (p.includes('disney')) return `https://www.disneyplus.com/search/${title}`;
+  if (p.includes('hulu')) return `https://www.hulu.com/search?q=${title}`;
+  if (p.includes('max') || p.includes('hbo')) return `https://play.max.com/search?q=${title}`;
+  if (p.includes('paramount')) return `https://www.paramountplus.com/search/?q=${title}`;
+  if (p.includes('peacock')) return `https://www.peacocktv.com/search?q=${title}`;
+  if (p.includes('crunchyroll')) return `https://www.crunchyroll.com/search?q=${title}`;
+  if (p.includes('youtube')) return `https://www.youtube.com/results?search_query=${title}+full+movie`;
+  if (p.includes('google') || p.includes('play')) return `https://play.google.com/store/search?q=${title}&c=movies`;
+  if (p.includes('vudu') || p.includes('fandango')) return `https://www.vudu.com/content/movies/search?searchString=${title}`;
+  if (p.includes('microsoft') || p.includes('xbox')) return `https://www.microsoft.com/en-us/search/shop/movies-tv?q=${title}`;
+  if (p.includes('mubi')) return `https://mubi.com/en/search?query=${title}`;
+  if (p.includes('tubi')) return `https://tubitv.com/search/${title}`;
+  if (p.includes('zee')) return `https://www.zee5.com/search?q=${title}`;
+  if (p.includes('jio')) return `https://www.jiocinema.com/search/${title}`;
+  if (p.includes('hotstar')) return `https://www.hotstar.com/in/search?q=${title}`;
+  if (p.includes('sony') || p.includes('liv')) return `https://www.sonyliv.com/search?searchTerm=${title}`;
+  if (p.includes('aha')) return `https://www.aha.video/search?q=${title}`;
+  if (p.includes('hoichoi')) return `https://www.hoichoi.tv/search?q=${title}`;
+  if (p.includes('sun')) return `https://www.sunnxt.com/search?q=${title}`;
+  if (p.includes('lionsgate')) return `https://www.lionsgateplay.com/search?q=${title}`;
+  if (p.includes('pluto')) return `https://pluto.tv/search/details/${title}`;
+  if (p.includes('roku')) return `https://therokuchannel.roku.com/search/${title}`;
+  if (p.includes('freevee')) return `https://www.amazon.com/s?k=${title}&i=instant-video`;
+  if (p.includes('popcornflix')) return `https://www.popcornflix.com/search/${title}`;
+  if (p.includes('rakuten')) return `https://www.rakuten.tv/search?q=${title}`;
+  if (p.includes('canal') || p.includes('mycanal')) return `https://www.canalplus.com/recherche?q=${title}`;
+  if (p.includes('sky')) return `https://www.sky.com/watch/search?q=${title}`;
+  if (p.includes('now')) return `https://www.nowtv.com/search?q=${title}`;
+  if (p.includes('bbc') || p.includes('iplayer')) return `https://www.bbc.co.uk/iplayer/search?q=${title}`;
+  if (p.includes('itv')) return `https://www.itv.com/watch/search?q=${title}`;
+  if (p.includes('channel 4') || p.includes('all 4') || p.includes('all4')) return `https://www.channel4.com/search?q=${title}`;
+  if (p.includes('bfi')) return `https://player.bfi.org.uk/search?q=${title}`;
+  if (p.includes('criterion')) return `https://www.criterionchannel.com/search?q=${title}`;
+  if (p.includes('shudder')) return `https://www.shudder.com/search?q=${title}`;
+  if (p.includes('amc')) return `https://www.amcplus.com/search?q=${title}`;
+  if (p.includes('britbox')) return `https://www.britbox.com/search?q=${title}`;
+  if (p.includes('kanopy')) return `https://www.kanopy.com/en/search?query=${title}`;
+  if (p.includes('plex')) return `https://watch.plex.tv/search?q=${title}`;
+  if (p.includes('stan')) return `https://www.stan.com.au/search?q=${title}`;
+  if (p.includes('starz')) return `https://www.starz.com/search?q=${title}`;
+  if (p.includes('showtime') || p.includes('sho')) return `https://www.sho.com/search?q=${title}`;
+  if (p.includes('curiosity')) return `https://curiositystream.com/search?q=${title}`;
+  if (p.includes('crave')) return `https://www.crave.ca/en/search?q=${title}`;
+  if (p.includes('viaplay')) return `https://viaplay.com/search?q=${title}`;
+  if (p.includes('voot')) return `https://www.voot.com/search/${title}`;
+  if (p.includes('mx')) return `https://www.mxplayer.in/search?q=${title}`;
+
+  return `https://www.google.com/search?q=${encodeURIComponent(`watch ${movieTitle} on ${providerName} official site`)}&btnI=1`;
+};
 const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
   const [movie, setMovie] = useState(null);
   const [cast, setCast] = useState([]);
@@ -389,7 +496,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <span className="provider-label">Stream</span>
                 <div className="provider-logos">
                   {watchProviders.flatrate.map(p => {
-                    const targetUrl = `https://www.google.com/search?q=watch+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
+                    const targetUrl = getProviderUrl(p.provider_name, movie.title || movie.name);
                     return (
                       <a 
                         key={p.provider_id} 
@@ -411,7 +518,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <span className="provider-label">Rent</span>
                 <div className="provider-logos">
                   {watchProviders.rent.map(p => {
-                    const targetUrl = `https://www.google.com/search?q=rent+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
+                    const targetUrl = getProviderUrl(p.provider_name, movie.title || movie.name);
                     return (
                       <a 
                         key={p.provider_id} 
@@ -433,7 +540,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                 <span className="provider-label">Buy</span>
                 <div className="provider-logos">
                   {watchProviders.buy.map(p => {
-                    const targetUrl = `https://www.google.com/search?q=buy+${encodeURIComponent(movie.title)}+on+${encodeURIComponent(p.provider_name)}`;
+                    const targetUrl = getProviderUrl(p.provider_name, movie.title || movie.name);
                     return (
                       <a 
                         key={p.provider_id} 
@@ -620,7 +727,7 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
             {/* CTA Buttons */}
             <div className="detail-actions">
               {/* Trailer */}
-              <div className="action-item">
+              <div className="action-item action-item-trailer">
                 {trailerKey ? (
                   <button
                     className="squircle-btn btn-primary"
@@ -635,79 +742,88 @@ const MovieDetail = ({ movieId, mediaType = 'movie', onBack }) => {
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                       <path d="M8 5v14l11-7z" />
                     </svg>
+                    <span className="mobile-btn-text">Watch Official Trailer</span>
                   </button>
                 ) : (
                   <button className="squircle-btn btn-primary disabled" disabled title="Trailer Unavailable">
                     <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                       <path d="M8 5v14l11-7z" />
                     </svg>
+                    <span className="mobile-btn-text">Trailer Unavailable</span>
                   </button>
                 )}
-                <span className="action-label">Trailer</span>
+                <span className="action-label desktop-only-label">Trailer</span>
               </div>
 
-              {/* Watchlist */}
-              <div className="action-item">
-                <button
-                  className={`squircle-btn btn-secondary ${isSaved ? 'saved' : ''}`}
-                  onClick={handleWatchlistClick}
-                  title={isSaved ? 'In Watchlist' : 'Add to Watchlist'}
-                >
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                  </svg>
-                </button>
-                <span className="action-label">{isSaved ? 'Saved' : 'Watchlist'}</span>
-              </div>
+              {/* 4 Secondary Actions */}
+              <div className="detail-secondary-actions">
+                {/* Watchlist */}
+                <div className="action-item">
+                  <button
+                    className={`squircle-btn btn-secondary ${isSaved ? 'saved' : ''}`}
+                    onClick={handleWatchlistClick}
+                    title={isSaved ? 'In Watchlist' : 'Add to Watchlist'}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill={isSaved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span className="mobile-btn-text">{isSaved ? 'Saved' : 'Watchlist'}</span>
+                  </button>
+                  <span className="action-label desktop-only-label">{isSaved ? 'Saved' : 'Watchlist'}</span>
+                </div>
 
-              {/* Like */}
-              <div className="action-item">
-                <button
-                  className={`squircle-btn btn-secondary ${isLikedItem ? 'liked' : ''}`}
-                  onClick={handleLikeClick}
-                  title={isLikedItem ? 'Liked' : 'Like'}
-                >
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill={isLikedItem ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                </button>
-                <span className="action-label">{isLikedItem ? 'Liked' : 'Like'}</span>
-              </div>
+                {/* Like */}
+                <div className="action-item">
+                  <button
+                    className={`squircle-btn btn-secondary ${isLikedItem ? 'liked' : ''}`}
+                    onClick={handleLikeClick}
+                    title={isLikedItem ? 'Liked' : 'Like'}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill={isLikedItem ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    <span className="mobile-btn-text">{isLikedItem ? 'Liked' : 'Like'}</span>
+                  </button>
+                  <span className="action-label desktop-only-label">{isLikedItem ? 'Liked' : 'Like'}</span>
+                </div>
 
-              {/* Watched */}
-              <div className="action-item">
-                <button
-                  className={`squircle-btn btn-secondary ${isWatchedItem ? 'watched' : ''}`}
-                  onClick={handleWatchedClick}
-                  title={isWatchedItem ? 'Watched' : 'Mark Watched'}
-                >
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2">
-                    {isWatchedItem ? (
-                      <path d="M20 6L9 17l-5-5" />
-                    ) : (
-                      <>
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </>
-                    )}
-                  </svg>
-                </button>
-                <span className="action-label">{isWatchedItem ? 'Watched' : 'Watched'}</span>
-              </div>
+                {/* Watched */}
+                <div className="action-item">
+                  <button
+                    className={`squircle-btn btn-secondary ${isWatchedItem ? 'watched' : ''}`}
+                    onClick={handleWatchedClick}
+                    title={isWatchedItem ? 'Watched' : 'Mark Watched'}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                      {isWatchedItem ? (
+                        <path d="M20 6L9 17l-5-5" />
+                      ) : (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </>
+                      )}
+                    </svg>
+                    <span className="mobile-btn-text">{isWatchedItem ? 'Watched' : 'Watched'}</span>
+                  </button>
+                  <span className="action-label desktop-only-label">Watched</span>
+                </div>
 
-              {/* Recommend */}
-              <div className="action-item">
-                <button
-                  className="squircle-btn btn-secondary"
-                  onClick={handleOpenRecommend}
-                  title="Recommend to a Friend"
-                >
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 2L11 13" />
-                    <path d="M22 2L15 22L11 13L2 9L22 2z" />
-                  </svg>
-                </button>
-                <span className="action-label">Recommend</span>
+                {/* Recommend */}
+                <div className="action-item">
+                  <button
+                    className="squircle-btn btn-secondary"
+                    onClick={handleOpenRecommend}
+                    title="Recommend to a Friend"
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M22 2L11 13" />
+                      <path d="M22 2L15 22L11 13L2 9L22 2z" />
+                    </svg>
+                    <span className="mobile-btn-text">Recommend</span>
+                  </button>
+                  <span className="action-label desktop-only-label">Recommend</span>
+                </div>
               </div>
             </div>
 

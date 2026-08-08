@@ -677,6 +677,13 @@
     padding: 0.85rem 1rem;
     font-size: 0.9rem;
   }
+  
+  .profile-v2-body {
+    padding: 1.5rem 1rem 3rem;
+  }
+  .dashboard-page {
+    padding: calc(var(--navbar-height, 68px) + 1rem) 1rem 3rem;
+  }
 }
 
 /* ── Achievements Section ── */
@@ -939,25 +946,9 @@
 }
 
 .profile-sort-select {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  color: #fff;
-  padding: 0.45rem 0.85rem;
-  font-size: 0.88rem;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
+  display: inline-block;
 }
 
-.profile-sort-select:focus {
-  border-color: var(--color-accent, #e50914);
-}
-
-.profile-sort-select option {
-  background: #0f172a;
-  color: #fff;
-}
 
 /* Mobile responsive rules for stats box & achievements banner */
 @media (max-width: 640px) {

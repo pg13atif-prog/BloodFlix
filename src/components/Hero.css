@@ -411,16 +411,28 @@
   .hero__content {
     padding: var(--space-lg) var(--space-sm);
     padding-bottom: calc(var(--space-xl) + 4rem);
+    text-align: center;
+    align-items: center;
   }
 
-  .hero__genres {
-    flex-wrap: wrap;
+  .hero__description {
+    text-align: center;
   }
 
   .hero__actions {
     flex-direction: row;
     align-items: center;
     gap: var(--space-sm);
+    justify-content: center;
+  }
+
+  .hero__genres {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero__rating {
+    justify-content: center;
   }
 
   .hero__btn {

@@ -42,20 +42,9 @@
 }
 
 .watchlist-select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 10px 15px;
-  border-radius: 8px;
-  color: #fff;
-  outline: none;
-  font-size: 0.95rem;
-  cursor: pointer;
+  display: inline-block;
 }
 
-.watchlist-select option {
-  background: #121212;
-  color: #fff;
-}
 
 .view-toggles {
   display: flex;
@@ -240,4 +229,11 @@
   background: var(--color-accent, #e50914);
   color: #fff;
   border-color: var(--color-accent, #e50914);
+}
+
+@media (max-width: 768px) {
+  .watchlist-page {
+    padding: 0 0.75rem;
+    padding-top: calc(var(--navbar-height, 68px) + 1rem);
+  }
 }

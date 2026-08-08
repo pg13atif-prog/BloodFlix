@@ -62,6 +62,7 @@ const Navbar = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
 
+  const navRef = useRef(null);
   const dropdownRef = useRef(null);
   const searchContainerRef = useRef(null);
   const { currentUser, logout } = useAuth();
@@ -128,6 +129,9 @@ const Navbar = () => {
       }
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
         setShowSuggestions(false);
+      }
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setOpenDropdown(null);
       }
     };
 
@@ -196,6 +200,8 @@ const Navbar = () => {
     setIsSearchActive(!isSearchActive);
     setShowSuggestions(!isSearchActive);
     if (isSearchActive) setSearchQuery('');
+    // Close mobile menu when activating search
+    if (!isSearchActive) setIsMobileMenuOpen(false);
   };
 
   const handleNotificationAction = async (notif, actionType) => {
@@ -252,34 +258,52 @@ const Navbar = () => {
   /* ── Helper: nav item with optional dropdown ─────────────── */
   const NavItem = ({ id, label, icon, hash, isActive, items, className }) => {
     const hasDropdown = items && items.length > 0;
-    const suppressDropdown =
-      (id === 'discover' && currentPath.startsWith('#discover')) ||
-      (id === 'cineai' && currentPath === '#cineai');
-    const canOpenDropdown = hasDropdown && !suppressDropdown;
-    const isOpen = canOpenDropdown && openDropdown === id;
+    const isOpen = hasDropdown && openDropdown === id;
+
+    const handleMouseEnter = () => {
+      if (hasDropdown && window.matchMedia('(hover: hover)').matches) {
+        setOpenDropdown(id);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (hasDropdown && window.matchMedia('(hover: hover)').matches) {
+        setOpenDropdown(null);
+      }
+    };
+
+    const handleItemClick = (e) => {
+      if (hasDropdown) {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpenDropdown(prev => (prev === id ? null : id));
+      } else {
+        handleNavClick(e, hash);
+      }
+    };
 
     return (
       <li
         className={`navbar__nav-item ${hasDropdown ? 'navbar__dropdown-container' : ''}`}
-        onMouseEnter={() => canOpenDropdown && setOpenDropdown(id)}
-        onMouseLeave={() => canOpenDropdown && setOpenDropdown(null)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <a
           href={hash}
-          onClick={(e) => handleNavClick(e, hash)}
+          onClick={handleItemClick}
           className={`navbar__link ${isActive ? 'navbar__link--active' : ''} ${className || ''}`}
         >
           <span className="navbar__link-label">
             {id === 'cineai' ? <>Cine<span className="navbar__ai-text">AI</span></> : label}
           </span>
-          {canOpenDropdown && (
+          {hasDropdown && (
             <svg className={`navbar__chevron ${isOpen ? 'navbar__chevron--open' : ''}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           )}
         </a>
         <AnimatePresence>
-          {canOpenDropdown && isOpen && renderPremiumDropdown(items)}
+          {hasDropdown && isOpen && renderPremiumDropdown(items)}
         </AnimatePresence>
       </li>
     );
@@ -288,6 +312,7 @@ const Navbar = () => {
   return (
     <>
       <nav
+        ref={navRef}
         id="navbar"
         className={`navbar${scrolled ? ' scrolled' : ''}`}
         role="navigation"
@@ -295,7 +320,15 @@ const Navbar = () => {
       >
         <div className="navbar__left">
           {/* Hamburger Icon */}
-          <button className="navbar__hamburger" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} aria-label="Menu">
+          <button className="navbar__hamburger" onClick={() => {
+            const newState = !isMobileMenuOpen;
+            setIsMobileMenuOpen(newState);
+            if (newState) {
+              setShowSuggestions(false);
+              setIsSearchActive(false);
+              setSearchQuery('');
+            }
+          }} aria-label="Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -405,6 +438,44 @@ const Navbar = () => {
               <span>Watchlist</span>
             </a>
           </li>
+          {currentUser && (
+            <li className="mobile-accordion-section mobile-profile-section">
+              <button className="mobile-accordion-trigger" onClick={() => setMobileAccordion(mobileAccordion === 'profile' ? null : 'profile')}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <span className="mobile-profile-avatar">{avatarLetter}</span>
+                  {currentUser.isAnonymous ? 'Guest' : (currentUser.email?.split('@')[0] || 'Profile')}
+                </span>
+                <svg className={`mobile-accordion-chevron ${mobileAccordion === 'profile' ? 'open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              {mobileAccordion === 'profile' && (
+                <div className="mobile-accordion-content">
+                  <a href="#profile" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#profile')}>
+                    <span className="mobile-accordion-icon">👤</span>
+                    <div><span className="mobile-accordion-label">My Profile</span><br/><span className="mobile-accordion-desc">View your profile and stats.</span></div>
+                  </a>
+                  <a href="#achievements" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#achievements')}>
+                    <span className="mobile-accordion-icon">🏆</span>
+                    <div><span className="mobile-accordion-label">Achievements</span><br/><span className="mobile-accordion-desc">View your unlocked achievements.</span></div>
+                  </a>
+                  <a href="#friends" className="mobile-accordion-item" onClick={(e) => handleNavClick(e, '#friends')}>
+                    <span className="mobile-accordion-icon">👥</span>
+                    <div><span className="mobile-accordion-label">Friends</span><br/><span className="mobile-accordion-desc">Manage your friends list.</span></div>
+                  </a>
+                  <button className="mobile-accordion-item" onClick={() => { setIsNotificationsOpen(true); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <span className="mobile-accordion-icon" style={{ position: 'relative' }}>
+                      🔔
+                      {hasUnreadNotifications && <span className="mobile-notif-dot"></span>}
+                    </span>
+                    <div><span className="mobile-accordion-label">Notifications</span><br/><span className="mobile-accordion-desc">{notifications.length > 0 ? `${notifications.length} new` : 'No new notifications.'}</span></div>
+                  </button>
+                  <button className="mobile-accordion-item mobile-logout-item" onClick={() => { logout(); setIsMobileMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <span className="mobile-accordion-icon">🚪</span>
+                    <div><span className="mobile-accordion-label" style={{ color: '#e50914' }}>Log Out</span><br/><span className="mobile-accordion-desc">Sign out of your account.</span></div>
+                  </button>
+                </div>
+              )}
+            </li>
+          )}
         </ul>
 
         <div className="navbar__actions" id="navbar-actions">
@@ -440,6 +511,19 @@ const Navbar = () => {
                 onFocus={() => setShowSuggestions(true)}
                 onKeyDown={handleSearchKeyDown}
               />
+              {isSearchActive && (
+                <button
+                  type="button"
+                  className="navbar__search-close-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSearch();
+                  }}
+                  aria-label="Close search"
+                >
+                  ✕
+                </button>
+              )}
             </form>
 
             {/* Autocomplete Dropdown */}

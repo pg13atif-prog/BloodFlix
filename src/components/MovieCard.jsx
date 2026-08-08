@@ -6,7 +6,7 @@ import {
   addToWatched, removeFromWatched, isWatched,
   addToLiked, removeFromLiked, isLiked
 } from '../services/firestore';
-import { getWatchProviders, getMovieDetails } from '../services/tmdb';
+import { getWatchProviders, getMovieDetails, getMovieVideos } from '../services/tmdb';
 import { checkAndUnlockAchievements } from '../services/achievements';
 import './MovieCard.css';
 
@@ -20,6 +20,9 @@ const MovieCard = memo((props) => {
   
   const [isLikedItem, setIsLikedItem] = useState(false);
   const [isWatchedItem, setIsWatchedItem] = useState(false);
+  const [showTrailerModal, setShowTrailerModal] = useState(false);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [trailerLoading, setTrailerLoading] = useState(false);
   
   const cardRef = useRef(null);
   const hoverTimeout = useRef(null);
@@ -36,6 +39,39 @@ const MovieCard = memo((props) => {
       setIsLikedItem(false);
     }
   }, [currentUser, id]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showTrailerModal) {
+        setShowTrailerModal(false);
+        setTrailerKey(null);
+      }
+    };
+    if (showTrailerModal) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showTrailerModal]);
+
+  const handlePlayTrailer = async (e) => {
+    e.stopPropagation();
+    if (trailerLoading) return;
+    setTrailerLoading(true);
+    try {
+      const videos = await getMovieVideos(id, mediaType || 'movie');
+      if (videos && videos.length > 0) {
+        setTrailerKey(videos[0].key);
+        setShowTrailerModal(true);
+      } else {
+        alert('No trailer available for this title.');
+      }
+    } catch (err) {
+      console.error('Error fetching trailer:', err);
+      alert('Could not load trailer.');
+    } finally {
+      setTrailerLoading(false);
+    }
+  };
 
   const handleMouseEnter = () => {
     if (disableHover) return;
@@ -173,9 +209,9 @@ const MovieCard = memo((props) => {
         <div className="poster-container">
           <img src={poster} alt={`${title} poster`} className="movie-poster" loading="lazy" />
           <div className="poster-overlay">
-            <span className="play-button" aria-label={`View ${title} details`}>
+            <button className="play-button" onClick={handlePlayTrailer} aria-label={`Play ${title} trailer`}>
               <span aria-hidden="true">&#9654;</span>
-            </span>
+            </button>
             <span className="movie-rating"><span className="star" aria-hidden="true">&#9733;</span> {rating}</span>
             <span className="movie-year">{year}</span>
           </div>
@@ -213,7 +249,7 @@ const MovieCard = memo((props) => {
           </div>
           <div className="hover-content">
             <div className="hover-controls">
-              <button className="hover-btn hover-play-btn" title="Play">
+              <button className="hover-btn hover-play-btn" onClick={handlePlayTrailer} title="Play Trailer">
                 <span aria-hidden="true" style={{ marginLeft: '4px' }}>&#9654;</span>
               </button>
               <button 
@@ -286,6 +322,26 @@ const MovieCard = memo((props) => {
                 )}
               </div>
             )}
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showTrailerModal && trailerKey && createPortal(
+        <div className="movie-card-trailer-overlay" onClick={() => { setShowTrailerModal(false); setTrailerKey(null); }}>
+          <div className="movie-card-trailer-content" onClick={(e) => e.stopPropagation()}>
+            <button className="movie-card-trailer-close" onClick={() => { setShowTrailerModal(false); setTrailerKey(null); }} aria-label="Close trailer">
+              &times;
+            </button>
+            <div className="movie-card-trailer-video">
+              <iframe
+                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+                title="Trailer"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
           </div>
         </div>,
         document.body
