@@ -9,6 +9,41 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ==========================================
+   CineScope Custom Aesthetic Scrollbar System
+   ========================================== */
+
+/* Webkit Browsers (Chrome, Edge, Safari, Opera) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 14, 23, 0.4);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent, #e50914);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(10, 14, 23, 0.4);
+}
+
 :root {
   --color-bg: #0a0a0a;
   --color-surface-hover: rgba(40, 40, 40, 0.9);

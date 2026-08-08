@@ -311,7 +311,8 @@ const Navbar = () => {
     };
 
     const handleItemClick = (e) => {
-      if (hasDropdown) {
+      const isTouchDevice = !window.matchMedia('(hover: hover)').matches;
+      if (hasDropdown && isTouchDevice) {
         e.preventDefault();
         e.stopPropagation();
         setOpenDropdown(prev => (prev === id ? null : id));
